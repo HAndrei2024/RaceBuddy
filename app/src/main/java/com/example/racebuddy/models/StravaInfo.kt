@@ -1,4 +1,4 @@
-package com.example.racebuddy.data
+package com.example.racebuddy.models
 
 data class StravaInfo(
     val averageSpeed: Float, // Average speed in km/h or mph
