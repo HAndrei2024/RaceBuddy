@@ -9,8 +9,8 @@ import java.sql.Date
 
 @Entity(tableName = "athlete")
 data class Athlete(
-    @PrimaryKey
-    val id: Int,
+    @PrimaryKey(autoGenerate = true)
+    val id: Int = 0,
     val name: String,
     val surname: String,
     val username: String,

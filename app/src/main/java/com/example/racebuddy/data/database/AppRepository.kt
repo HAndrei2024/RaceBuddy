@@ -14,4 +14,8 @@ class AppRepository(
     ) : Int {
         return localDataSource.verifyLogin(username, password)
     }
+
+    suspend fun createNewAccount(athlete: Athlete) {
+        localDataSource.createNewAccount(athlete)
+    }
 }

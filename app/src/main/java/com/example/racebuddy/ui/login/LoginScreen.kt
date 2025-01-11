@@ -51,7 +51,7 @@ fun LoginScreen(
                 label = "Password",
                 onValueChange = { loginScreenViewModel.onPasswordChange(it) }
             )
-            LoginButton(
+            UserButton(
                 text = "Login",
                 onClick = { loginScreenViewModel.onLoginButtonPressed() }
             )
@@ -73,7 +73,7 @@ fun UserTextField(
 }
 
 @Composable
-fun LoginButton(
+fun UserButton(
     text: String,
     onClick: () -> Unit = { }
 ) {

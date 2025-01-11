@@ -11,4 +11,8 @@ class LocalDataSource(val athleteDao: AthleteDao) {
     ) : Int {
         return athleteDao.verifyLogin(username, password)
     }
+
+    suspend fun createNewAccount(athlete: Athlete) {
+        athleteDao.createNewAccount(athlete)
+    }
 }
