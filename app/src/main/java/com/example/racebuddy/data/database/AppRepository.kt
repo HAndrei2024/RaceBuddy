@@ -7,4 +7,11 @@ class AppRepository(
     fun getData() {
         localDataSource.getData()
     }
+
+    suspend fun verifyLogin(
+        username: String,
+        password: String
+    ) : Int {
+        return localDataSource.verifyLogin(username, password)
+    }
 }
