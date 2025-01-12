@@ -1,6 +1,6 @@
 package com.example.racebuddy.data.database
 
-class LocalDataSource(val athleteDao: AthleteDao) {
+class LocalDataSource(private val athleteDao: AthleteDao) {
     fun getData() {
 
     }
@@ -15,4 +15,9 @@ class LocalDataSource(val athleteDao: AthleteDao) {
     suspend fun createNewAccount(athlete: Athlete) {
         athleteDao.createNewAccount(athlete)
     }
+
+    suspend fun getUsernameById(id: Int): String {
+        return athleteDao.getUsernameById(id)
+    }
+
 }

@@ -93,6 +93,7 @@ plugins {
     id("com.google.devtools.ksp") version "2.1.0-1.0.29"
     id("org.jetbrains.kotlin.android")
     id("org.jetbrains.kotlin.plugin.compose")
+    kotlin("plugin.serialization") version "2.0.21"
 }
 
 android {
@@ -170,7 +171,6 @@ android {
 ////    ksp("androidx.room:room-compiler:2.5.0") // Room Annotation Processor for KSP
 //}
 dependencies {
-
     implementation(platform("androidx.compose:compose-bom:2024.11.00"))
     implementation("androidx.activity:activity-compose:1.9.3")
     implementation("androidx.compose.material3:material3")
@@ -193,4 +193,17 @@ dependencies {
     implementation("androidx.datastore:datastore-preferences:1.0.0")
 
     implementation("androidx.lifecycle:lifecycle-viewmodel-ktx:2.8.7") //for viewModelScope
+
+    // Navigation Component
+    implementation("androidx.navigation:navigation-fragment-ktx:2.8.5")
+    implementation("androidx.navigation:navigation-ui-ktx:2.8.5")
+
+    // Testing Navigation
+    androidTestImplementation("androidx.navigation:navigation-testing:2.8.5")
+
+    // Serialization
+    implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.7.3")
+
+    //DataStore
+    implementation("androidx.datastore:datastore-preferences:1.0.0")
 }

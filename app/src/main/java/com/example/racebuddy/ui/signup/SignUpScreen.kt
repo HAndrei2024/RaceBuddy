@@ -7,22 +7,21 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.lifecycle.viewmodel.compose.viewModel
-import com.example.racebuddy.LoginTopAppBar
+import com.example.racebuddy.ui.common.LoginTopAppBar
 import com.example.racebuddy.ui.login.UserButton
 import com.example.racebuddy.ui.login.UserTextField
 import kotlin.math.sign
 
 @Composable
 fun SignUpScreen(
-    signUpViewModel: SignUpViewModel = viewModel(
-        factory = SignUpViewModel.factory
-    )
+    signUpViewModel: SignUpViewModel
 ) {
     val uiState by signUpViewModel.uiState.collectAsState()
     Scaffold(
@@ -55,6 +54,9 @@ fun SignUpScreen(
                 label = "Password",
                 onValueChange = { signUpViewModel.onPasswordChange(it) }
             )
+            if(uiState.errorMessageFlag) {
+                Text(uiState.errorMessage)
+            }
             UserButton(
                 text = "Sign Up",
                 onClick = { signUpViewModel.onSignUpButtonPressed() }

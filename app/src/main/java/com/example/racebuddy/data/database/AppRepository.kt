@@ -18,4 +18,8 @@ class AppRepository(
     suspend fun createNewAccount(athlete: Athlete) {
         localDataSource.createNewAccount(athlete)
     }
+
+    suspend fun getUsernameById(id: Int): String {
+        return localDataSource.getUsernameById(id)
+    }
 }

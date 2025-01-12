@@ -9,16 +9,20 @@ import androidx.lifecycle.ViewModelProvider.AndroidViewModelFactory.Companion.AP
 import androidx.lifecycle.viewModelScope
 import androidx.lifecycle.viewmodel.initializer
 import androidx.lifecycle.viewmodel.viewModelFactory
+import androidx.navigation.NavController
+import com.example.racebuddy.AppScreen
 import com.example.racebuddy.Application
 import com.example.racebuddy.data.database.AppRepository
 import com.example.racebuddy.data.database.AthleteDao
+import com.example.racebuddy.data.database.UserPreferencesRepository
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 
 class LoginScreenViewModel(
-    val appRepository: AppRepository
+    val appRepository: AppRepository,
+    val userPreferencesRepository: UserPreferencesRepository
 ) : ViewModel() {
     private val _uiState = MutableStateFlow(LoginScreenUiState("", ""))
     val uiState = _uiState.asStateFlow()
@@ -39,27 +43,48 @@ class LoginScreenViewModel(
         }
     }
 
+    private fun updateLogInSucces(boolean: Boolean) {
+        _uiState.update { currentState ->
+            currentState.copy(
+                logInSucces = boolean
+            )
+        }
+    }
+
+    fun updateErrorMessage(boolean: Boolean) {
+        _uiState.update { currentState ->
+            currentState.copy(
+                errorMessage = boolean
+            )
+        }
+    }
+
     fun onLoginButtonPressed() {
         viewModelScope.launch {
-            val loginResult = appRepository.verifyLogin(
-                uiState.value.username,
-                uiState.value.password
-            )
-
-            when(loginResult) {
-                0 -> { onUsernameChange("Not correct!") }
-                1 -> { onUsernameChange("Correct!") }
-                else -> { onUsernameChange("Idk?!") }
+            try {
+                val loginResult = appRepository.verifyLogin(
+                    uiState.value.username,
+                    uiState.value.password
+                )
+                val loginResultBoolean = loginResult != 0
+                updateLogInSucces(loginResultBoolean)
+                updateErrorMessage(!loginResultBoolean)
+                userPreferencesRepository.saveAthleteLoginId(loginResult)
+                userPreferencesRepository.saveAthleteUsername(uiState.value.username)
+            } catch (e: Exception) {
+                updateErrorMessage(true)
             }
         }
     }
+
 
     companion object {
         val factory: ViewModelProvider.Factory = viewModelFactory {
             initializer {
                 val application = (this[APPLICATION_KEY] as Application)
                 LoginScreenViewModel(
-                    appRepository = application.container.appRepository
+                    appRepository = application.container.appRepository,
+                    userPreferencesRepository = application.userPreferencesRepository
                 )
             }
         }
@@ -68,5 +93,7 @@ class LoginScreenViewModel(
 
 data class LoginScreenUiState(
     val username: String,
-    val password: String
+    val password: String,
+    val errorMessage: Boolean = false,
+    val logInSucces: Boolean = false
 )

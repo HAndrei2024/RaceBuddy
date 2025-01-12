@@ -19,20 +19,20 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
-import com.example.racebuddy.LoginTopAppBar
+import androidx.navigation.NavController
+import com.example.racebuddy.ui.common.LoginTopAppBar
 
 @Composable
 fun LoginScreen(
-    title: String,
-    loginScreenViewModel: LoginScreenViewModel = viewModel(
-        factory = LoginScreenViewModel.factory
-    ),
+    loginScreenViewModel: LoginScreenViewModel,
+    onSignUpClick: () -> Unit = { },
+    onLogInClick: () -> Unit = { },
     modifier: Modifier = Modifier
 ) {
     val uiState by loginScreenViewModel.uiState.collectAsState()
 
     Scaffold(
-        topBar = { LoginTopAppBar(title) }
+        topBar = { LoginTopAppBar() }
     ) { innerPadding ->
         Column(
             verticalArrangement = Arrangement.Center,
@@ -51,9 +51,16 @@ fun LoginScreen(
                 label = "Password",
                 onValueChange = { loginScreenViewModel.onPasswordChange(it) }
             )
+            if(uiState.errorMessage) {
+                Text("Error Logging in!")
+            }
             UserButton(
                 text = "Login",
-                onClick = { loginScreenViewModel.onLoginButtonPressed() }
+                onClick = onLogInClick
+            )
+            UserButton(
+                text = "Sign Up",
+                onClick = onSignUpClick
             )
         }
     }
@@ -89,8 +96,6 @@ fun UserButton(
 @Preview
 @Composable
 fun LoginScreenPreview() {
-    LoginScreen(
-        title = "RaceBuddy"
-    )
+    //LoginScreen()
 }
 

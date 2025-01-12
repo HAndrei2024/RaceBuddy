@@ -1,19 +1,9 @@
-package com.example.racebuddy
+package com.example.racebuddy.ui.common
 
 import androidx.compose.material3.CenterAlignedTopAppBar
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import com.example.racebuddy.ui.login.LoginScreen
-import com.example.racebuddy.ui.signup.SignUpScreen
-
-@Composable
-fun App() {
-//    LoginScreen(
-//        title = "RaceBuddy"
-//    )
-    SignUpScreen()
-}
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
