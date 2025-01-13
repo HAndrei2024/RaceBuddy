@@ -1,6 +1,11 @@
 package com.example.racebuddy.data.database
 
-class LocalDataSource(private val athleteDao: AthleteDao) {
+import kotlinx.coroutines.flow.Flow
+
+class LocalDataSource(
+    private val athleteDao: AthleteDao,
+    private val eventDao: EventDao
+) {
     fun getData() {
 
     }
@@ -18,6 +23,10 @@ class LocalDataSource(private val athleteDao: AthleteDao) {
 
     suspend fun getUsernameById(id: Int): String {
         return athleteDao.getUsernameById(id)
+    }
+
+    fun getListOfEvents(title: String): Flow<List<Event>> {
+        return eventDao.getListOfEvents(title)
     }
 
 }

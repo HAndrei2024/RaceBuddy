@@ -70,13 +70,18 @@ class LoginScreenViewModel(
                 updateLogInSucces(loginResultBoolean)
                 updateErrorMessage(!loginResultBoolean)
                 userPreferencesRepository.saveAthleteLoginId(loginResult)
-                userPreferencesRepository.saveAthleteUsername(uiState.value.username)
+                //userPreferencesRepository.saveAthleteUsername(uiState.value.username)
             } catch (e: Exception) {
                 updateErrorMessage(true)
             }
         }
     }
 
+    fun updateDataSourceOnSkipButtonClicked() {
+        viewModelScope.launch {
+            userPreferencesRepository.saveAthleteLoginId(-1)
+        }
+    }
 
     companion object {
         val factory: ViewModelProvider.Factory = viewModelFactory {

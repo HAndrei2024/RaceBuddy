@@ -1,5 +1,7 @@
 package com.example.racebuddy.data.database
 
+import kotlinx.coroutines.flow.Flow
+
 class AppRepository(
     private val localDataSource: LocalDataSource,
     private val remoteDataSource: RemoteDataSource
@@ -21,5 +23,9 @@ class AppRepository(
 
     suspend fun getUsernameById(id: Int): String {
         return localDataSource.getUsernameById(id)
+    }
+
+    fun getListOfEvents(title: String): Flow<List<Event>> {
+        return localDataSource.getListOfEvents(title)
     }
 }

@@ -9,8 +9,15 @@ interface AppContainer {
 class AppDataContainer(private val context: Context) : AppContainer {
     override val appRepository: AppRepository by lazy {
         AppRepository(
-            localDataSource = LocalDataSource(AppDatabase.getDatabase(context).athleteDao()),
+            localDataSource = LocalDataSource(
+                athleteDao = AppDatabase.getDatabase(context).athleteDao(),
+                eventDao = AppDatabase.getDatabase(context).eventDao()
+            ),
             remoteDataSource = RemoteDataSource()
         )
+    }
+
+    init {
+        //AppDatabase.populateDatabase(context)
     }
 }

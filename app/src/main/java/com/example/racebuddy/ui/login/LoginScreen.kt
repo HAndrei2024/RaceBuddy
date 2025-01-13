@@ -27,6 +27,7 @@ fun LoginScreen(
     loginScreenViewModel: LoginScreenViewModel,
     onSignUpClick: () -> Unit = { },
     onLogInClick: () -> Unit = { },
+    onSkipClick: () -> Unit = { },
     modifier: Modifier = Modifier
 ) {
     val uiState by loginScreenViewModel.uiState.collectAsState()
@@ -61,6 +62,10 @@ fun LoginScreen(
             UserButton(
                 text = "Sign Up",
                 onClick = onSignUpClick
+            )
+            UserButton(
+                text = "Skip >>>",
+                onClick = onSkipClick
             )
         }
     }
