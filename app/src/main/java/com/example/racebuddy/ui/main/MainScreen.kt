@@ -16,6 +16,7 @@ import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CardElevation
 import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
@@ -24,6 +25,7 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.painter.Painter
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
@@ -31,6 +33,7 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.racebuddy.R
 import com.example.racebuddy.data.database.Event
 import com.example.racebuddy.ui.common.BottomAppBar
+import com.example.racebuddy.ui.common.EventCard
 import com.example.racebuddy.ui.common.LoginTopAppBar
 import com.example.racebuddy.ui.common.MainScreenTopAppBar
 
@@ -41,17 +44,24 @@ fun MainScreen(
     ),
     onHomeClick: () -> Unit = { },
     onFavoriteClick: () -> Unit = { },
-    onProfileClick: () -> Unit = { }
+    onProfileClick: () -> Unit = { },
+    isHomeSelected: Boolean = true,
+    isFavoriteSelected: Boolean = false,
+    isProfileSelected: Boolean = false,
 ) {
     val mainScreenUiState = mainScreenViewModel.uiState.collectAsState()
     val eventList = mainScreenUiState.value.eventList.collectAsState(emptyList())
+    val favoriteEvents = mainScreenViewModel.favoriteEventList.collectAsState().value
 
     Scaffold(
         topBar = { LoginTopAppBar("RaceBuddy") },
         bottomBar = { BottomAppBar(
             onHomeClick = onHomeClick,
             onFavoriteClick = onFavoriteClick,
-            onProfileClick = onProfileClick
+            onProfileClick = onProfileClick,
+            isHomeSelected = isHomeSelected,
+            isFavoriteSelected = isFavoriteSelected,
+            isProfileSelected = isProfileSelected,
         ) }
     ) { innerPadding ->
         if(mainScreenUiState.value.athleteLoginId == -1) {
@@ -64,7 +74,10 @@ fun MainScreen(
                 Text(text = "Main Screen! Hello, no user logged in!")
                 LazyColumn {
                     items(eventList.value) { item ->
-                        EventCard(item)
+                        EventCard(
+                            event = item,
+                            isUserLoggedIn = false,
+                            )
                     }
                 }
             }
@@ -82,7 +95,20 @@ fun MainScreen(
                         .imePadding()
                 ) {
                     items(eventList.value) { item ->
-                        EventCard(item)
+                        val favoriteIcon = if(item in favoriteEvents) painterResource(R.drawable.baseline_favorite_24)
+                            else painterResource(R.drawable.baseline_favorite_border_24)
+                        EventCard(
+                            event = item,
+                            isUserLoggedIn = true,
+                            favoriteIcon = favoriteIcon,
+                            onFavoriteIconClick = {
+                                mainScreenViewModel.onFavoriteIconClick(
+                                    athleteId = mainScreenUiState.value.athleteLoginId,
+                                    eventId = item.id,
+                                    newFavoriteValue = item !in favoriteEvents
+                                )
+                            }
+                            )
                     }
                 }
             }
@@ -90,48 +116,3 @@ fun MainScreen(
     }
 }
 
-@Composable
-fun EventCard(event: Event) {
-    Card(
-        shape = CardDefaults.elevatedShape,
-        elevation = CardDefaults.cardElevation(5.dp),
-        modifier = Modifier
-            .fillMaxWidth()
-    ) {
-        Row() {
-            Image(
-                painter = painterResource(R.drawable.ic_launcher_background),
-                contentDescription = "",
-                modifier = Modifier
-                    .padding(5.dp)
-            )
-            Column(
-                verticalArrangement = Arrangement.SpaceEvenly,
-                horizontalAlignment = Alignment.CenterHorizontally,
-                modifier = Modifier
-            ) {
-                Text(
-                    text = event.title
-                )
-                Text(
-                    text = "Location"
-                )
-                Text(
-                    text = "Period"
-                )
-            }
-            Column() {
-                Icon(
-                    painter = painterResource(R.drawable.baseline_favorite_border_24),
-                    contentDescription = ""
-                )
-            }
-        }
-    }
-}
-
-@Preview
-@Composable
-fun EventCardPreview() {
-    EventCard(Event(title = "Preview"))
-}

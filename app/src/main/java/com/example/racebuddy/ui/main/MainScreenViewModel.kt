@@ -3,6 +3,7 @@ package com.example.racebuddy.ui.main
 import android.database.sqlite.SQLiteException
 import android.nfc.Tag
 import android.util.Log
+import androidx.compose.runtime.collectAsState
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.ViewModelProvider.AndroidViewModelFactory.Companion.APPLICATION_KEY
@@ -34,6 +35,10 @@ class MainScreenViewModel(
 ) : ViewModel() {
     private val _uiState = MutableStateFlow(MainScreenUiState(-1, "initial"))
     val uiState = _uiState.asStateFlow()
+
+    private val _favoriteEventList = MutableStateFlow<List<Event>>(emptyList())
+    val favoriteEventList: StateFlow<List<Event>> = _favoriteEventList
+
 //    val mainScreenEventListStateFlow: StateFlow<List<Event>> =
 //        appRepository.getListOfEvents(_uiState.value.searchString).map { it }
 //            .stateIn(
@@ -56,6 +61,9 @@ class MainScreenViewModel(
                 }
                 if(athleteLoginId > 0) {
                     getAthleteUsernameById(_uiState.value.athleteLoginId)
+                    getFavoriteEvents(athleteLoginId).collect {events ->
+                        _favoriteEventList.value = events
+                    }
                 }
             }
 
@@ -83,6 +91,40 @@ class MainScreenViewModel(
             )
         }
     }
+
+    fun getFavoriteEvents(athleteId: Int): Flow<List<Event>> {
+        return appRepository.getListOfFavoriteEvents(athleteId)
+    }
+
+    fun onFavoriteIconClick(
+        athleteId: Int,
+        eventId: Int,
+        newFavoriteValue: Boolean) {
+        if(newFavoriteValue) {
+            viewModelScope.launch {
+                appRepository.addFavoriteEvent(
+                    athleteId = athleteId,
+                    eventId = eventId
+                )
+            }
+        }
+        else {
+            viewModelScope.launch {
+                appRepository.removeFavoriteEvent(
+                    athleteId = athleteId,
+                    eventId = eventId
+                )
+            }
+        }
+    }
+
+
+//
+//    fun checkFavoriteEvent(athleteId:Int, eventId: Int): Flow<Int> {
+//        viewModelScope.launch {
+//            val returnValue = appRepository.checkFavoriteEvent(athleteId, eventId)
+//        }
+//    }
 
     companion object {
         val factory: ViewModelProvider.Factory = viewModelFactory {

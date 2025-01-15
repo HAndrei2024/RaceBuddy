@@ -3,6 +3,7 @@ package com.example.racebuddy.data.database
 import androidx.room.Dao
 import androidx.room.Insert
 import androidx.room.Query
+import kotlinx.coroutines.flow.Flow
 
 @Dao
 interface AthleteDao {
@@ -11,6 +12,7 @@ interface AthleteDao {
 
     @Query("SELECT username FROM athlete WHERE id = :id")
     suspend fun getUsernameById(id: Int): String
+
 
     @Insert
     suspend fun createNewAccount(athlete: Athlete)

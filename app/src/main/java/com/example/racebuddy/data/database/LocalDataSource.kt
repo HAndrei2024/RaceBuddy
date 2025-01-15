@@ -29,4 +29,19 @@ class LocalDataSource(
         return eventDao.getListOfEvents(title)
     }
 
+//    fun checkFavoriteEvent(userId: Int, eventId: Int): Flow<Int> {
+//        return eventDao.checkFavoriteEvent(userId, eventId)
+//    }
+
+    fun getListOfFavoriteEvents(athleteId: Int): Flow<List<Event>> {
+        return eventDao.getFavoriteListOfEvents(athleteId)
+    }
+
+    suspend fun addFavoriteEvent(athleteId: Int, eventId: Int) {
+        eventDao.insertFavoriteEvent(athleteId, eventId)
+    }
+
+    suspend fun removeFavoriteEvent(athleteId: Int, eventId: Int) {
+        eventDao.deleteFavoriteEvent(athleteId, eventId)
+    }
 }

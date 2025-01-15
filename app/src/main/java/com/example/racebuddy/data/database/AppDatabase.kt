@@ -8,7 +8,7 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 
-@Database(entities = [Athlete::class, Event::class], version = 4)
+@Database(entities = [Athlete::class, Event::class, Favorite::class], version = 8)
 abstract class AppDatabase : RoomDatabase() {
     abstract fun athleteDao(): AthleteDao
     abstract fun eventDao() : EventDao

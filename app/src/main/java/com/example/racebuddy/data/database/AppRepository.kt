@@ -28,4 +28,20 @@ class AppRepository(
     fun getListOfEvents(title: String): Flow<List<Event>> {
         return localDataSource.getListOfEvents(title)
     }
+
+//    fun checkFavoriteEvent(userId: Int, eventId: Int): Flow<Int> {
+//        return localDataSource.checkFavoriteEvent(userId, eventId)
+//    }
+
+    fun getListOfFavoriteEvents(athleteId: Int): Flow<List<Event>> {
+        return localDataSource.getListOfFavoriteEvents(athleteId)
+    }
+
+    suspend fun addFavoriteEvent(athleteId: Int, eventId: Int) {
+        localDataSource.addFavoriteEvent(athleteId, eventId)
+    }
+
+    suspend fun removeFavoriteEvent(athleteId: Int, eventId: Int) {
+        localDataSource.removeFavoriteEvent(athleteId, eventId)
+    }
 }
