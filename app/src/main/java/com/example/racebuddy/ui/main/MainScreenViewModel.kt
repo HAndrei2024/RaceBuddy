@@ -12,6 +12,7 @@ import androidx.lifecycle.viewmodel.initializer
 import androidx.lifecycle.viewmodel.viewModelFactory
 import com.example.racebuddy.Application
 import com.example.racebuddy.data.database.AppRepository
+import com.example.racebuddy.data.database.Athlete
 import com.example.racebuddy.data.database.Event
 import com.example.racebuddy.data.database.UserPreferencesRepository
 import com.example.racebuddy.ui.login.LoginScreenViewModel
@@ -39,6 +40,9 @@ class MainScreenViewModel(
     private val _favoriteEventList = MutableStateFlow<List<Event>>(emptyList())
     val favoriteEventList: StateFlow<List<Event>> = _favoriteEventList
 
+    private val _athlete = MutableStateFlow<Athlete>(Athlete(-1, "", "", "", ""))
+    val athlete: StateFlow<Athlete> = _athlete
+
 //    val mainScreenEventListStateFlow: StateFlow<List<Event>> =
 //        appRepository.getListOfEvents(_uiState.value.searchString).map { it }
 //            .stateIn(
@@ -63,7 +67,11 @@ class MainScreenViewModel(
                     getAthleteUsernameById(_uiState.value.athleteLoginId)
                     getFavoriteEvents(athleteLoginId).collect {events ->
                         _favoriteEventList.value = events
+                        getAthlete(athleteLoginId).collect { athlete ->
+                            _athlete.value = athlete
+                        }
                     }
+                    // why getAthlete cannot be called here?
                 }
             }
 
@@ -116,6 +124,11 @@ class MainScreenViewModel(
                 )
             }
         }
+    }
+
+    fun getAthlete(id: Int): Flow<Athlete> {
+        Log.d(TAG, "Fetching athlete with id: $id")
+        return appRepository.getAthlete(id)
     }
 
 

@@ -13,6 +13,8 @@ interface AthleteDao {
     @Query("SELECT username FROM athlete WHERE id = :id")
     suspend fun getUsernameById(id: Int): String
 
+    @Query("SELECT * FROM athlete WHERE id = :id")
+    fun getAthlete(id: Int): Flow<Athlete> //Flow or no flow?
 
     @Insert
     suspend fun createNewAccount(athlete: Athlete)

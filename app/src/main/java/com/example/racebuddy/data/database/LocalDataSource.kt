@@ -44,4 +44,8 @@ class LocalDataSource(
     suspend fun removeFavoriteEvent(athleteId: Int, eventId: Int) {
         eventDao.deleteFavoriteEvent(athleteId, eventId)
     }
+
+    fun getAthlete(id: Int): Flow<Athlete> {
+        return athleteDao.getAthlete(id)
+    }
 }

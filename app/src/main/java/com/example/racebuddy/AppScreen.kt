@@ -25,6 +25,7 @@ import com.example.racebuddy.ui.login.LoginScreenViewModel
 import com.example.racebuddy.ui.main.MainScreen
 import com.example.racebuddy.ui.main.MainScreenUiState
 import com.example.racebuddy.ui.main.MainScreenViewModel
+import com.example.racebuddy.ui.profile.ProfileScreen
 import com.example.racebuddy.ui.signup.SignUpScreen
 import com.example.racebuddy.ui.signup.SignUpViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -143,7 +144,25 @@ fun App(
         }
 
         composable(route = AppScreen.Profile.name) {
-            Text("Profile")
+
+            val athlete = mainScreenViewModel.athlete.collectAsState().value
+
+            ProfileScreen(
+                athlete = athlete,
+                onHomeClick = {
+                    navController.navigate(AppScreen.Main.name)
+                    appViewModel.updateScreenSelected(AppScreen.Main)
+                },
+                onFavoriteClick = {
+                    navController.navigate(AppScreen.Favorite.name)
+                    appViewModel.updateScreenSelected(AppScreen.Favorite)
+                },
+                onProfileClick = {
+                    navController.navigate(AppScreen.Profile.name)
+                    appViewModel.updateScreenSelected(AppScreen.Profile)
+                },
+                onLogoutButtonClick = {}
+            )
         }
     }
 }

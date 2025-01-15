@@ -44,4 +44,8 @@ class AppRepository(
     suspend fun removeFavoriteEvent(athleteId: Int, eventId: Int) {
         localDataSource.removeFavoriteEvent(athleteId, eventId)
     }
+
+    fun getAthlete(id: Int): Flow<Athlete> {
+        return localDataSource.getAthlete(id)
+    }
 }
