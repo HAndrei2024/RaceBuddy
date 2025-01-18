@@ -1,11 +1,15 @@
 package com.example.racebuddy
 
+import android.app.Activity
+import androidx.activity.ComponentActivity
+import androidx.activity.compose.BackHandler
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.compositionLocalOf
 import androidx.compose.runtime.getValue
+import androidx.compose.ui.platform.LocalContext
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.ViewModelProvider.AndroidViewModelFactory.Companion.APPLICATION_KEY
@@ -98,6 +102,8 @@ fun App(
                     loginScreenViewModel.updateDataSourceOnSkipButtonClicked()
                 }
             )
+            BackHandler {
+            }
         }
 
         composable(route = AppScreen.SignUp.name) {
@@ -128,6 +134,7 @@ fun App(
                     isFavoriteSelected = false,
                     isProfileSelected = false,
                 )
+            BackHandler {  }
         }
 
         composable(route = AppScreen.Favorite.name) {
@@ -150,7 +157,11 @@ fun App(
                 isHomeSelected = false,
                 isFavoriteSelected = true,
                 isProfileSelected = false,
+                onLoginButtonClicked = {
+                    navController.navigate(AppScreen.Login.name)
+                }
                 )
+            BackHandler {  }
         }
 
         composable(route = AppScreen.Profile.name) {
@@ -171,8 +182,16 @@ fun App(
                     navController.navigate(AppScreen.Profile.name)
                     appViewModel.updateScreenSelected(AppScreen.Profile)
                 },
-                onLogoutButtonClick = {}
+                onLoginButtonClick = {
+                    navController.navigate(AppScreen.Login.name)
+                },
+                onLogoutButtonClick = {
+                    profileScreenViewModel.onLogoutButtonClick()
+                    loginScreenViewModel.updateLogInSucces(false)
+                    navController.navigate(AppScreen.Login.name)
+                }
             )
+            BackHandler {  }
         }
     }
 }

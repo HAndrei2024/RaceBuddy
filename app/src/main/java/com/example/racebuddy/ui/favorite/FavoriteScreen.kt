@@ -4,6 +4,7 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.material3.Button
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -29,6 +30,7 @@ fun FavoriteScreen(
     isHomeSelected: Boolean = true,
     isFavoriteSelected: Boolean = false,
     isProfileSelected: Boolean = false,
+    onLoginButtonClicked: () -> Unit = {}
 ) {
     val favoriteScreenUiState by favoriteScreenViewModel.uiState.collectAsState()
     Scaffold(
@@ -45,21 +47,30 @@ fun FavoriteScreen(
         Column(
             modifier = Modifier.padding(innerPadding)
         ) {
-            Text("This is favorite screen!")
-            LazyColumn() {
-                items(favoriteEventsList) { event ->
-                    EventCard(
-                        event = event,
-                        isUserLoggedIn = true,
-                        onFavoriteIconClick = {
-                            favoriteScreenViewModel.onFavoriteIconClick(
-                                athleteId = favoriteScreenUiState.athleteId,
-                                eventId = event.id,
-                                newFavoriteValue = false
-                            )
-                        },
-                        favoriteIcon = painterResource(R.drawable.baseline_favorite_24)
-                    )
+            if(favoriteScreenUiState.athleteId > 0) {
+                LazyColumn() {
+                    items(favoriteEventsList) { event ->
+                        EventCard(
+                            event = event,
+                            isUserLoggedIn = true,
+                            onFavoriteIconClick = {
+                                favoriteScreenViewModel.onFavoriteIconClick(
+                                    athleteId = favoriteScreenUiState.athleteId,
+                                    eventId = event.id,
+                                    newFavoriteValue = false
+                                )
+                            },
+                            favoriteIcon = painterResource(R.drawable.baseline_favorite_24)
+                        )
+                    }
+                }
+            }
+            else {
+                Text("There is no user logged in!")
+                Button(
+                    onClick = onLoginButtonClicked
+                ) {
+                    Text("Log In")
                 }
             }
         }

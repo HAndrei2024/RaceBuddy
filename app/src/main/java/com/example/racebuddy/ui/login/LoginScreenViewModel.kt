@@ -43,7 +43,7 @@ class LoginScreenViewModel(
         }
     }
 
-    private fun updateLogInSucces(boolean: Boolean) {
+    fun updateLogInSucces(boolean: Boolean) {
         _uiState.update { currentState ->
             currentState.copy(
                 logInSucces = boolean

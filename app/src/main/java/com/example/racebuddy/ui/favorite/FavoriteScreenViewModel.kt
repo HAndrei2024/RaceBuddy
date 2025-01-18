@@ -12,11 +12,15 @@ import com.example.racebuddy.data.database.Event
 import com.example.racebuddy.data.database.UserPreferencesRepository
 import com.example.racebuddy.ui.login.LoginScreenViewModel
 import com.example.racebuddy.ui.main.MainScreenUiState
+import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 
@@ -24,36 +28,30 @@ class FavoriteScreenViewModel(
     private val appRepository: AppRepository,
     private val userPreferencesRepository: UserPreferencesRepository
 ) : ViewModel() {
-//    private val _favoriteEventList = MutableStateFlow<List<Event>>(emptyList())
-//    val favoriteEventList: StateFlow<List<Event>> = _favoriteEventList
 
-    private val _athleteLoginId = userPreferencesRepository.athleteLoginId.map { athleteLoginId ->
-        athleteLoginId
-    }
-
-    private val _uiState = MutableStateFlow(FavoriteScreenUiState(-1, emptyList()))
-    val uiState = _uiState.asStateFlow()
-
-    init {
-        viewModelScope.launch {
-            _athleteLoginId.collect { athleteLoginId ->
-                _uiState.update { currentState ->
-                    currentState.copy(
-                        athleteId = athleteLoginId
-                    )
-                }
-                if (athleteLoginId > 0) {
-                    getFavoriteEvents(athleteLoginId).collect { events ->
-                        _uiState.update { currentState ->
-                            currentState.copy(
-                                favoriteEvents = events
-                            )
-                        }
-                    }
-                }
+    @OptIn(ExperimentalCoroutinesApi::class)
+    val uiState = userPreferencesRepository.athleteLoginId
+        .flatMapLatest { athleteLoginId ->
+            // Collect data from Room database based on 'isLinearLayout'
+            // Assume 'getDesserts' is a method in the dessertRepository that fetches desserts
+            // based on the 'isLinearLayout' flag.
+            appRepository.getListOfFavoriteEvents(athleteLoginId).map { events ->
+                // Combine 'isLinearLayout' with the fetched desserts data into the UI state
+                FavoriteScreenUiState(
+                    athleteId = athleteLoginId,
+                    favoriteEvents = events
+                )
             }
         }
-    }
+        .stateIn(
+            scope = viewModelScope,
+            started = SharingStarted.WhileSubscribed(5_000),
+            initialValue = FavoriteScreenUiState(
+                athleteId = -1,
+                favoriteEvents = emptyList()
+            ) // Initial value for UI state
+        )
+
 
     private fun getFavoriteEvents(athleteId: Int): Flow<List<Event>> {
         return appRepository.getListOfFavoriteEvents(athleteId)

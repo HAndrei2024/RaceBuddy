@@ -13,9 +13,14 @@ import com.example.racebuddy.data.database.Athlete
 import com.example.racebuddy.data.database.UserPreferencesRepository
 import com.example.racebuddy.ui.favorite.FavoriteScreenUiState
 import com.example.racebuddy.ui.favorite.FavoriteScreenViewModel
+import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.flatMapLatest
+import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 
@@ -26,40 +31,35 @@ class ProfileScreenViewModel(
     private val userPreferencesRepository: UserPreferencesRepository
 ) : ViewModel() {
 
-    private val _uiState = MutableStateFlow(
-        ProfileScreenUiState(athlete = Athlete(id = -1, name = "", surname = "", username = "", password = ""))
-            )
-    val uiState = _uiState.asStateFlow()
-
-    private val _athleteLoginId = userPreferencesRepository.athleteLoginId.map { athleteLoginId ->
-        athleteLoginId
-    }
-
-
-    init {
-        viewModelScope.launch {
-            _athleteLoginId.collect { athleteLoginId ->
-                if(athleteLoginId > 0) {
-                    getAthlete(athleteLoginId)
-                }
-                else {
-                    //TODO
+    @OptIn(ExperimentalCoroutinesApi::class)
+    val uiState = userPreferencesRepository.athleteLoginId
+        .flatMapLatest { athleteLoginId ->
+            if(athleteLoginId > 0) {
+                appRepository.getAthlete(athleteLoginId).map { athlete ->
+                    ProfileScreenUiState(
+                        athlete = athlete
+                    )
                 }
             }
+            else {
+                flowOf(ProfileScreenUiState(
+                    athlete = Athlete(id = -1, name = "", surname = "", username = "", password = "")
+                    )
+                )
+            }
         }
-    }
+        .stateIn(
+            scope = viewModelScope,
+            started = SharingStarted.WhileSubscribed(5_000),
+            initialValue = ProfileScreenUiState(
+                athlete = Athlete(id = -1, name = "", surname = "", username = "", password = "")
+            )
+        )
 
-    fun getAthlete(id: Int) {
-        Log.d(TAG, "Fetching athlete with id: $id")
+
+    fun onLogoutButtonClick() {
         viewModelScope.launch {
-            appRepository.getAthlete(id)
-                .collect { athlete ->
-                    _uiState.update { currentState ->
-                        currentState.copy(
-                            athlete = athlete
-                        )
-                    }
-                }
+            userPreferencesRepository.saveAthleteLoginId(-1)
         }
     }
 

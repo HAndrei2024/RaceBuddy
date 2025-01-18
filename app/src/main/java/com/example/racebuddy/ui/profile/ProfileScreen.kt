@@ -37,6 +37,7 @@ fun ProfileScreen(
     isHomeSelected: Boolean = false,
     isFavoriteSelected: Boolean = false,
     isProfileSelected: Boolean = true,
+    onLoginButtonClick: () -> Unit,
     onLogoutButtonClick: () -> Unit
 ) {
     Scaffold(
@@ -96,7 +97,7 @@ fun ProfileScreen(
             ) {
                 Text("There is no user logged in!")
                 Button(
-                    onClick = { }
+                    onClick = onLoginButtonClick
                 ) {
                     Text("Log In")
                 }
@@ -265,6 +266,7 @@ fun LogoutButton(
 fun ProfileScreenPreview() {
     ProfileScreen(
         athlete = Athlete(0, "test", "test", "test", "test"),
+        onLoginButtonClick = {},
         onLogoutButtonClick = {}
     )
 }

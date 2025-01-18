@@ -38,7 +38,7 @@ class MainScreenViewModel(
     val uiState = _uiState.asStateFlow()
 
 
-    val athleteLoginId = userPreferencesRepository.athleteLoginId.map { athleteLoginId ->
+    private val athleteLoginId = userPreferencesRepository.athleteLoginId.map { athleteLoginId ->
         athleteLoginId
     }
 
