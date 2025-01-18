@@ -37,19 +37,7 @@ class MainScreenViewModel(
     private val _uiState = MutableStateFlow(MainScreenUiState(athleteLoginId = -1, athleteUsername = "initial"))
     val uiState = _uiState.asStateFlow()
 
-//    private val _favoriteEventList = MutableStateFlow<List<Event>>(emptyList())
-//    val favoriteEventList: StateFlow<List<Event>> = _favoriteEventList
 
-    private val _athlete = MutableStateFlow<Athlete>(Athlete(-1, "", "", "", ""))
-    val athlete: StateFlow<Athlete> = _athlete
-
-//    val mainScreenEventListStateFlow: StateFlow<List<Event>> =
-//        appRepository.getListOfEvents(_uiState.value.searchString).map { it }
-//            .stateIn(
-//                scope = viewModelScope,
-//                started = SharingStarted.WhileSubscribed(TIMEOUT_MILLIS),
-//                initialValue = emptyList()
-//            )
     val athleteLoginId = userPreferencesRepository.athleteLoginId.map { athleteLoginId ->
         athleteLoginId
     }
@@ -71,12 +59,7 @@ class MainScreenViewModel(
                                 favoriteEvents = events
                             )
                         }
-                        //getAthlete(athleteLoginId).collect { athlete ->
-//                            _athlete.value = athlete
-//                        }
                     }
-                    // why getAthlete cannot be called here?
-                    getAthlete(athleteLoginId)
                 }
             }
 
@@ -131,23 +114,7 @@ class MainScreenViewModel(
         }
     }
 
-    fun getAthlete(id: Int) {
-        Log.d(TAG, "Fetching athlete with id: $id")
-        viewModelScope.launch {
-            appRepository.getAthlete(id)
-                .collect { athlete ->
-                    _athlete.value = athlete
-            }
-        }
-    }
 
-
-//
-//    fun checkFavoriteEvent(athleteId:Int, eventId: Int): Flow<Int> {
-//        viewModelScope.launch {
-//            val returnValue = appRepository.checkFavoriteEvent(athleteId, eventId)
-//        }
-//    }
 
     companion object {
         val factory: ViewModelProvider.Factory = viewModelFactory {

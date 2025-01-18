@@ -27,6 +27,7 @@ import com.example.racebuddy.ui.main.MainScreen
 import com.example.racebuddy.ui.main.MainScreenUiState
 import com.example.racebuddy.ui.main.MainScreenViewModel
 import com.example.racebuddy.ui.profile.ProfileScreen
+import com.example.racebuddy.ui.profile.ProfileScreenViewModel
 import com.example.racebuddy.ui.signup.SignUpScreen
 import com.example.racebuddy.ui.signup.SignUpViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -55,6 +56,9 @@ fun App(
     favoriteScreenViewModel: FavoriteScreenViewModel = viewModel(
         factory = FavoriteScreenViewModel.factory
     ),
+    profileScreenViewModel: ProfileScreenViewModel = viewModel(
+        factory = ProfileScreenViewModel.factory
+    ),
     appViewModel: AppViewModel = viewModel(
         factory = AppViewModel.factory
     ),
@@ -64,6 +68,7 @@ fun App(
     val signUpUiState by signUpViewModel.uiState.collectAsState()
     val mainScreenUiState by mainScreenViewModel.uiState.collectAsState()
     val favoriteScreenUiState by favoriteScreenViewModel.uiState.collectAsState()
+    val profileScreenUiState by profileScreenViewModel.uiState.collectAsState()
     //val appScreenUiState by appViewModel.uiState.collectAsState()
     val startDestination = if(mainScreenUiState.athleteLoginId == -1 || mainScreenUiState.athleteLoginId == 0)
         AppScreen.Login.name else AppScreen.Main.name
@@ -150,7 +155,7 @@ fun App(
 
         composable(route = AppScreen.Profile.name) {
 
-            val athlete = mainScreenViewModel.athlete.collectAsState().value
+            val athlete = profileScreenUiState.athlete
 
             ProfileScreen(
                 athlete = athlete,
