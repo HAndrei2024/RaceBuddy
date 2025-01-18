@@ -34,11 +34,11 @@ class MainScreenViewModel(
     val appRepository: AppRepository,
     val userPreferencesRepository: UserPreferencesRepository
 ) : ViewModel() {
-    private val _uiState = MutableStateFlow(MainScreenUiState(-1, "initial"))
+    private val _uiState = MutableStateFlow(MainScreenUiState(athleteLoginId = -1, athleteUsername = "initial"))
     val uiState = _uiState.asStateFlow()
 
-    private val _favoriteEventList = MutableStateFlow<List<Event>>(emptyList())
-    val favoriteEventList: StateFlow<List<Event>> = _favoriteEventList
+//    private val _favoriteEventList = MutableStateFlow<List<Event>>(emptyList())
+//    val favoriteEventList: StateFlow<List<Event>> = _favoriteEventList
 
     private val _athlete = MutableStateFlow<Athlete>(Athlete(-1, "", "", "", ""))
     val athlete: StateFlow<Athlete> = _athlete
@@ -66,12 +66,17 @@ class MainScreenViewModel(
                 if(athleteLoginId > 0) {
                     getAthleteUsernameById(_uiState.value.athleteLoginId)
                     getFavoriteEvents(athleteLoginId).collect {events ->
-                        _favoriteEventList.value = events
-                        getAthlete(athleteLoginId).collect { athlete ->
-                            _athlete.value = athlete
+                        _uiState.update { currentState ->
+                            currentState.copy(
+                                favoriteEvents = events
+                            )
                         }
+                        //getAthlete(athleteLoginId).collect { athlete ->
+//                            _athlete.value = athlete
+//                        }
                     }
                     // why getAthlete cannot be called here?
+                    getAthlete(athleteLoginId)
                 }
             }
 
@@ -126,9 +131,14 @@ class MainScreenViewModel(
         }
     }
 
-    fun getAthlete(id: Int): Flow<Athlete> {
+    fun getAthlete(id: Int) {
         Log.d(TAG, "Fetching athlete with id: $id")
-        return appRepository.getAthlete(id)
+        viewModelScope.launch {
+            appRepository.getAthlete(id)
+                .collect { athlete ->
+                    _athlete.value = athlete
+            }
+        }
     }
 
 
@@ -157,5 +167,6 @@ data class MainScreenUiState(
     val athleteLoginId: Int,
     val athleteUsername: String,
     val searchString: String = "",
-    val eventList: Flow<List<Event>> = flowOf(emptyList())
+    val eventList: Flow<List<Event>> = flowOf(emptyList()),
+    val favoriteEvents: List<Event> = emptyList()
 )

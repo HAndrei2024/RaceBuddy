@@ -51,7 +51,8 @@ fun MainScreen(
 ) {
     val mainScreenUiState = mainScreenViewModel.uiState.collectAsState()
     val eventList = mainScreenUiState.value.eventList.collectAsState(emptyList())
-    val favoriteEvents = mainScreenViewModel.favoriteEventList.collectAsState().value
+    val favoriteEvents = mainScreenUiState.value.favoriteEvents
+    //val favoriteEvents = mainScreenViewModel.favoriteEventList.collectAsState().value
 
     Scaffold(
         topBar = { LoginTopAppBar("RaceBuddy") },

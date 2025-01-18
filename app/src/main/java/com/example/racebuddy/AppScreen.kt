@@ -20,6 +20,7 @@ import com.example.racebuddy.data.database.AppRepository
 import com.example.racebuddy.data.database.UserPreferencesRepository
 import com.example.racebuddy.ui.common.BottomAppBar
 import com.example.racebuddy.ui.favorite.FavoriteScreen
+import com.example.racebuddy.ui.favorite.FavoriteScreenViewModel
 import com.example.racebuddy.ui.login.LoginScreen
 import com.example.racebuddy.ui.login.LoginScreenViewModel
 import com.example.racebuddy.ui.main.MainScreen
@@ -51,6 +52,9 @@ fun App(
     mainScreenViewModel: MainScreenViewModel = viewModel(
         factory = MainScreenViewModel.factory
     ),
+    favoriteScreenViewModel: FavoriteScreenViewModel = viewModel(
+        factory = FavoriteScreenViewModel.factory
+    ),
     appViewModel: AppViewModel = viewModel(
         factory = AppViewModel.factory
     ),
@@ -59,6 +63,7 @@ fun App(
     val loginUiState by loginScreenViewModel.uiState.collectAsState()
     val signUpUiState by signUpViewModel.uiState.collectAsState()
     val mainScreenUiState by mainScreenViewModel.uiState.collectAsState()
+    val favoriteScreenUiState by favoriteScreenViewModel.uiState.collectAsState()
     //val appScreenUiState by appViewModel.uiState.collectAsState()
     val startDestination = if(mainScreenUiState.athleteLoginId == -1 || mainScreenUiState.athleteLoginId == 0)
         AppScreen.Login.name else AppScreen.Main.name
@@ -121,9 +126,9 @@ fun App(
         }
 
         composable(route = AppScreen.Favorite.name) {
-            val favoriteEvents = mainScreenViewModel.favoriteEventList.collectAsState().value
+            val favoriteEvents = favoriteScreenUiState.favoriteEvents
             FavoriteScreen(
-                mainScreenViewModel = mainScreenViewModel,
+                favoriteScreenViewModel = favoriteScreenViewModel,
                 favoriteEventsList = favoriteEvents,
                 onHomeClick = {
                     navController.navigate(AppScreen.Main.name)

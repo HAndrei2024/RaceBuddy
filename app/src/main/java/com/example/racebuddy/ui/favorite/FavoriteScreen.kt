@@ -21,7 +21,7 @@ import com.example.racebuddy.ui.main.MainScreenViewModel
 
 @Composable
 fun FavoriteScreen(
-    mainScreenViewModel: MainScreenViewModel,
+    favoriteScreenViewModel: FavoriteScreenViewModel,
     favoriteEventsList: List<Event> = emptyList(),
     onHomeClick: () -> Unit = { },
     onFavoriteClick: () -> Unit = { },
@@ -30,7 +30,7 @@ fun FavoriteScreen(
     isFavoriteSelected: Boolean = false,
     isProfileSelected: Boolean = false,
 ) {
-    val mainScreenUiState by mainScreenViewModel.uiState.collectAsState()
+    val favoriteScreenUiState by favoriteScreenViewModel.uiState.collectAsState()
     Scaffold(
         topBar = { LoginTopAppBar("RaceBuddy") },
         bottomBar = { BottomAppBar(
@@ -52,8 +52,8 @@ fun FavoriteScreen(
                         event = event,
                         isUserLoggedIn = true,
                         onFavoriteIconClick = {
-                            mainScreenViewModel.onFavoriteIconClick(
-                                athleteId = mainScreenUiState.athleteLoginId,
+                            favoriteScreenViewModel.onFavoriteIconClick(
+                                athleteId = favoriteScreenUiState.athleteId,
                                 eventId = event.id,
                                 newFavoriteValue = false
                             )
