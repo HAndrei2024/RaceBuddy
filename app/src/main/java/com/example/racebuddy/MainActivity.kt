@@ -13,6 +13,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
 import com.example.racebuddy.data.database.AppRepository
 import com.example.racebuddy.data.database.LocalDataSource
+import com.example.racebuddy.ui.event.EventScreen
 import com.example.racebuddy.ui.theme.RaceBuddyTheme
 
 class MainActivity : ComponentActivity() {
@@ -22,6 +23,9 @@ class MainActivity : ComponentActivity() {
         setContent {
             RaceBuddyTheme {
                 App()
+//                EventScreen(
+//                    modifier = Modifier
+//                )
             }
         }
     }
