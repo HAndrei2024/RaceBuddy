@@ -1,6 +1,7 @@
 package com.example.racebuddy.ui.common
 
 import androidx.compose.foundation.Image
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -142,13 +143,15 @@ fun EventCard(
     event: Event,
     isUserLoggedIn: Boolean,
     favoriteIcon: Painter = painterResource(R.drawable.baseline_favorite_border_24),
-    onFavoriteIconClick: () -> Unit = {}
+    onFavoriteIconClick: () -> Unit = {},
+    onEventClick: () -> Unit = {}
 ) {
     Card(
         shape = CardDefaults.elevatedShape,
         elevation = CardDefaults.cardElevation(5.dp),
         modifier = Modifier
             .fillMaxWidth()
+            .clickable { onEventClick() }
     ) {
         Row() {
             Image(

@@ -29,9 +29,9 @@ class LocalDataSource(
         return eventDao.getListOfEvents(title)
     }
 
-//    fun checkFavoriteEvent(userId: Int, eventId: Int): Flow<Int> {
-//        return eventDao.checkFavoriteEvent(userId, eventId)
-//    }
+    fun checkFavoriteEvent(userId: Int, eventId: Int): Flow<Int> {
+        return eventDao.checkFavoriteEvent(userId, eventId)
+    }
 
     fun getListOfFavoriteEvents(athleteId: Int): Flow<List<Event>> {
         return eventDao.getFavoriteListOfEvents(athleteId)
@@ -47,5 +47,9 @@ class LocalDataSource(
 
     fun getAthlete(id: Int): Flow<Athlete> {
         return athleteDao.getAthlete(id)
+    }
+
+    fun getEvent(id: Int): Flow<Event> {
+        return eventDao.getEvent(id)
     }
 }

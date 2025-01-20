@@ -30,7 +30,8 @@ fun FavoriteScreen(
     isHomeSelected: Boolean = true,
     isFavoriteSelected: Boolean = false,
     isProfileSelected: Boolean = false,
-    onLoginButtonClicked: () -> Unit = {}
+    onLoginButtonClicked: () -> Unit = {},
+    onEventClick: (Event) -> Unit = { }
 ) {
     val favoriteScreenUiState by favoriteScreenViewModel.uiState.collectAsState()
     Scaffold(
@@ -60,7 +61,8 @@ fun FavoriteScreen(
                                     newFavoriteValue = false
                                 )
                             },
-                            favoriteIcon = painterResource(R.drawable.baseline_favorite_24)
+                            favoriteIcon = painterResource(R.drawable.baseline_favorite_24),
+                            onEventClick = { onEventClick(event) }
                         )
                     }
                 }

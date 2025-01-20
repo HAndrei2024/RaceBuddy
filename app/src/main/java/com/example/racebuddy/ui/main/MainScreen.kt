@@ -48,6 +48,7 @@ fun MainScreen(
     isHomeSelected: Boolean = true,
     isFavoriteSelected: Boolean = false,
     isProfileSelected: Boolean = false,
+    onEventClick: (Event) -> Unit = { }
 ) {
     val mainScreenUiState = mainScreenViewModel.uiState.collectAsState()
     val eventList = mainScreenUiState.value.eventList.collectAsState(emptyList())
@@ -78,6 +79,7 @@ fun MainScreen(
                         EventCard(
                             event = item,
                             isUserLoggedIn = false,
+                            onEventClick = { onEventClick(item) }
                             )
                     }
                 }
@@ -108,6 +110,10 @@ fun MainScreen(
                                     eventId = item.id,
                                     newFavoriteValue = item !in favoriteEvents
                                 )
+                            },
+                            onEventClick = {
+                                //mainScreenViewModel.updateClickedEventId(id = item.id)
+                                onEventClick(item)
                             }
                             )
                     }

@@ -53,6 +53,7 @@ class FavoriteScreenViewModel(
         )
 
 
+
     private fun getFavoriteEvents(athleteId: Int): Flow<List<Event>> {
         return appRepository.getListOfFavoriteEvents(athleteId)
     }

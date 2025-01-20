@@ -29,9 +29,9 @@ class AppRepository(
         return localDataSource.getListOfEvents(title)
     }
 
-//    fun checkFavoriteEvent(userId: Int, eventId: Int): Flow<Int> {
-//        return localDataSource.checkFavoriteEvent(userId, eventId)
-//    }
+    fun checkFavoriteEvent(userId: Int, eventId: Int): Flow<Int> {
+        return localDataSource.checkFavoriteEvent(userId, eventId)
+    }
 
     fun getListOfFavoriteEvents(athleteId: Int): Flow<List<Event>> {
         return localDataSource.getListOfFavoriteEvents(athleteId)
@@ -47,5 +47,9 @@ class AppRepository(
 
     fun getAthlete(id: Int): Flow<Athlete> {
         return localDataSource.getAthlete(id)
+    }
+
+    fun getEvent(id: Int): Flow<Event> {
+        return localDataSource.getEvent(id)
     }
 }

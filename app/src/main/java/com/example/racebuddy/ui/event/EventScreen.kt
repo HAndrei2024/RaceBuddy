@@ -19,9 +19,11 @@ import androidx.compose.material3.Card
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.drawWithContent
 import androidx.compose.ui.graphics.BlendMode
 import androidx.compose.ui.graphics.Brush
@@ -33,21 +35,39 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.racebuddy.R
+import com.example.racebuddy.data.database.Event
 import com.example.racebuddy.ui.login.UserButton
 
 @Composable
 fun EventScreen(
+    eventScreenViewModel: EventScreenViewModel,
+    event: Event,
+    onFavoriteIconClick: () -> Unit,
+    onNavigateBackIconClick: () -> Unit,
     modifier: Modifier
 ) {
+    val athleteId = eventScreenViewModel.athleteId.collectAsState().value
+    val isFavoriteIconEnabledBoolean = athleteId > 0
+    eventScreenViewModel.checkFavoriteEvent(athleteId, event.id)
     LazyColumn(
         verticalArrangement = Arrangement.Top,
         horizontalAlignment = Alignment.CenterHorizontally,
         modifier = modifier.fillMaxWidth()
     ) {
         item {
+            val isFavorite = eventScreenViewModel.isFavorite.collectAsState().value
             IconsRow(
-                onFavoriteIconClick = {},
-                onNavigateBackIconClick = {},
+                onFavoriteIconClick = {
+                    eventScreenViewModel.onFavoriteIconClick(
+                        athleteId = athleteId,
+                        eventId = event.id,
+                        newFavoriteValue = !isFavorite
+                        )
+                    onFavoriteIconClick()
+                                      },
+                isFavoriteIconEnabled = isFavoriteIconEnabledBoolean,
+                isFavorite = isFavorite,
+                onNavigateBackIconClick = onNavigateBackIconClick,
                 modifier = Modifier
             )
         }
@@ -67,7 +87,10 @@ fun EventScreen(
         }
 
         item {
-            EventDetails(modifier = Modifier.fillMaxWidth())
+            EventDetails(
+                event = event,
+                modifier = Modifier.fillMaxWidth()
+            )
         }
 
         item {
@@ -78,6 +101,7 @@ fun EventScreen(
 
 @Composable
 fun EventDetails(
+    event: Event,
     modifier: Modifier
 ) {
     Column(
@@ -87,7 +111,7 @@ fun EventDetails(
     ) {
         EventDetailsRow(
             detailsIcon = R.drawable.outline_location_on_40,
-            bigText = "Big text and other",
+            bigText = event.title, //TODO implement event details
             smallText = "Small text and other"
         )
         EventDetailsRow(
@@ -148,6 +172,8 @@ fun IconsRow(
     onNavigateBackIconClick: () -> Unit,
     onFavoriteIconClick: () -> Unit,
     favoriteIcon: Int = R.drawable.baseline_favorite_24,
+    isFavoriteIconEnabled: Boolean,
+    isFavorite: Boolean,
     unfavoriteIcon: Int = R.drawable.baseline_favorite_border_24,
     modifier: Modifier
 ) {
@@ -166,10 +192,13 @@ fun IconsRow(
             )
         }
         IconButton(
-            onClick = onFavoriteIconClick
+            onClick = onFavoriteIconClick,
+            enabled = isFavoriteIconEnabled,
+            modifier = Modifier.alpha(if (isFavoriteIconEnabled) 1f else 0f)
         ) {
+            val painter = if(isFavorite) favoriteIcon else unfavoriteIcon
             Image(
-                painter = painterResource(unfavoriteIcon),
+                painter = painterResource(painter),
                 contentDescription = ""
             )
         }
@@ -246,13 +275,15 @@ fun EventDetailRowPreview() {
     )
 }
 
-@Preview
-@Composable
-fun EventScreenPreview() {
-    EventScreen(
-        modifier = Modifier
-    )
-}
+//@Preview
+//@Composable
+//fun EventScreenPreview() {
+//    EventScreen(
+//        modifier = Modifier,
+//        onNavigateBackIconClick = {},
+//        onFavoriteIconClick = {}
+//    )
+//}
 
 
 

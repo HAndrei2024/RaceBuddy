@@ -9,6 +9,7 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.compositionLocalOf
 import androidx.compose.runtime.getValue
+import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
@@ -21,8 +22,11 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import com.example.racebuddy.data.database.AppRepository
+import com.example.racebuddy.data.database.Event
 import com.example.racebuddy.data.database.UserPreferencesRepository
 import com.example.racebuddy.ui.common.BottomAppBar
+import com.example.racebuddy.ui.event.EventScreen
+import com.example.racebuddy.ui.event.EventScreenViewModel
 import com.example.racebuddy.ui.favorite.FavoriteScreen
 import com.example.racebuddy.ui.favorite.FavoriteScreenViewModel
 import com.example.racebuddy.ui.login.LoginScreen
@@ -43,7 +47,8 @@ enum class AppScreen {
     SignUp,
     Main,
     Favorite,
-    Profile
+    Profile,
+    Event
 }
 
 @Composable
@@ -63,6 +68,9 @@ fun App(
     profileScreenViewModel: ProfileScreenViewModel = viewModel(
         factory = ProfileScreenViewModel.factory
     ),
+    eventScreenViewModel: EventScreenViewModel = viewModel(
+        factory = EventScreenViewModel.factory
+    ),
     appViewModel: AppViewModel = viewModel(
         factory = AppViewModel.factory
     ),
@@ -73,9 +81,11 @@ fun App(
     val mainScreenUiState by mainScreenViewModel.uiState.collectAsState()
     val favoriteScreenUiState by favoriteScreenViewModel.uiState.collectAsState()
     val profileScreenUiState by profileScreenViewModel.uiState.collectAsState()
+    val eventScreenUiState by eventScreenViewModel.uiState.collectAsState()
     //val appScreenUiState by appViewModel.uiState.collectAsState()
     val startDestination = if(mainScreenUiState.athleteLoginId == -1 || mainScreenUiState.athleteLoginId == 0)
         AppScreen.Login.name else AppScreen.Main.name
+
 
     appViewModel.updateScreenSelected(AppScreen.valueOf(startDestination))
     // is this state needed? (Selected Screen)
@@ -133,6 +143,10 @@ fun App(
                     isHomeSelected = true,
                     isFavoriteSelected = false,
                     isProfileSelected = false,
+                    onEventClick = { event: Event ->
+                        eventScreenViewModel.updateEvent(event)
+                        navController.navigate(AppScreen.Event.name)
+                    }
                 )
             BackHandler {  }
         }
@@ -159,6 +173,10 @@ fun App(
                 isProfileSelected = false,
                 onLoginButtonClicked = {
                     navController.navigate(AppScreen.Login.name)
+                },
+                onEventClick = { event: Event ->
+                    eventScreenViewModel.updateEvent(event)
+                    navController.navigate(AppScreen.Event.name)
                 }
                 )
             BackHandler {  }
@@ -192,6 +210,18 @@ fun App(
                 }
             )
             BackHandler {  }
+        }
+
+        composable(route = AppScreen.Event.name) {
+            EventScreen(
+                eventScreenViewModel = eventScreenViewModel,
+                event = eventScreenUiState.event,
+                modifier = Modifier,
+                onNavigateBackIconClick = {
+                    navController.popBackStack()
+                },
+                onFavoriteIconClick = { }
+            )
         }
     }
 }
