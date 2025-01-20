@@ -61,7 +61,16 @@ class EventScreenViewModel(
     private val _uiState = MutableStateFlow(EventScreenUiState(
         athleteId = -1,
         eventId = -1, //TODO Delete?
-        event = Event(title = "")
+        event = Event(
+            title = "",
+            startDateString = "-",
+            endDateString = "-",
+            county = "-",
+            country = "-",
+            city = "-",
+            locationName = "-",
+            organizerName = "-",
+            description = "-")
     ))
     val uiState = _uiState.asStateFlow()
 

@@ -35,6 +35,7 @@ import androidx.compose.ui.graphics.painter.Painter
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.example.racebuddy.R
@@ -159,23 +160,41 @@ fun EventCard(
                 contentDescription = "",
                 modifier = Modifier
                     .padding(5.dp)
+                    .weight(1.5f)
             )
             Column(
                 verticalArrangement = Arrangement.SpaceEvenly,
-                horizontalAlignment = Alignment.CenterHorizontally,
+                horizontalAlignment = Alignment.Start,
                 modifier = Modifier
+                    .weight(3f)
             ) {
                 Text(
-                    text = event.title
+                    text = event.title,
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis,
+                    modifier = Modifier
+                        .padding(5.dp)
                 )
                 Text(
-                    text = "Location"
+                    text = event.county + ", " + event.city,
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis,
+                    modifier = Modifier
+                        .padding(5.dp)
                 )
                 Text(
-                    text = "Period"
+                    text = event.startDateString,
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis,
+                    modifier = Modifier
+                        .padding(5.dp)
                 )
             }
-            Column() {
+            Column(
+                horizontalAlignment = Alignment.End,
+                modifier = Modifier
+                    .weight(1f)
+            ) {
                 if(isUserLoggedIn) {
                     IconButton(
                         onClick = onFavoriteIconClick

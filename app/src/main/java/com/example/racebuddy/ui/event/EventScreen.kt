@@ -30,8 +30,14 @@ import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalConfiguration
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.unit.TextUnit
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.racebuddy.R
@@ -109,20 +115,29 @@ fun EventDetails(
         verticalArrangement = Arrangement.Center,
         modifier = modifier
     ) {
-        EventDetailsRow(
-            detailsIcon = R.drawable.outline_location_on_40,
-            bigText = event.title, //TODO implement event details
-            smallText = "Small text and other"
+        Text(
+            text = event.title,
+            fontSize = 30.sp,
+            textAlign = TextAlign.Center,
+            overflow = TextOverflow.Ellipsis,
+            lineHeight = 35.sp,
+            modifier = Modifier
+                .padding(7.dp)
         )
         EventDetailsRow(
             detailsIcon = R.drawable.outline_calendar_today_40,
-            bigText = "Big text and other",
-            smallText = "Small text and other"
+            bigText = event.startDateString + "-" + event.endDateString,
+            smallText = "Day x to Day y"
+        )
+        EventDetailsRow(
+            detailsIcon = R.drawable.outline_location_on_40,
+            bigText = event.county + " " + event.country, //TODO implement event details
+            smallText = event.city + " " + event.locationName
         )
         EventDetailsRow(
             detailsIcon = R.drawable.outline_person_40,
-            bigText = "Big text and other",
-            smallText = "Small text and other"
+            bigText = event.organizerName,
+            smallText = "Organizer"
         )
     }
 }
@@ -148,7 +163,7 @@ fun EventDetailsRow(
                 .weight(1.5f)
         )
         Column(
-            horizontalAlignment = Alignment.CenterHorizontally,
+            horizontalAlignment = Alignment.Start,
             modifier = modifier
                 .padding(5.dp)
                 .weight(3f)

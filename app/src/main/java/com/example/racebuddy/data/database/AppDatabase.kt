@@ -8,7 +8,7 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 
-@Database(entities = [Athlete::class, Event::class, Favorite::class], version = 8)
+@Database(entities = [Athlete::class, Event::class, Favorite::class], version = 9)
 abstract class AppDatabase : RoomDatabase() {
     abstract fun athleteDao(): AthleteDao
     abstract fun eventDao() : EventDao
@@ -32,9 +32,39 @@ abstract class AppDatabase : RoomDatabase() {
             val eventDao = getDatabase(context).eventDao()
             val athleteDao = getDatabase(context).athleteDao()
             val events = listOf(
-                Event(title = "Event 1"),
-                Event(title = "Event 2"),
-                Event(title = "Event 3")
+                Event(
+                    title = "Music Festival 2025",
+                    startDateString = "2025-05-15T10:00:00",
+                    endDateString = "2025-05-15T18:00:00",
+                    county = "Orange County",
+                    country = "USA",
+                    city = "Los Angeles",
+                    locationName = "Hollywood Park",
+                    organizerName = "Some firm",
+                    description = "A day-long music festival featuring top artists from around the world."
+                ),
+                Event(
+                    title = "Tech Conference 2025",
+                    startDateString = "2025-06-20T09:00:00",
+                    endDateString = "2025-06-22T18:00:00",
+                    county = "Santa Clara County",
+                    country = "USA",
+                    city = "San Francisco",
+                    locationName = "Moscone Center",
+                    organizerName = "Another firm",
+                    description = "The largest tech conference in the world, showcasing the latest in technology."
+                ),
+                Event(
+                    title = "Art Exhibition 2025",
+                    startDateString = "2025-07-01T11:00:00",
+                    endDateString = "2025-07-31T19:00:00",
+                    county = "Cook County",
+                    country = "USA",
+                    city = "Chicago",
+                    locationName = "The Art Institute of Chicago",
+                    organizerName = "Yet another firm",
+                    description = "A month-long exhibition of modern art from renowned artists."
+                )
             )
             val athletes = listOf(
                 Athlete(
