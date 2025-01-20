@@ -52,4 +52,16 @@ class AppRepository(
     fun getEvent(id: Int): Flow<Event> {
         return localDataSource.getEvent(id)
     }
+
+    suspend fun insertResult(result: Result) {
+        localDataSource.insertResult(result)
+    }
+
+    fun getAllEventResults(eventId: Int): Flow<List<Result>> {
+        return localDataSource.getAllEventResults(eventId)
+    }
+
+    fun getAllAthleteResults(athleteId: Int): Flow<List<Result>> {
+        return localDataSource.getAllAthleteResults(athleteId)
+    }
 }

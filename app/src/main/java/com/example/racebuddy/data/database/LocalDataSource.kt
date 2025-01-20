@@ -4,7 +4,8 @@ import kotlinx.coroutines.flow.Flow
 
 class LocalDataSource(
     private val athleteDao: AthleteDao,
-    private val eventDao: EventDao
+    private val eventDao: EventDao,
+    private val resultDao: ResultDao
 ) {
     fun getData() {
 
@@ -51,5 +52,17 @@ class LocalDataSource(
 
     fun getEvent(id: Int): Flow<Event> {
         return eventDao.getEvent(id)
+    }
+
+    suspend fun insertResult(result: Result) {
+        resultDao.insertResult(result)
+    }
+
+    fun getAllEventResults(eventId: Int): Flow<List<Result>> {
+        return resultDao.getAllEventResults(eventId)
+    }
+
+    fun getAllAthleteResults(athleteId: Int): Flow<List<Result>> {
+        return resultDao.getAllAthleteResults(athleteId)
     }
 }

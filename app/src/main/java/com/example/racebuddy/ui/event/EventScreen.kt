@@ -100,7 +100,11 @@ fun EventScreen(
         }
 
         item {
-            HorizontalPagerTabRowSample()
+            val events = eventScreenViewModel.getAllEventResults(event.id).collectAsState().value
+            HorizontalPagerTabRowSample(
+                description = event.description,
+                eventResults = events
+            )
         }
     }
 }

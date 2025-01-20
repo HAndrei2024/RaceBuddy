@@ -4,14 +4,16 @@ import android.content.Context
 import androidx.room.Database
 import androidx.room.Room
 import androidx.room.RoomDatabase
+import com.example.racebuddy.data.database.Result
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 
-@Database(entities = [Athlete::class, Event::class, Favorite::class], version = 9)
+@Database(entities = [Athlete::class, Event::class, Favorite::class, Result::class], version = 10)
 abstract class AppDatabase : RoomDatabase() {
     abstract fun athleteDao(): AthleteDao
     abstract fun eventDao() : EventDao
+    abstract fun resultDao() : ResultDao
 
     companion object {
         @Volatile // changes made to one thread are visible to all
@@ -31,6 +33,7 @@ abstract class AppDatabase : RoomDatabase() {
             // Insert initial data (for example, inserting items)
             val eventDao = getDatabase(context).eventDao()
             val athleteDao = getDatabase(context).athleteDao()
+            val resultDao = getDatabase(context).resultDao()
             val events = listOf(
                 Event(
                     title = "Music Festival 2025",
@@ -80,12 +83,32 @@ abstract class AppDatabase : RoomDatabase() {
                     password = "t2"
                 )
             )
+            val results = listOf(
+                Result(
+                    time = "1:00:00",
+                    athleteId = 1,
+                    eventId = 1
+                ),
+                Result(
+                    time = "2:00:00",
+                    athleteId = 1,
+                    eventId = 2
+                ),
+                Result(
+                    time = "3:00:00",
+                    athleteId = 1,
+                    eventId = 3
+                )
+            )
             CoroutineScope(Dispatchers.IO).launch {
                 events.forEach { event ->
                     eventDao.insertEvent(event)
                 }
                 athletes.forEach { athlete ->
                     athleteDao.createNewAccount(athlete)
+                }
+                results.forEach { result ->
+                    resultDao.insertResult(result)
                 }
             }
         }

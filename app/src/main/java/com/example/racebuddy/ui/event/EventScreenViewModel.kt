@@ -10,6 +10,7 @@ import androidx.lifecycle.viewmodel.viewModelFactory
 import com.example.racebuddy.Application
 import com.example.racebuddy.data.database.AppRepository
 import com.example.racebuddy.data.database.Event
+import com.example.racebuddy.data.database.Result
 import com.example.racebuddy.data.database.UserPreferencesRepository
 import com.example.racebuddy.ui.favorite.FavoriteScreenUiState
 import com.example.racebuddy.ui.favorite.FavoriteScreenViewModel
@@ -17,6 +18,7 @@ import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
+import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.map
@@ -136,6 +138,15 @@ class EventScreenViewModel(
                 }
             }
         }
+    }
+
+    fun getAllEventResults(eventId: Int): StateFlow<List<Result>> {
+        return appRepository.getAllEventResults(eventId).
+                stateIn(
+                    scope = viewModelScope,
+                    started = SharingStarted.WhileSubscribed(5_000),
+                    initialValue = emptyList()
+                )
     }
 
     companion object {

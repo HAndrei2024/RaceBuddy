@@ -26,10 +26,14 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import com.example.racebuddy.data.database.Result
 import kotlinx.coroutines.launch
 
 @Composable
-fun HorizontalPagerTabRowSample() {
+fun HorizontalPagerTabRowSample(
+    description: String,
+    eventResults: List<Result>
+) {
     val pagerState = rememberPagerState(pageCount = { 2 })
     val pages = listOf(
         "Details",
@@ -68,28 +72,40 @@ fun HorizontalPagerTabRowSample() {
                     )
                 }
             }
-
         }
         HorizontalPager(
             state = pagerState,
             pageSpacing = 8.dp
         ) {
-            val pages = (1..15).map { "Page $it" }
-            PageScreen(
-                items = pages
-            )
+            if(pagerState.currentPage == 0) {
+                Column() {
+                    Text(
+                        text = description,
+                        textAlign = TextAlign.Center,
+                        modifier = Modifier
+                            .background(Color.LightGray)
+                            .fillMaxSize()
+                            .padding(32.dp)
+                    )
+                }
+            }
+            else {
+                PageScreen(
+                    items = eventResults
+                )
+            }
         }
     }
 }
 
 @Composable
 fun PageScreen(
-    items: List<String>
+    items: List<Result>
 ) {
     Column() {
         items.forEach { item ->
             Text(
-                text = item,
+                text = "${item.time}, ${item.athleteId}, ${item.eventId}}",
                 textAlign = TextAlign.Center,
                 modifier = Modifier
                     .background(Color.LightGray)
@@ -103,5 +119,8 @@ fun PageScreen(
 @Preview
 @Composable
 fun PagerPreview() {
-    HorizontalPagerTabRowSample()
+    HorizontalPagerTabRowSample(
+        description = "",
+        eventResults = emptyList()
+    )
 }

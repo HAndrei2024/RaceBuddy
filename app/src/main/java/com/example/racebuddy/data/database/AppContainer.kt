@@ -11,7 +11,8 @@ class AppDataContainer(private val context: Context) : AppContainer {
         AppRepository(
             localDataSource = LocalDataSource(
                 athleteDao = AppDatabase.getDatabase(context).athleteDao(),
-                eventDao = AppDatabase.getDatabase(context).eventDao()
+                eventDao = AppDatabase.getDatabase(context).eventDao(),
+                resultDao = AppDatabase.getDatabase(context).resultDao()
             ),
             remoteDataSource = RemoteDataSource()
         )
