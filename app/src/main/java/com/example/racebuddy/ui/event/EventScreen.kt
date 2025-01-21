@@ -1,5 +1,6 @@
 package com.example.racebuddy.ui.event
 
+import android.util.Log
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.Image
@@ -43,6 +44,7 @@ import androidx.compose.ui.unit.sp
 import com.example.racebuddy.R
 import com.example.racebuddy.data.database.Event
 import com.example.racebuddy.ui.login.UserButton
+import kotlinx.coroutines.flow.distinctUntilChanged
 
 @Composable
 fun EventScreen(
@@ -86,7 +88,9 @@ fun EventScreen(
                 BackgroundImageCard(modifier = Modifier.fillMaxWidth())
                 RegisterButton(
                     text = "Register",
-                    onClick = {},
+                    onClick = {
+
+                    },
                     modifier = Modifier.offset(y = 4.dp)
                 )
             }
@@ -100,7 +104,9 @@ fun EventScreen(
         }
 
         item {
-            val events = eventScreenViewModel.getAllEventResults(event.id).collectAsState().value
+            //val events = eventScreenViewModel.getAllEventResults(event.id).collectAsState().value
+            val uiState by eventScreenViewModel.uiState.collectAsState()
+            val events = uiState.eventResults
             HorizontalPagerTabRowSample(
                 description = event.description,
                 eventResults = events
@@ -114,6 +120,7 @@ fun EventDetails(
     event: Event,
     modifier: Modifier
 ) {
+    Log.d("RecompositionDetails", "HorizontalPagerTabRowSample recomposed!")
     Column(
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.Center,

@@ -72,17 +72,20 @@ class EventScreenViewModel(
             city = "-",
             locationName = "-",
             organizerName = "-",
-            description = "-")
+            description = "-"),
+        eventResults = emptyList()
     ))
     val uiState = _uiState.asStateFlow()
 
     fun updateEventId(id: Int) {
         viewModelScope.launch {
             getEvent(id).collect { event ->
+                val eventResults = appRepository.getAllEventResultsNotFlow(eventId = id)
                 _uiState.update { currentState ->
                     currentState.copy(
                         eventId = id,
-                        event = event
+                        event = event,
+                        eventResults = eventResults
                     )
                 }
             }
@@ -90,10 +93,14 @@ class EventScreenViewModel(
     }
 
     fun updateEvent(event: Event) {
-        _uiState.update { currentState ->
-            currentState.copy(
-                event = event
-            )
+        viewModelScope.launch {
+            _uiState.update { currentState ->
+                val eventResults = appRepository.getAllEventResultsNotFlow(eventId = event.id)
+                currentState.copy(
+                    event = event,
+                    eventResults = eventResults
+                )
+            }
         }
     }
 
@@ -167,4 +174,5 @@ data class EventScreenUiState(
     val athleteId: Int,
     val eventId: Int, //TODO Delete
     val event: Event,
+    val eventResults: List<Result>
 )

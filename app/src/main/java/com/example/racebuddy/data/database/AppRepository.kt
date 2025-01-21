@@ -64,4 +64,8 @@ class AppRepository(
     fun getAllAthleteResults(athleteId: Int): Flow<List<Result>> {
         return localDataSource.getAllAthleteResults(athleteId)
     }
+
+    suspend fun getAllEventResultsNotFlow(eventId: Int): List<Result> {
+        return localDataSource.getAllEventResultsNotFlow(eventId)
+    }
 }

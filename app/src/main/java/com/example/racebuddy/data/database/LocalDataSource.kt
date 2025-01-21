@@ -65,4 +65,8 @@ class LocalDataSource(
     fun getAllAthleteResults(athleteId: Int): Flow<List<Result>> {
         return resultDao.getAllAthleteResults(athleteId)
     }
+
+    suspend fun getAllEventResultsNotFlow(eventId: Int): List<Result> {
+        return resultDao.getAllEventResultsNotFlow(eventId)
+    }
 }

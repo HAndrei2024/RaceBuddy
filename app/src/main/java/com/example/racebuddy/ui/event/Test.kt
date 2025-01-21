@@ -1,5 +1,6 @@
 package com.example.racebuddy.ui.event
 
+import android.util.Log
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -14,6 +15,7 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.rememberPagerState
+import androidx.compose.material3.Card
 import androidx.compose.material3.TabRow
 import androidx.compose.material3.TabRowDefaults
 import androidx.compose.material3.TabRowDefaults.tabIndicatorOffset
@@ -34,6 +36,7 @@ fun HorizontalPagerTabRowSample(
     description: String,
     eventResults: List<Result>
 ) {
+    Log.d("Recomposition", "HorizontalPagerTabRowSample recomposed!")
     val pagerState = rememberPagerState(pageCount = { 2 })
     val pages = listOf(
         "Details",
@@ -83,7 +86,6 @@ fun HorizontalPagerTabRowSample(
                         text = description,
                         textAlign = TextAlign.Center,
                         modifier = Modifier
-                            .background(Color.LightGray)
                             .fillMaxSize()
                             .padding(32.dp)
                     )
@@ -104,14 +106,17 @@ fun PageScreen(
 ) {
     Column() {
         items.forEach { item ->
-            Text(
-                text = "${item.time}, ${item.athleteId}, ${item.eventId}}",
-                textAlign = TextAlign.Center,
-                modifier = Modifier
-                    .background(Color.LightGray)
-                    .fillMaxSize()
-                    .padding(32.dp)
-            )
+            Card(
+                modifier = Modifier.padding(7.dp)
+            ) {
+                Text(
+                    text = "Time: ${item.time}, Athlete: ${item.athleteId}, Event: ${item.eventId}",
+                    textAlign = TextAlign.Center,
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .padding(32.dp)
+                )
+            }
         }
     }
 }
