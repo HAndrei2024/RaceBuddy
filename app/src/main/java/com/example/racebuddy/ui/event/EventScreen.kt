@@ -1,6 +1,7 @@
 package com.example.racebuddy.ui.event
 
 import android.util.Log
+import android.widget.Toast
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.Image
@@ -32,6 +33,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalConfiguration
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.TextStyle
@@ -56,6 +58,8 @@ fun EventScreen(
 ) {
     val athleteId = eventScreenViewModel.athleteId.collectAsState().value
     val isFavoriteIconEnabledBoolean = athleteId > 0
+    val uiState by eventScreenViewModel.uiState.collectAsState()
+
     eventScreenViewModel.checkFavoriteEvent(athleteId, event.id)
     LazyColumn(
         verticalArrangement = Arrangement.Top,
@@ -85,11 +89,19 @@ fun EventScreen(
                 contentAlignment = Alignment.BottomCenter,
                 modifier = Modifier.fillMaxWidth()
             ) {
+                eventScreenViewModel.checkIfAthleteRegistered(athleteId, event.id)
+                val isAthleteRegistered = uiState.isAthleteRegistered
+
                 BackgroundImageCard(modifier = Modifier.fillMaxWidth())
                 RegisterButton(
-                    text = "Register",
+                    isAthleteLoggedIn = athleteId > 0,
+                    isAthleteRegistered = isAthleteRegistered,
                     onClick = {
-
+                        eventScreenViewModel.onRegisterButtonClick(
+                            athleteId = athleteId,
+                            eventId = event.id,
+                            newBooleanValue = !isAthleteRegistered
+                        )
                     },
                     modifier = Modifier.offset(y = 4.dp)
                 )
@@ -105,7 +117,6 @@ fun EventScreen(
 
         item {
             //val events = eventScreenViewModel.getAllEventResults(event.id).collectAsState().value
-            val uiState by eventScreenViewModel.uiState.collectAsState()
             val events = uiState.eventResults
             HorizontalPagerTabRowSample(
                 description = event.description,
@@ -233,18 +244,35 @@ fun IconsRow(
 
 @Composable
 fun RegisterButton(
-    text: String,
+    isAthleteLoggedIn: Boolean,
+    isAthleteRegistered: Boolean,
     onClick: () -> Unit,
     modifier: Modifier
 ) {
-   Button(
-       onClick = onClick,
-       modifier = modifier
-   ) {
-       Text(
-           text = text
-       )
-   }
+    if(isAthleteLoggedIn) {
+        val buttonText = if (isAthleteRegistered) "Registered!" else "Register"
+        if (!isAthleteRegistered) {
+            Button(
+                onClick = onClick,
+                modifier = modifier
+            ) {
+                Text(
+                    text = buttonText
+                )
+            }
+        } else {
+            Button(
+                onClick = {
+
+                },
+                modifier = modifier
+            ) {
+                Text(
+                    text = buttonText
+                )
+            }
+        }
+    }
 }
 
 @Composable

@@ -15,8 +15,11 @@ interface ResultDao {
     fun getAllEventResults(eventId: Int): Flow<List<Result>>
 
     @Query("SELECT * FROM result WHERE athlete_id = :athleteId")
-    fun getAllAthleteResults(athleteId: Int): Flow<List<Result>>
+    suspend fun getAllAthleteResults(athleteId: Int): List<Result>
 
     @Query("SELECT * FROM result WHERE event_id = :eventId")
     suspend fun getAllEventResultsNotFlow(eventId: Int): List<Result>
+
+    @Query("SELECT COUNT(*) FROM result WHERE athlete_id = :athleteId AND event_id = :eventId")
+    fun checkIfAthleteRegistered(athleteId: Int, eventId: Int): Flow<Int>
 }

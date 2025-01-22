@@ -10,6 +10,7 @@ import androidx.lifecycle.viewmodel.viewModelFactory
 import com.example.racebuddy.Application
 import com.example.racebuddy.data.database.AppRepository
 import com.example.racebuddy.data.database.Athlete
+import com.example.racebuddy.data.database.Result
 import com.example.racebuddy.data.database.UserPreferencesRepository
 import com.example.racebuddy.ui.favorite.FavoriteScreenUiState
 import com.example.racebuddy.ui.favorite.FavoriteScreenViewModel
@@ -36,14 +37,19 @@ class ProfileScreenViewModel(
         .flatMapLatest { athleteLoginId ->
             if(athleteLoginId > 0) {
                 appRepository.getAthlete(athleteLoginId).map { athlete ->
+                    val resultsList = appRepository.getAllAthleteResults(
+                        athleteId = athleteLoginId
+                    )
                     ProfileScreenUiState(
-                        athlete = athlete
+                        athlete = athlete,
+                        athleteResults = resultsList
                     )
                 }
             }
             else {
                 flowOf(ProfileScreenUiState(
-                    athlete = Athlete(id = -1, name = "", surname = "", username = "", password = "")
+                    athlete = Athlete(id = -1, name = "", surname = "", username = "", password = ""),
+                    athleteResults = emptyList()
                     )
                 )
             }
@@ -52,7 +58,8 @@ class ProfileScreenViewModel(
             scope = viewModelScope,
             started = SharingStarted.WhileSubscribed(5_000),
             initialValue = ProfileScreenUiState(
-                athlete = Athlete(id = -1, name = "", surname = "", username = "", password = "")
+                athlete = Athlete(id = -1, name = "", surname = "", username = "", password = ""),
+                athleteResults = emptyList()
             )
         )
 
@@ -62,6 +69,7 @@ class ProfileScreenViewModel(
             userPreferencesRepository.saveAthleteLoginId(-1)
         }
     }
+
 
     companion object {
         val factory: ViewModelProvider.Factory = viewModelFactory {
@@ -77,5 +85,6 @@ class ProfileScreenViewModel(
 }
 
 data class ProfileScreenUiState(
-    val athlete: Athlete
+    val athlete: Athlete,
+    val athleteResults: List<Result>
 )

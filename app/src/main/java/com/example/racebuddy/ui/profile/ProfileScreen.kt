@@ -25,12 +25,14 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.example.racebuddy.R
 import com.example.racebuddy.data.database.Athlete
+import com.example.racebuddy.data.database.Result
 import com.example.racebuddy.ui.common.BottomAppBar
 import com.example.racebuddy.ui.common.LoginTopAppBar
 
 @Composable
 fun ProfileScreen(
     athlete: Athlete,
+    athleteResults: List<Result>,
     onHomeClick: () -> Unit = { },
     onFavoriteClick: () -> Unit = { },
     onProfileClick: () -> Unit = { },
@@ -81,7 +83,7 @@ fun ProfileScreen(
                 ResultsCard(
                     modifier = Modifier
                         .padding(5.dp),
-                    results = listOf(1, 2, 3)
+                    results = athleteResults
                 )
                 LogoutButton(
                     onLogoutClick = onLogoutButtonClick
@@ -185,7 +187,7 @@ fun DetailsCard(
 @Composable
 fun ResultsCard(
     modifier: Modifier,
-    results: List<Int> = emptyList()
+    results: List<Result> = emptyList()
 ) {
     Card(
         modifier = modifier
@@ -197,19 +199,25 @@ fun ResultsCard(
                 .padding(10.dp)
                 .fillMaxWidth()
         ) {
-            Card() {
-                Text(
-                    text = "Results",
-                    modifier = Modifier
+            Column(
+
+            ) {
+                Card() {
+                    Text(
+                        text = "Results",
+                        modifier = Modifier
                         //.fillMaxWidth()
                     )
 
+                }
+                TableHeader()
             }
         }
         LazyColumn {
             items(results) { result ->
+                if(result.time != "-")
                 ResultCard(
-                    result = 0,
+                    result = result,
                     modifier = Modifier
                         .padding(10.dp)
                 )
@@ -219,8 +227,33 @@ fun ResultsCard(
 }
 
 @Composable
+fun TableHeader(
+    modifier: Modifier = Modifier
+) {
+    Card(
+        modifier = modifier
+    ) {
+        Row(
+            horizontalArrangement = Arrangement.SpaceEvenly,
+            modifier = Modifier
+                .fillMaxWidth()
+        ) {
+            Text(
+                text = "Athlete Id"
+            )
+            Text(
+                text = "Event Id"
+            )
+            Text(
+                text = "Time"
+            )
+        }
+    }
+}
+
+@Composable
 fun ResultCard(
-    result: Int,
+    result: Result,
     modifier: Modifier
 ) {
     Card(
@@ -232,16 +265,13 @@ fun ResultCard(
                 .fillMaxWidth()
         ) {
             Text(
-                text = "Race"
+                text = "${result.eventId}"
             )
             Text(
-                text = "Country"
+                text = "${result.athleteId}"
             )
             Text(
-                text = "Position"
-            )
-            Text(
-                text = "Time"
+                text = result.time
             )
         }
     }
@@ -266,6 +296,7 @@ fun LogoutButton(
 fun ProfileScreenPreview() {
     ProfileScreen(
         athlete = Athlete(0, "test", "test", "test", "test"),
+        athleteResults = emptyList(),
         onLoginButtonClick = {},
         onLogoutButtonClick = {}
     )

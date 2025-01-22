@@ -185,9 +185,11 @@ fun App(
         composable(route = AppScreen.Profile.name) {
 
             val athlete = profileScreenUiState.athlete
+            val athleteResults = profileScreenUiState.athleteResults
 
             ProfileScreen(
                 athlete = athlete,
+                athleteResults = athleteResults,
                 onHomeClick = {
                     navController.navigate(AppScreen.Main.name)
                     appViewModel.updateScreenSelected(AppScreen.Main)

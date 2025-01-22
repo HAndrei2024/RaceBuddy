@@ -73,7 +73,8 @@ class EventScreenViewModel(
             locationName = "-",
             organizerName = "-",
             description = "-"),
-        eventResults = emptyList()
+        eventResults = emptyList(),
+        isAthleteRegistered = false
     ))
     val uiState = _uiState.asStateFlow()
 
@@ -156,6 +157,45 @@ class EventScreenViewModel(
                 )
     }
 
+    fun checkIfAthleteRegistered(
+        athleteId: Int,
+        eventId: Int
+    ) {
+        viewModelScope.launch {
+            appRepository.checkIfAthleteRegistered(
+                athleteId = athleteId,
+                eventId = eventId
+            ).collect{ int ->
+                _uiState.update { currentState ->
+                    currentState.copy(
+                        isAthleteRegistered = int == 1
+                    )
+                }
+            }
+        }
+    }
+
+    fun onRegisterButtonClick(
+        athleteId: Int,
+        eventId: Int,
+        newBooleanValue: Boolean,
+    ) {
+        viewModelScope.launch {
+            _uiState.update { currentState ->
+                currentState.copy(
+                    isAthleteRegistered = newBooleanValue
+                )
+            }
+            appRepository.insertResult(
+                Result(
+                    athleteId = athleteId,
+                    eventId = eventId,
+                    time = "-"
+                )
+            )
+        }
+    }
+
     companion object {
         val factory: ViewModelProvider.Factory = viewModelFactory {
             initializer {
@@ -174,5 +214,6 @@ data class EventScreenUiState(
     val athleteId: Int,
     val eventId: Int, //TODO Delete
     val event: Event,
-    val eventResults: List<Result>
+    val eventResults: List<Result>,
+    val isAthleteRegistered: Boolean
 )
