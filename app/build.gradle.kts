@@ -180,6 +180,7 @@ dependencies {
     implementation("androidx.core:core-ktx:1.15.0")
     implementation("androidx.lifecycle:lifecycle-runtime-ktx:2.8.7")
     implementation("androidx.navigation:navigation-compose:${rootProject.extra["nav_version"]}")
+    implementation(libs.play.services.location)
 
     debugImplementation("androidx.compose.ui:ui-test-manifest")
     debugImplementation("androidx.compose.ui:ui-tooling")
@@ -206,4 +207,12 @@ dependencies {
 
     //DataStore
     implementation("androidx.datastore:datastore-preferences:1.0.0")
+
+    //GoogleMaps
+    implementation ("com.google.accompanist:accompanist-permissions:0.30.1")
+    implementation ("org.jetbrains.kotlinx:kotlinx-coroutines-play-services:1.7.3")
+    implementation ("com.google.maps.android:maps-compose:2.14.1")
+    implementation ("com.google.android.gms:play-services-maps:18.1.0")
+
+    implementation ("org.osmdroid:osmdroid-android:6.1.10")
 }
