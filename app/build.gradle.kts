@@ -1,3 +1,5 @@
+import java.util.Properties
+
 ////plugins {
 ////    alias(libs.plugins.android.application)
 ////    alias(libs.plugins.jetbrains.kotlin.android)
@@ -111,6 +113,12 @@ android {
         vectorDrawables {
             useSupportLibrary = true
         }
+
+        val properties = Properties()
+        properties.load(project.rootProject.file("local.properties").inputStream())
+        buildConfigField("String", "CLIENT_ID", "\"${properties.getProperty("CLIENT_ID")}\"")
+        buildConfigField("String", "REDIRECT_URL", "\"${properties.getProperty("REDIRECT_URL")}\"")
+        buildConfigField("String", "CLIENT_SECRET", "\"${properties.getProperty("CLIENT_SECRET")}\"")
     }
 
     buildTypes {
@@ -131,6 +139,8 @@ android {
     }
     buildFeatures {
         compose = true
+        viewBinding = true
+        buildConfig = true
     }
     composeOptions {
         kotlinCompilerExtensionVersion = "1.5.1"
@@ -180,6 +190,7 @@ dependencies {
     implementation("androidx.core:core-ktx:1.15.0")
     implementation("androidx.lifecycle:lifecycle-runtime-ktx:2.8.7")
     implementation("androidx.navigation:navigation-compose:${rootProject.extra["nav_version"]}")
+    implementation(libs.androidx.junit.ktx)
 
     debugImplementation("androidx.compose.ui:ui-test-manifest")
     debugImplementation("androidx.compose.ui:ui-tooling")
@@ -206,4 +217,16 @@ dependencies {
 
     //DataStore
     implementation("androidx.datastore:datastore-preferences:1.0.0")
+
+    // Retrofit
+    implementation("com.squareup.retrofit2:retrofit:2.9.0")
+    // Retrofit with Scalar Converter
+    implementation("com.squareup.retrofit2:converter-scalars:2.9.0")
+    implementation("com.jakewharton.retrofit:retrofit2-kotlinx-serialization-converter:0.8.0") // Retrofit2-Kotlinx Serialization converter
+    implementation("com.squareup.okhttp3:okhttp:4.11.0")
+
+    //Gson
+    implementation("com.squareup.retrofit2:converter-gson:2.9.0") // for parsing JSON
+    implementation("com.google.code.gson:gson:2.8.6") // Gson library
+
 }
