@@ -5,6 +5,8 @@ import androidx.compose.runtime.Composable
 import com.example.racebuddy.data.database.Athlete
 import com.jakewharton.retrofit2.converter.kotlinx.serialization.asConverterFactory
 import kotlinx.serialization.ExperimentalSerializationApi
+import kotlinx.serialization.SerialName
+import kotlinx.serialization.Serializable
 import kotlinx.serialization.StringFormat
 import kotlinx.serialization.json.Json
 import okhttp3.MediaType.Companion.toMediaType
@@ -17,9 +19,14 @@ import retrofit2.http.POST
 
 private const val BASE_URL = "https://www.strava.com/"
 
+private val json = Json{
+    ignoreUnknownKeys = true
+    coerceInputValues = true
+}
+
 @OptIn(ExperimentalSerializationApi::class)
 private val retrofit = Retrofit.Builder()
-    .addConverterFactory(Json.asConverterFactory("application/json".toMediaType()))
+    .addConverterFactory(json.asConverterFactory("application/json".toMediaType()))
     .baseUrl(BASE_URL)
     .build()
 
@@ -27,7 +34,16 @@ interface StravaApiService {
 
     @FormUrlEncoded
     @POST("oauth/token")
-    suspend fun getAccessToken(
+    suspend fun getAuthDetails(
+        @Field("client_id") clientId: String,
+        @Field("client_secret") clientSecret: String,
+        @Field("code") authorizationCode: String,
+        @Field("grant_type") grantType: String = "authorization_code"
+    ): StravaAuthResponse
+
+    @FormUrlEncoded
+    @POST("oauth/token")
+    suspend fun getAuthDetailsJson(
         @Field("client_id") clientId: String,
         @Field("client_secret") clientSecret: String,
         @Field("code") authorizationCode: String,
@@ -35,15 +51,34 @@ interface StravaApiService {
     ): ResponseBody
 }
 
-data class StravaAccessTokenResponse(
-    val accessToken: String,
+@Serializable
+data class StravaAuthResponse(
+    @SerialName(value = "token_type")
+    val tokenType: String,
+    @SerialName(value = "expires_at")
+    val expiresAt: Int,
+    @SerialName(value = "refresh_token")
     val refreshToken: String,
-    val expiresIn: Long,
+    @SerialName(value = "access_token")
+    val accessToken: String,
+    @SerialName(value = "athlete")
     val athlete: StravaAthlete
 )
 
+@Serializable
 data class StravaAthlete (
-    val username: String
+    @SerialName(value = "id")
+    val id: Int,
+    @SerialName(value = "username")
+    val username: String?,
+    @SerialName(value = "resource_state")
+    val resourceState: Int,
+    @SerialName(value = "firstname")
+    val firstName: String,
+    @SerialName(value = "lastname")
+    val lastName: String,
+    @SerialName(value = "profile")
+    val profilePictureUrl: String
 )
 
 object StravaApi {

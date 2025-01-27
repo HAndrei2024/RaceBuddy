@@ -20,11 +20,16 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.viewinterop.AndroidView
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import coil.compose.AsyncImage
+import coil.request.ImageRequest
 import com.example.racebuddy.BuildConfig
+import com.example.racebuddy.R
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -39,7 +44,9 @@ fun StravaScreenIntent(
     val activity = context as Activity
     val intent = activity.intent
     val response = intent.data?.getQueryParameter("code").toString()
-    var result by remember { mutableStateOf("") }
+    val stravaAthlete = StravaAthlete(0, "", 0, "", "", "")
+    var stravaAuthResult by remember { mutableStateOf(StravaAuthResponse("", 0, "", "", stravaAthlete)) }
+    var jsonString by remember { mutableStateOf("") }
     Column(
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.Center,
@@ -58,11 +65,11 @@ fun StravaScreenIntent(
         Button(
             onClick = {
                 CoroutineScope(Dispatchers.Main).launch {
-                    result = StravaApi.retrofitService.getAccessToken(
+                    stravaAuthResult = StravaApi.retrofitService.getAuthDetails(
                         clientId = BuildConfig.CLIENT_ID,
                         clientSecret = BuildConfig.CLIENT_SECRET,
                         authorizationCode = response
-                    ).string()
+                    )
                 }
             }
         ) {
@@ -70,8 +77,15 @@ fun StravaScreenIntent(
                 text = "Get Athlete data"
             )
         }
-        Text(
-            text = result
+        AsyncImage(
+            model = ImageRequest.Builder(context = LocalContext.current)
+                .data(stravaAuthResult.athlete.profilePictureUrl)
+                .crossfade(true)
+                .build(),
+            error = painterResource(R.drawable.ic_launcher_background),
+            placeholder = painterResource(R.drawable.default_profile),
+            contentDescription = "Profile picture",
+            contentScale = ContentScale.Crop
         )
     }
 }
