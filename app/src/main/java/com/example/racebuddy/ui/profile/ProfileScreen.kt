@@ -1,5 +1,8 @@
 package com.example.racebuddy.ui.profile
 
+import android.app.Activity
+import android.content.Intent
+import android.net.Uri
 import android.widget.Button
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
@@ -7,30 +10,43 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material3.Button
 import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.viewmodel.compose.viewModel
+import coil.compose.AsyncImage
+import coil.request.ImageRequest
+import com.example.racebuddy.BuildConfig
 import com.example.racebuddy.R
 import com.example.racebuddy.data.database.Athlete
 import com.example.racebuddy.data.database.Result
 import com.example.racebuddy.ui.common.BottomAppBar
 import com.example.racebuddy.ui.common.LoginTopAppBar
+import com.example.racebuddy.ui.main.MainScreenViewModel
 
 @Composable
 fun ProfileScreen(
+    profileScreenViewModel: ProfileScreenViewModel,
     athlete: Athlete,
     athleteResults: List<Result>,
     onHomeClick: () -> Unit = { },
@@ -40,7 +56,8 @@ fun ProfileScreen(
     isFavoriteSelected: Boolean = false,
     isProfileSelected: Boolean = true,
     onLoginButtonClick: () -> Unit,
-    onLogoutButtonClick: () -> Unit
+    onLogoutButtonClick: () -> Unit,
+    onStravaButtonClick: () -> Unit
 ) {
     Scaffold(
         topBar = { LoginTopAppBar("RaceBuddy") },
@@ -54,6 +71,11 @@ fun ProfileScreen(
         ) }
     ) { innerPadding ->
         if(athlete.id > 0) {
+            val activity = LocalContext.current as Activity
+            val intent = activity.intent
+            val responseCode = intent.data?.getQueryParameter("code").toString()
+            profileScreenViewModel.updateResponseCode(responseCode)
+
             Column(
                 verticalArrangement = Arrangement.Top,
                 horizontalAlignment = Alignment.CenterHorizontally,
@@ -71,6 +93,7 @@ fun ProfileScreen(
                 ImageAndNameRow(
                     name = athlete.name,
                     surname = athlete.surname,
+                    profilePictureUrl = athlete.profilePictureUrl,
                     modifier = Modifier
                         .padding(10.dp)
                     //.weight(2f)
@@ -85,8 +108,12 @@ fun ProfileScreen(
                         .padding(5.dp),
                     results = athleteResults
                 )
-                LogoutButton(
-                    onLogoutClick = onLogoutButtonClick
+                ProfileButton(
+                    onClick = onLogoutButtonClick
+                )
+                ProfileButton(
+                    buttonText = "Get Profile from Strava",
+                    onClick = { onStravaButtonClick() }
                 )
             }
         }
@@ -113,6 +140,7 @@ fun ProfileScreen(
 fun ImageAndNameRow(
     name: String,
     surname: String,
+    profilePictureUrl: String,
     modifier: Modifier
 ) {
     Row(
@@ -121,20 +149,51 @@ fun ImageAndNameRow(
             .fillMaxWidth()
     ) {
         Card(
+            elevation = CardDefaults.cardElevation(5.dp),
             modifier = Modifier
                 .weight(2f)
         ) {
-            Image(
-                painter = painterResource(R.drawable.default_profile),
-                contentDescription = "Profile Picture"
+            AsyncImage(
+                model = ImageRequest.Builder(context = LocalContext.current)
+                    .data(profilePictureUrl)
+                    .crossfade(true)
+                    .build(),
+                error = painterResource(R.drawable.error_image_generic),
+                placeholder = painterResource(R.drawable.default_profile),
+                contentDescription = "Profile picture",
+                contentScale = ContentScale.Crop,
+                modifier = Modifier
+                    .heightIn(min = 150.dp, max = 150.dp)
             )
         }
-        Text(
-            text = "$name $surname",
+        Card(
+            elevation = CardDefaults.cardElevation(5.dp),
             modifier = Modifier
-                .padding(10.dp)
                 .weight(3f)
-        )
+                .padding(horizontal = 10.dp)
+                .heightIn(min = 150.dp, max = 150.dp)
+        ) {
+            Column() {
+                Text(
+                    text = "$name $surname",
+                    modifier = Modifier
+                        .padding(10.dp)
+                    //.weight(3f)
+                )
+                Text(
+                    text = "Age: ",
+                    modifier = Modifier
+                        .padding(10.dp)
+                    //.weight(3f)
+                )
+                Text(
+                    text = "Nationality: ",
+                    modifier = Modifier
+                        .padding(10.dp)
+                    //.weight(3f)
+                )
+            }
+        }
     }
 }
 
@@ -150,36 +209,18 @@ fun DetailsCard(
             modifier = Modifier
                 .padding(10.dp)
         ) {
-            Column(
+            Text(
+                text = "Team",
                 modifier = Modifier
+                    .padding(10.dp)
                     .weight(1f)
-            ) {
-                Text(
-                    text = "Age",
-                    modifier = Modifier
-                        .padding(10.dp)
-                )
-                Text(
-                    text = "Nationality",
-                    modifier = Modifier
-                        .padding(10.dp)
-                )
-            }
-            Column(
+            )
+            Text(
+                text = "Sponsors",
                 modifier = Modifier
+                    .padding(10.dp)
                     .weight(1f)
-            ) {
-                Text(
-                    text = "Team",
-                    modifier = Modifier
-                        .padding(10.dp)
-                )
-                Text(
-                    text = "Sponsors",
-                    modifier = Modifier
-                        .padding(10.dp)
-                )
-            }
+            )
         }
     }
 }
@@ -278,12 +319,12 @@ fun ResultCard(
 }
 
 @Composable
-fun LogoutButton(
+fun ProfileButton(
     buttonText: String = "Log Out",
-    onLogoutClick: () -> Unit
+    onClick: () -> Unit
 ) {
     Button(
-        onClick = onLogoutClick
+        onClick = onClick
     ) {
         Text(
             text = buttonText
@@ -295,9 +336,13 @@ fun LogoutButton(
 @Composable
 fun ProfileScreenPreview() {
     ProfileScreen(
+        profileScreenViewModel = viewModel(
+            factory = ProfileScreenViewModel.factory
+        ),
         athlete = Athlete(0, "test", "test", "test", "test"),
         athleteResults = emptyList(),
         onLoginButtonClick = {},
-        onLogoutButtonClick = {}
+        onLogoutButtonClick = {},
+        onStravaButtonClick = {}
     )
 }

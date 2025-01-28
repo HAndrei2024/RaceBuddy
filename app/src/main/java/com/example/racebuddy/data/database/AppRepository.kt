@@ -72,4 +72,10 @@ class AppRepository(
     fun checkIfAthleteRegistered(athleteId: Int, eventId: Int): Flow<Int> {
         return localDataSource.checkIfAthleteRegistered(athleteId, eventId)
     }
+    suspend fun updateAthleteProfilePicture(profilePictureUrl: String, id: Int){
+        localDataSource.updateAthleteProfilePicture(
+            profilePictureUrl = profilePictureUrl,
+            id = id
+        )
+    }
 }

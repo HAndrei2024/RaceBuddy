@@ -73,4 +73,11 @@ class LocalDataSource(
     fun checkIfAthleteRegistered(athleteId: Int, eventId: Int): Flow<Int> {
         return resultDao.checkIfAthleteRegistered(athleteId, eventId)
     }
+
+    suspend fun updateAthleteProfilePicture(profilePictureUrl: String, id: Int){
+        athleteDao.updateAthleteProfilePicture(
+            profilePictureUrl = profilePictureUrl,
+            id = id
+        )
+    }
 }

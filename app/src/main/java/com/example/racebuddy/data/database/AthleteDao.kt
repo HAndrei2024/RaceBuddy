@@ -16,6 +16,9 @@ interface AthleteDao {
     @Query("SELECT * FROM athlete WHERE id = :id")
     fun getAthlete(id: Int): Flow<Athlete> //Flow or no flow?
 
+    @Query("UPDATE athlete SET profile_picture_url = :profilePictureUrl WHERE id = :id")
+    suspend fun updateAthleteProfilePicture(profilePictureUrl: String, id: Int)
+
     @Insert
     suspend fun createNewAccount(athlete: Athlete)
 }

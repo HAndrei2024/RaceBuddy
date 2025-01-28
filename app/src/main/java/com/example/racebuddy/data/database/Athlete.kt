@@ -1,6 +1,7 @@
 package com.example.racebuddy.data.database
 
 import androidx.annotation.DrawableRes
+import androidx.room.ColumnInfo
 import androidx.room.Entity
 import androidx.room.Index
 import androidx.room.PrimaryKey
@@ -19,4 +20,6 @@ data class Athlete(
     val surname: String,
     val username: String,
     val password: String,
+    @ColumnInfo(name = "profile_picture_url")
+    val profilePictureUrl: String = ""
 )

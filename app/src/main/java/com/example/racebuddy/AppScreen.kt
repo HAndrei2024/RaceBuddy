@@ -1,6 +1,7 @@
 package com.example.racebuddy
 
 import android.app.Activity
+import android.util.Log
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.BackHandler
 import androidx.compose.material3.Text
@@ -186,8 +187,11 @@ fun App(
 
             val athlete = profileScreenUiState.athlete
             val athleteResults = profileScreenUiState.athleteResults
+            val currentContext = LocalContext.current
+
 
             ProfileScreen(
+                profileScreenViewModel = profileScreenViewModel,
                 athlete = athlete,
                 athleteResults = athleteResults,
                 onHomeClick = {
@@ -209,6 +213,11 @@ fun App(
                     profileScreenViewModel.onLogoutButtonClick()
                     loginScreenViewModel.updateLogInSucces(false)
                     navController.navigate(AppScreen.Login.name)
+                },
+                onStravaButtonClick = {
+                    profileScreenViewModel.onGetInfoFromStravaClick(
+                        context = currentContext
+                    )
                 }
             )
             BackHandler {  }
