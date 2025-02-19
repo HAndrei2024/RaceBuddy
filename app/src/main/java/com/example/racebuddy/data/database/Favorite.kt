@@ -4,15 +4,6 @@ import androidx.room.ColumnInfo
 import androidx.room.Entity
 import androidx.room.ForeignKey
 
-//@Entity(tableName = "favorite")
-//data class Favorite(
-//    @ColumnInfo(name = "user_id")
-//    val userId: Int,
-//    @ColumnInfo(name = "event_id")
-//    val eventId: Int
-//)
-
-
 @Entity(
     tableName = "favorite",
     foreignKeys = [

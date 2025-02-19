@@ -37,9 +37,6 @@ class MainScreenViewModel(
     private val _uiState = MutableStateFlow(MainScreenUiState(athleteLoginId = -1, athleteUsername = "initial"))
     val uiState = _uiState.asStateFlow()
 
-    private val _clickedEventId = MutableStateFlow(-1)
-    val clickedEventId = _clickedEventId.asStateFlow()
-
     private val athleteLoginId = userPreferencesRepository.athleteLoginId.map { athleteLoginId ->
         athleteLoginId
     }
@@ -66,10 +63,6 @@ class MainScreenViewModel(
             }
 
         }
-    }
-
-    fun updateClickedEventId(id: Int) {
-        _clickedEventId.update { id }
     }
 
     private suspend fun getAthleteUsernameById(id: Int) {

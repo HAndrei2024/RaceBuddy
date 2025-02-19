@@ -99,7 +99,6 @@ fun App(
             LaunchedEffect(loginUiState) {
                 if (loginUiState.logInSucces) {
                     navController.navigate(AppScreen.Main.name)
-                    //TODO
                 }
             }
             LoginScreen(

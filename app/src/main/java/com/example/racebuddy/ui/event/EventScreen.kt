@@ -116,7 +116,6 @@ fun EventScreen(
         }
 
         item {
-            //val events = eventScreenViewModel.getAllEventResults(event.id).collectAsState().value
             val events = uiState.eventResults
             HorizontalPagerTabRowSample(
                 description = event.description,

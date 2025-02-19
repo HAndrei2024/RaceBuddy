@@ -31,25 +31,6 @@ class EventScreenViewModel(
     private val userPreferencesRepository: UserPreferencesRepository
 ) : ViewModel() {
 
-//    @OptIn(ExperimentalCoroutinesApi::class)
-//    val uiState = userPreferencesRepository.athleteLoginId
-//        .flatMapLatest { athleteLoginId ->
-//            appRepository.getEvent(athleteLoginId).map { events ->
-//                FavoriteScreenUiState(
-//                    athleteId = athleteLoginId,
-//                    favoriteEvents = events
-//                )
-//            }
-//        }
-//        .stateIn(
-//            scope = viewModelScope,
-//            started = SharingStarted.WhileSubscribed(5_000),
-//            initialValue = FavoriteScreenUiState(
-//                athleteId = -1,
-//                favoriteEvents = emptyList()
-//            ) // Initial value for UI state
-//        )
-
     val athleteId = userPreferencesRepository.athleteLoginId
         .stateIn(
             scope = viewModelScope,

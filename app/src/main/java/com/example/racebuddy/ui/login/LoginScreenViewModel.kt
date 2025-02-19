@@ -70,7 +70,6 @@ class LoginScreenViewModel(
                 updateLogInSucces(loginResultBoolean)
                 updateErrorMessage(!loginResultBoolean)
                 userPreferencesRepository.saveAthleteLoginId(loginResult)
-                //userPreferencesRepository.saveAthleteUsername(uiState.value.username)
             } catch (e: Exception) {
                 updateErrorMessage(true)
             }

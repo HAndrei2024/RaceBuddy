@@ -86,7 +86,6 @@ fun ProfileScreen(
                 Box(
                     modifier = Modifier
                         .background(color = Color.Blue)
-                    //.weight(0.3f)
                 ) {
 
                 }
@@ -96,12 +95,10 @@ fun ProfileScreen(
                     profilePictureUrl = athlete.profilePictureUrl,
                     modifier = Modifier
                         .padding(10.dp)
-                    //.weight(2f)
                 )
                 DetailsCard(
                     modifier = Modifier
                         .padding(5.dp)
-                    //.weight(15f)
                 )
                 ResultsCard(
                     modifier = Modifier

@@ -32,11 +32,7 @@ class FavoriteScreenViewModel(
     @OptIn(ExperimentalCoroutinesApi::class)
     val uiState = userPreferencesRepository.athleteLoginId
         .flatMapLatest { athleteLoginId ->
-            // Collect data from Room database based on 'isLinearLayout'
-            // Assume 'getDesserts' is a method in the dessertRepository that fetches desserts
-            // based on the 'isLinearLayout' flag.
             appRepository.getListOfFavoriteEvents(athleteLoginId).map { events ->
-                // Combine 'isLinearLayout' with the fetched desserts data into the UI state
                 FavoriteScreenUiState(
                     athleteId = athleteLoginId,
                     favoriteEvents = events
@@ -49,14 +45,8 @@ class FavoriteScreenViewModel(
             initialValue = FavoriteScreenUiState(
                 athleteId = -1,
                 favoriteEvents = emptyList()
-            ) // Initial value for UI state
+            )
         )
-
-
-
-    private fun getFavoriteEvents(athleteId: Int): Flow<List<Event>> {
-        return appRepository.getListOfFavoriteEvents(athleteId)
-    }
 
     fun onFavoriteIconClick(
         athleteId: Int,

@@ -18,7 +18,6 @@ class UserPreferencesRepository(
 ) {
     companion object {
         val ATHLETE_LOGIN_ID = intPreferencesKey("ATHLETE_LOGIN_ID")
-        //val ATHLETE_USERNAME = stringPreferencesKey("ATHLETE_USERNAME")
     }
 
     val athleteLoginId: Flow<Int> = dataStore.data
@@ -35,29 +34,10 @@ class UserPreferencesRepository(
             preferences[ATHLETE_LOGIN_ID] ?: -1
         }
 
-//    val athleteUsername: Flow<String> = dataStore.data
-//        .catch {
-//            if(it is IOException) {
-//                Log.e("UserPreferencesRepository", "IOException", it)
-//                emit(emptyPreferences())
-//            }
-//            else {
-//                throw it
-//            }
-//        }
-//        .map { preferences ->
-//            preferences[ATHLETE_USERNAME] ?: "Null"
-//        }
-
     suspend fun saveAthleteLoginId(loginId: Int) {
         dataStore.edit { preferences ->
             preferences[ATHLETE_LOGIN_ID] = loginId
         }
     }
 
-//    suspend fun saveAthleteUsername(username: String) {
-//        dataStore.edit { preferences ->
-//            preferences[ATHLETE_USERNAME] = username
-//        }
-//    }
 }
