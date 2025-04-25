@@ -31,6 +31,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.painter.Painter
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.layout.onGloballyPositioned
@@ -150,6 +151,7 @@ fun EventCard(
     Card(
         shape = CardDefaults.elevatedShape,
         elevation = CardDefaults.cardElevation(5.dp),
+        colors = CardDefaults.elevatedCardColors(containerColor = Color.White),
         modifier = Modifier
             .fillMaxWidth()
             .clickable { onEventClick() }
