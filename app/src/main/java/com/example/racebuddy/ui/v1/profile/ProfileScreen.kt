@@ -1,4 +1,4 @@
-package com.example.racebuddy.ui.profile
+package com.example.racebuddy.ui.v1.profile
 
 import android.app.Activity
 import android.content.Intent
@@ -43,9 +43,9 @@ import com.example.racebuddy.BuildConfig
 import com.example.racebuddy.R
 import com.example.racebuddy.data.database.Athlete
 import com.example.racebuddy.data.database.Result
-import com.example.racebuddy.ui.common.BottomAppBar
-import com.example.racebuddy.ui.common.LoginTopAppBar
-import com.example.racebuddy.ui.main.MainScreenViewModel
+import com.example.racebuddy.ui.v1.common.BottomAppBar
+import com.example.racebuddy.ui.v1.common.LoginTopAppBar
+import com.example.racebuddy.ui.v1.main.MainScreenViewModel
 
 @Composable
 fun ProfileScreen(

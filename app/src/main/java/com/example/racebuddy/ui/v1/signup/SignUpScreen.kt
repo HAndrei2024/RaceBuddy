@@ -1,4 +1,4 @@
-package com.example.racebuddy.ui.signup
+package com.example.racebuddy.ui.v1.signup
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -14,7 +14,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.lifecycle.viewmodel.compose.viewModel
-import com.example.racebuddy.ui.common.LoginTopAppBar
+import com.example.racebuddy.ui.v1.common.LoginTopAppBar
 import com.example.racebuddy.ui.login.UserButton
 import com.example.racebuddy.ui.login.UserTextField
 import kotlin.math.sign

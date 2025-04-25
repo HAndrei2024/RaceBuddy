@@ -1,4 +1,4 @@
-package com.example.racebuddy.ui.profile
+package com.example.racebuddy.ui.v1.profile
 
 import android.app.Activity
 import android.content.Context
@@ -25,8 +25,8 @@ import com.example.racebuddy.data.database.UserPreferencesRepository
 import com.example.racebuddy.data.network.StravaApi
 import com.example.racebuddy.data.network.StravaAthlete
 import com.example.racebuddy.data.network.StravaAuthResponse
-import com.example.racebuddy.ui.favorite.FavoriteScreenUiState
-import com.example.racebuddy.ui.favorite.FavoriteScreenViewModel
+import com.example.racebuddy.ui.v1.favorite.FavoriteScreenUiState
+import com.example.racebuddy.ui.v1.favorite.FavoriteScreenViewModel
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
@@ -63,7 +63,8 @@ class ProfileScreenViewModel(
                 }
             }
             else {
-                flowOf(ProfileScreenUiState(
+                flowOf(
+                    ProfileScreenUiState(
                     athlete = Athlete(id = -1, name = "", surname = "", username = "", password = ""),
                     athleteResults = emptyList()
                     )

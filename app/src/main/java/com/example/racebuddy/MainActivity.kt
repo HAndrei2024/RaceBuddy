@@ -25,8 +25,9 @@ import com.example.racebuddy.data.database.LocalDataSource
 import com.example.racebuddy.data.network.StravaApi
 import com.example.racebuddy.data.network.StravaApiService
 import com.example.racebuddy.data.network.StravaScreenIntent
-import com.example.racebuddy.ui.event.EventScreen
+import com.example.racebuddy.ui.v1.event.EventScreen
 import com.example.racebuddy.ui.theme.RaceBuddyTheme
+import com.example.racebuddy.ui.v2.login.LoginScreen
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -38,7 +39,8 @@ class MainActivity : ComponentActivity() {
         val intent = intent
         setContent {
             RaceBuddyTheme {
-                App()
+                //App()
+                LoginScreen()
             }
         }
     }

@@ -1,19 +1,13 @@
 package com.example.racebuddy.ui.login
 
-import androidx.compose.runtime.collectAsState
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.ViewModelProvider.AndroidViewModelFactory.Companion.APPLICATION_KEY
 import androidx.lifecycle.viewModelScope
 import androidx.lifecycle.viewmodel.initializer
 import androidx.lifecycle.viewmodel.viewModelFactory
-import androidx.navigation.NavController
-import com.example.racebuddy.AppScreen
 import com.example.racebuddy.Application
 import com.example.racebuddy.data.database.AppRepository
-import com.example.racebuddy.data.database.AthleteDao
 import com.example.racebuddy.data.database.UserPreferencesRepository
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow

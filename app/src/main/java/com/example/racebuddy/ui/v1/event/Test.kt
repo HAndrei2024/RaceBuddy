@@ -1,4 +1,4 @@
-package com.example.racebuddy.ui.event
+package com.example.racebuddy.ui.v1.event
 
 import android.util.Log
 import androidx.compose.foundation.background

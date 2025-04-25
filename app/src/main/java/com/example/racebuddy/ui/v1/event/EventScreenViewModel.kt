@@ -1,4 +1,4 @@
-package com.example.racebuddy.ui.event
+package com.example.racebuddy.ui.v1.event
 
 import androidx.compose.runtime.collectAsState
 import androidx.lifecycle.ViewModel
@@ -12,8 +12,8 @@ import com.example.racebuddy.data.database.AppRepository
 import com.example.racebuddy.data.database.Event
 import com.example.racebuddy.data.database.Result
 import com.example.racebuddy.data.database.UserPreferencesRepository
-import com.example.racebuddy.ui.favorite.FavoriteScreenUiState
-import com.example.racebuddy.ui.favorite.FavoriteScreenViewModel
+import com.example.racebuddy.ui.v1.favorite.FavoriteScreenUiState
+import com.example.racebuddy.ui.v1.favorite.FavoriteScreenViewModel
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -41,7 +41,8 @@ class EventScreenViewModel(
     private val _isFavorite = MutableStateFlow<Boolean>(false)
     val isFavorite = _isFavorite.asStateFlow()
 
-    private val _uiState = MutableStateFlow(EventScreenUiState(
+    private val _uiState = MutableStateFlow(
+        EventScreenUiState(
         athleteId = -1,
         eventId = -1, //TODO Delete?
         event = Event(
@@ -56,7 +57,8 @@ class EventScreenViewModel(
             description = "-"),
         eventResults = emptyList(),
         isAthleteRegistered = false
-    ))
+    )
+    )
     val uiState = _uiState.asStateFlow()
 
     fun updateEventId(id: Int) {

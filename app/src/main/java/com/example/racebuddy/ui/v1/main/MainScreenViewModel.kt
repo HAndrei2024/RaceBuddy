@@ -1,4 +1,4 @@
-package com.example.racebuddy.ui.main
+package com.example.racebuddy.ui.v1.main
 
 import android.database.sqlite.SQLiteException
 import android.nfc.Tag

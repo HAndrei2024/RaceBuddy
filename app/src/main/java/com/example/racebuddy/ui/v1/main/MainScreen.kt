@@ -1,4 +1,4 @@
-package com.example.racebuddy.ui.main
+package com.example.racebuddy.ui.v1.main
 
 import android.graphics.drawable.shapes.Shape
 import androidx.compose.foundation.Image
@@ -32,10 +32,10 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.racebuddy.R
 import com.example.racebuddy.data.database.Event
-import com.example.racebuddy.ui.common.BottomAppBar
-import com.example.racebuddy.ui.common.EventCard
-import com.example.racebuddy.ui.common.LoginTopAppBar
-import com.example.racebuddy.ui.common.MainScreenTopAppBar
+import com.example.racebuddy.ui.v1.common.BottomAppBar
+import com.example.racebuddy.ui.v1.common.EventCard
+import com.example.racebuddy.ui.v1.common.LoginTopAppBar
+import com.example.racebuddy.ui.v1.common.MainScreenTopAppBar
 
 @Composable
 fun MainScreen(

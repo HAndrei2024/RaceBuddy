@@ -1,6 +1,7 @@
 package com.example.racebuddy.ui.theme
 
 import androidx.compose.material3.Typography
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
@@ -8,6 +9,7 @@ import androidx.compose.ui.text.googlefonts.Font
 import androidx.compose.ui.text.googlefonts.GoogleFont
 import androidx.compose.ui.unit.sp
 import com.example.racebuddy.R
+import androidx.compose.ui.text.font.Font
 
 // Set of Material typography styles to start with
 val Typography = Typography(
@@ -98,6 +100,35 @@ val displayFontFamily = FontFamily(
     )
 )
 
+
+
+val gabaritoFontFamily = FontFamily(
+    Font(R.font.gabarito_variablefont_wght) // Replace with the correct font resource
+)
+
+// Define a reusable TextStyle for the custom font
+val gabaritoExtraBoldTextStyle = TextStyle(
+    fontFamily = gabaritoFontFamily,
+    fontWeight = FontWeight.ExtraBold,  // ExtraBold weight
+    fontSize = 55.sp,                  // Font size 55
+    letterSpacing = 5.sp               // Letter spacing 9.sp
+)
+
+val gabaritoMediumBoldTextStyle = TextStyle(
+    fontFamily = gabaritoFontFamily,
+    fontWeight = FontWeight.Medium,  // ExtraBold weight
+    fontSize = 20.sp,                  // Font size 55
+    //letterSpacing = 5.sp               // Letter spacing 9.sp
+)
+
+val gabaritoMediumBoldGrayTextStyle = TextStyle(
+    fontFamily = gabaritoFontFamily,
+    fontWeight = FontWeight.Medium,  // ExtraBold weight
+    fontSize = 14.sp,                // Font size 55
+    color = Color.Gray
+    //letterSpacing = 5.sp               // Letter spacing 9.sp
+)
+
 // Default Material 3 typography values
 val baseline = Typography()
 
@@ -108,15 +139,16 @@ val AppTypography = Typography(
     headlineLarge = baseline.headlineLarge.copy(fontFamily = displayFontFamily),
     headlineMedium = baseline.headlineMedium.copy(fontFamily = displayFontFamily),
     headlineSmall = baseline.headlineSmall.copy(fontFamily = displayFontFamily),
-    titleLarge = baseline.titleLarge.copy(fontFamily = displayFontFamily),
+    titleLarge = gabaritoExtraBoldTextStyle,
     titleMedium = baseline.titleMedium.copy(fontFamily = displayFontFamily),
     titleSmall = baseline.titleSmall.copy(fontFamily = displayFontFamily),
-    bodyLarge = baseline.bodyLarge.copy(fontFamily = bodyFontFamily),
-    bodyMedium = baseline.bodyMedium.copy(fontFamily = bodyFontFamily),
+    bodyLarge = gabaritoMediumBoldTextStyle,
+    bodyMedium = gabaritoMediumBoldGrayTextStyle,
     bodySmall = baseline.bodySmall.copy(fontFamily = bodyFontFamily),
     labelLarge = baseline.labelLarge.copy(fontFamily = bodyFontFamily),
     labelMedium = baseline.labelMedium.copy(fontFamily = bodyFontFamily),
     labelSmall = baseline.labelSmall.copy(fontFamily = bodyFontFamily),
 )
+
 
 

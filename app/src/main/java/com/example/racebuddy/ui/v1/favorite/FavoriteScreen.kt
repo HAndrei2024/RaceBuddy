@@ -1,4 +1,4 @@
-package com.example.racebuddy.ui.favorite
+package com.example.racebuddy.ui.v1.favorite
 
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.padding
@@ -14,11 +14,11 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.painterResource
 import com.example.racebuddy.R
 import com.example.racebuddy.data.database.Event
-import com.example.racebuddy.ui.common.BottomAppBar
-import com.example.racebuddy.ui.common.EventCard
-import com.example.racebuddy.ui.common.LoginTopAppBar
-import com.example.racebuddy.ui.main.MainScreenUiState
-import com.example.racebuddy.ui.main.MainScreenViewModel
+import com.example.racebuddy.ui.v1.common.BottomAppBar
+import com.example.racebuddy.ui.v1.common.EventCard
+import com.example.racebuddy.ui.v1.common.LoginTopAppBar
+import com.example.racebuddy.ui.v1.main.MainScreenUiState
+import com.example.racebuddy.ui.v1.main.MainScreenViewModel
 
 @Composable
 fun FavoriteScreen(

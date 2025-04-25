@@ -1,4 +1,4 @@
-package com.example.racebuddy.ui.common
+package com.example.racebuddy.ui.v1.common
 
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.clickable
@@ -41,7 +41,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.example.racebuddy.R
 import com.example.racebuddy.data.database.Event
-import com.example.racebuddy.ui.main.MainScreenViewModel
+import com.example.racebuddy.ui.v1.main.MainScreenViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable

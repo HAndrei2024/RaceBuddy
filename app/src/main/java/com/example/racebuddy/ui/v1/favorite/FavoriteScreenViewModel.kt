@@ -1,4 +1,4 @@
-package com.example.racebuddy.ui.favorite
+package com.example.racebuddy.ui.v1.favorite
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
@@ -11,7 +11,7 @@ import com.example.racebuddy.data.database.AppRepository
 import com.example.racebuddy.data.database.Event
 import com.example.racebuddy.data.database.UserPreferencesRepository
 import com.example.racebuddy.ui.login.LoginScreenViewModel
-import com.example.racebuddy.ui.main.MainScreenUiState
+import com.example.racebuddy.ui.v1.main.MainScreenUiState
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow

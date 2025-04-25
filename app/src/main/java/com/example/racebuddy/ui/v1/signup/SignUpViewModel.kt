@@ -1,4 +1,4 @@
-package com.example.racebuddy.ui.signup
+package com.example.racebuddy.ui.v1.signup
 
 import android.database.sqlite.SQLiteConstraintException
 import android.util.Log
