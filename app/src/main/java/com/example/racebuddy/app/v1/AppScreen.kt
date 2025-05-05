@@ -1,14 +1,9 @@
-package com.example.racebuddy
+package com.example.racebuddy.app.v1
 
-import android.app.Activity
-import android.util.Log
-import androidx.activity.ComponentActivity
 import androidx.activity.compose.BackHandler
-import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
-import androidx.compose.runtime.compositionLocalOf
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
@@ -22,10 +17,10 @@ import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
+import com.example.racebuddy.Application
 import com.example.racebuddy.data.database.AppRepository
 import com.example.racebuddy.data.database.Event
 import com.example.racebuddy.data.database.UserPreferencesRepository
-import com.example.racebuddy.ui.v1.common.BottomAppBar
 import com.example.racebuddy.ui.v1.event.EventScreen
 import com.example.racebuddy.ui.v1.event.EventScreenViewModel
 import com.example.racebuddy.ui.v1.favorite.FavoriteScreen
@@ -33,7 +28,6 @@ import com.example.racebuddy.ui.v1.favorite.FavoriteScreenViewModel
 import com.example.racebuddy.ui.login.LoginScreen
 import com.example.racebuddy.ui.login.LoginScreenViewModel
 import com.example.racebuddy.ui.v1.main.MainScreen
-import com.example.racebuddy.ui.v1.main.MainScreenUiState
 import com.example.racebuddy.ui.v1.main.MainScreenViewModel
 import com.example.racebuddy.ui.v1.profile.ProfileScreen
 import com.example.racebuddy.ui.v1.profile.ProfileScreenViewModel

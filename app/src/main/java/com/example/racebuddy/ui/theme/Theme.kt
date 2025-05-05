@@ -17,7 +17,8 @@ import com.example.racebuddy.ui.theme.Typography
 import okhttp3.internal.wait
 
 private val baseNavyBlueColorScheme = lightColorScheme(
-    primary = Color(0xFF4169E1),              // Navy Blue
+    primary = Color(0xFF4169E1),     // Navy Blue
+   // primary = Color(0x6200EE),    // Purple 500 (Base color)
     onPrimary = Color.White,
 
     secondary = Color(0xFFFF6F61),            // Coral
@@ -27,9 +28,9 @@ private val baseNavyBlueColorScheme = lightColorScheme(
     onTertiary = Color.White,
 
     surface = Color.White,
-    onSurface = Color.Black,
+    onSurface = Color.Gray,
 
-    background = Color(0xE6E6FA),           // Lavander
+    background = Color(0xFFE6E6FA),           // Lavander
     onBackground = Color.Black
 )
 

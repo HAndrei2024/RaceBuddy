@@ -31,6 +31,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
+import androidx.compose.material3.TextFieldColors
 import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -61,15 +62,20 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.racebuddy.R
+import com.example.racebuddy.ui.theme.AppTypography
 import com.example.racebuddy.ui.theme.Spacing
-import com.example.racebuddy.ui.theme.gabaritoExtraBoldTextStyle
-import com.example.racebuddy.ui.theme.gabaritoMediumBoldGrayTextStyle
-import com.example.racebuddy.ui.theme.gabaritoMediumBoldTextStyle
 import com.example.racebuddy.ui.theme.paddings
 import com.example.racebuddy.ui.theme.shapes
 
 @Composable
 fun LoginScreen(
+    onEmailTexFieldChange: (String) -> Unit,
+    emailStringValue: String,
+    onPasswordTextFieldChange: (String) -> Unit,
+    passwordStringValue: String,
+    onLoginClick: () -> Unit,
+    onSignUpClick: () -> Unit,
+    onSkipClick: () -> Unit,
     modifier: Modifier = Modifier
 ) {
     Column(
@@ -80,17 +86,29 @@ fun LoginScreen(
             .padding(start = paddings.spacingExtraLarge)
     ) {
         LoginText()
-        EmailTextField()
-        PasswordTextField()
-        LoginButton()
-        SkipText()
+        EmailTextField(
+            emailStringValue = emailStringValue,
+            onValueChange = onEmailTexFieldChange
+        )
+        PasswordTextField(
+            passwordStringValue = passwordStringValue,
+            onValueChange = onPasswordTextFieldChange
+        )
+        LoginButton(
+            onClick = onLoginClick
+        )
+        SkipText(
+            onClick = onSkipClick
+        )
     }
 }
 
 
 
 @Composable
-fun LoginText() {
+fun LoginText(
+    onSignUpClick: () -> Unit = {}
+) {
     val annotatedLinkString: AnnotatedString = buildAnnotatedString {
         val str = "Or create an account to sign up!"
         val startIndex = str.indexOf("create")
@@ -100,14 +118,18 @@ fun LoginText() {
         addStyle(
             style = SpanStyle(
                 color = Color.Gray,
-                fontStyle = gabaritoMediumBoldTextStyle.fontStyle
-            ), start = 0, end = str.length
+                fontStyle = AppTypography.titleSmall.fontStyle, //gabaritoMediumBoldTextStyle
+                fontSize = AppTypography.titleSmall.fontSize,
+                fontWeight = FontWeight.Bold
+                ), start = 0, end = str.length
         )
 
         addStyle(
             style = SpanStyle(
                 color = MaterialTheme.colorScheme.primary,
-                fontStyle = gabaritoMediumBoldTextStyle.fontStyle,
+                fontStyle = AppTypography.titleSmall.fontStyle, //gabaritoMediumBoldTextStyle.fontStyle,
+                fontSize = AppTypography.titleSmall.fontSize,
+                fontWeight = FontWeight.Bold,
                 textDecoration = TextDecoration.Underline
             ), start = startIndex, end = endIndex
         )
@@ -125,18 +147,19 @@ fun LoginText() {
     ) {
         Text(
             text = "Log In",
-            style = gabaritoExtraBoldTextStyle,
+            style = AppTypography.displayLarge,
             modifier = Modifier
                 .padding(bottom = paddings.spacingXSmall)
         )
         ClickableText(
             text = annotatedLinkString,
-            style = gabaritoMediumBoldTextStyle,
+            //style = AppTypography.bodyMedium, //gabaritoMediumBoldTextStyle,
             onClick = {
                 annotatedLinkString
                     .getStringAnnotations("SignUp", it, it)
                     .firstOrNull()?.let { stringAnnotation ->
-                        Log.d("SignUp", "String pressed!")
+                        //Function call or just function reference? -> onSignUpClick
+                        onSignUpClick()
                     }
             },
         )
@@ -153,11 +176,25 @@ fun LoginText() {
 }
 
 @Composable
-fun EmailTextField() {
+fun EmailTextField(
+    emailStringValue: String,
+    onValueChange: (String) -> Unit = { }
+) {
     OutlinedTextField(
-        value = "Enter your email...",
-        textStyle = MaterialTheme.typography.bodyMedium,
-        onValueChange = { },
+        value = emailStringValue,
+        textStyle = AppTypography.bodyLarge.copy(
+            color = if(emailStringValue == "Enter your email...") {
+                MaterialTheme.colorScheme.onSurface
+            } else {
+                Color.Black
+            }
+        ),
+        placeholder = {
+            Text(
+                text = "Enter your email..."
+            )
+        },
+        onValueChange = onValueChange,
         shape = shapes.small,
         leadingIcon = {
             Icon(
@@ -174,11 +211,17 @@ fun EmailTextField() {
 }
 
 @Composable
-fun PasswordTextField() {
+fun PasswordTextField(
+    passwordStringValue: String,
+    onValueChange: (String) -> Unit = {}
+) {
     OutlinedTextField(
-        value = "Password",
-        textStyle = MaterialTheme.typography.bodyMedium,
-        onValueChange = { },
+        value = passwordStringValue,
+        textStyle = AppTypography.bodyLarge,
+        placeholder = {
+            Text("********")
+        },
+        onValueChange = onValueChange,
         shape = shapes.small,
         visualTransformation = PasswordVisualTransformation(),
         keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password),
@@ -197,7 +240,9 @@ fun PasswordTextField() {
 }
 
 @Composable
-fun LoginButton() {
+fun LoginButton(
+    onClick: () -> Unit = {}
+) {
     Spacer(modifier = Modifier.size(paddings.spacingSmall))
     Column(
         horizontalAlignment = Alignment.End,
@@ -206,7 +251,7 @@ fun LoginButton() {
             .fillMaxWidth()
     ) {
         Button(
-            onClick = { },
+            onClick = onClick,
             colors = ButtonDefaults.buttonColors(
                 containerColor = MaterialTheme.colorScheme.primary
             ),
@@ -216,7 +261,8 @@ fun LoginButton() {
             Row(verticalAlignment = Alignment.CenterVertically) {
                 Text(
                     text = "Continue",
-                    style = gabaritoMediumBoldTextStyle
+                    fontWeight = FontWeight.Bold,
+                    style = AppTypography.bodyLarge //gabaritoMediumBoldTextStyle
                 )
                 Spacer(modifier = Modifier.width(8.dp))
                 Icon(
@@ -311,7 +357,7 @@ fun LineWithTextCanvas(
             // Measure text width
             val textLayoutResult = textMeasurer.measure(
                 text = AnnotatedString(text),
-                style = gabaritoMediumBoldTextStyle
+                style = AppTypography.bodyMedium
             )
             val textWidth = textLayoutResult.size.width.toFloat()
             val textHeight = textLayoutResult.size.height.toFloat()
@@ -358,7 +404,9 @@ fun LineWithTextCanvas(
 }
 
 @Composable
-fun SkipText() {
+fun SkipText(
+    onClick: () -> Unit = {}
+) {
     Spacer(modifier = Modifier.size(paddings.spacingExtraLarge * 2))
 
     HorizontalDivider(
@@ -376,9 +424,10 @@ fun SkipText() {
         append(str)
         addStyle(
             style = SpanStyle(
-                color = Color.Gray,
+                color = MaterialTheme.colorScheme.primary,
                 textDecoration = TextDecoration.Underline,
-                fontStyle = gabaritoMediumBoldTextStyle.fontStyle
+                fontStyle = AppTypography.bodyMedium.fontStyle,
+                fontWeight = FontWeight.Bold
             ), start = startIndex, end = endIndex
         )
     }
@@ -391,9 +440,7 @@ fun SkipText() {
     ){
         ClickableText(
             text = annotatedLinkString,
-            onClick = {
-                Log.d("Skip", "Skip text pressed!")
-            }
+            onClick = { onClick }
         )
     }
 }
@@ -401,11 +448,19 @@ fun SkipText() {
 @Preview
 @Composable
 fun LoginScreenPreview() {
-    LoginScreen()
+    LoginScreen(
+        onLoginClick = {},
+        onEmailTexFieldChange = {},
+        emailStringValue = "Enter your email...",
+        onSkipClick = {},
+        onPasswordTextFieldChange = {},
+        passwordStringValue = "Password",
+        onSignUpClick = {}
+    )
 }
 
 @Preview
 @Composable
 fun EmailTextPreview() {
-    EmailTextField()
+    EmailTextField("")
 }
