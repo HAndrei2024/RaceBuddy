@@ -85,7 +85,9 @@ fun LoginScreen(
             .fillMaxSize()
             .padding(start = paddings.spacingExtraLarge)
     ) {
-        LoginText()
+        LoginText(
+            onSignUpClick = onSignUpClick
+        )
         EmailTextField(
             emailStringValue = emailStringValue,
             onValueChange = onEmailTexFieldChange

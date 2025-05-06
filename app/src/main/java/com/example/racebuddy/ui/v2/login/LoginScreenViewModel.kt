@@ -1,14 +1,25 @@
 package com.example.racebuddy.ui.v2.login
 
+import android.provider.ContactsContract
+import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.ViewModelProvider.AndroidViewModelFactory.Companion.APPLICATION_KEY
+import androidx.lifecycle.viewModelScope
 import androidx.lifecycle.viewmodel.initializer
 import androidx.lifecycle.viewmodel.viewModelFactory
 import com.example.racebuddy.Application
+import com.example.racebuddy.data.database.AthleteInfo
+import com.example.racebuddy.data.database.SupabaseClient
+import io.github.jan.supabase.auth.OtpType
+import io.github.jan.supabase.auth.admin.AdminUserBuilder
+import io.github.jan.supabase.auth.auth
+import io.github.jan.supabase.auth.providers.builtin.Email
+import io.github.jan.supabase.postgrest.from
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
+import kotlinx.coroutines.launch
 
 class LoginScreenViewModel : ViewModel() {
     private val _uiState = MutableStateFlow(LoginScreenUiState("", ""))
@@ -31,7 +42,20 @@ class LoginScreenViewModel : ViewModel() {
     }
 
     fun onLoginButtonClick() {
-        // TODO: Verify login
+        Log.d("LOGIN", "Login button pressed.")
+        viewModelScope.launch {
+            try {
+                val r = SupabaseClient.client.auth.signInWith(Email) {
+                    email = uiState.value.email
+                    password = uiState.value.password
+                }
+
+                Log.d("LOGON", "Login succes!")
+            } catch (exception: Exception) {
+                onEmailChange(exception.message.toString())
+                Log.d("LOGON", "Login Failed!")
+            }
+        }
     }
 
     fun onSignUpTextClick() {
@@ -51,6 +75,8 @@ class LoginScreenViewModel : ViewModel() {
         }
     }
 }
+
+
 
 data class LoginScreenUiState(
     val email: String,

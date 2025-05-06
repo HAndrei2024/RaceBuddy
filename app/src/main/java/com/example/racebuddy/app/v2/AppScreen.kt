@@ -20,6 +20,8 @@ import com.example.racebuddy.data.database.AppRepository
 import com.example.racebuddy.data.database.UserPreferencesRepository
 import com.example.racebuddy.ui.v2.login.LoginScreen
 import com.example.racebuddy.ui.v2.login.LoginScreenViewModel
+import com.example.racebuddy.ui.v2.main.MainScreen
+import com.example.racebuddy.ui.v2.signup.SignUpScreen
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
@@ -61,10 +63,11 @@ fun Appv2(
                 passwordStringValue = loginScreenUiState.password,
                 onLoginClick = {
                     loginScreenViewModel.onLoginButtonClick()
-                    navController.navigate(AppScreen.Main)
+                    //navController.navigate(AppScreen.Main)
                },
                 onSignUpClick = {
                     loginScreenViewModel.onSignUpTextClick()
+                    navController.navigate(AppScreen.SignUp)
                 },
                 onSkipClick = {
                     navController.navigate(AppScreen.Main)
@@ -73,7 +76,11 @@ fun Appv2(
         }
 
         composable(route = AppScreen.Main.name) {
+            MainScreen()
+        }
 
+        composable(route = AppScreen.SignUp.name) {
+            SignUpScreen()
         }
     }
 }

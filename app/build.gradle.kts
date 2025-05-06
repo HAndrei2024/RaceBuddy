@@ -232,4 +232,19 @@ dependencies {
 
     // Coil
     implementation("io.coil-kt:coil-compose:2.4.0")
+
+    // Supabase
+    implementation(platform("io.github.jan-tennert.supabase:bom:3.1.2"))
+    implementation("io.github.jan-tennert.supabase:postgrest-kt")
+    implementation("io.ktor:ktor-client-android:3.0.0")
+
+//    // Add the core Ktor client
+//    implementation("io.ktor:ktor-client-core:2.3.5")
+//
+//// Add the Android-specific client
+//    implementation("io.ktor:ktor-client-android:2.3.5")
+//
+//// Add the timeout plugin
+//    implementation("io.ktor:ktor-client-plugins:2.3.5")  // To include the HttpTimeout plugin
+
 }
