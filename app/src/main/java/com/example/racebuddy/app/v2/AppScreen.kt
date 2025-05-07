@@ -1,6 +1,7 @@
 package com.example.racebuddy.app.v2
 
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.lifecycle.ViewModel
@@ -56,21 +57,26 @@ fun Appv2(
         startDestination = startDestination
     ) {
         composable(route = AppScreen.Login.name) {
+            LaunchedEffect(loginScreenUiState) {
+                if (loginScreenUiState.loginSucces) {
+                    navController.navigate(AppScreen.Main.name)
+                }
+            }
             LoginScreen(
                 onEmailTexFieldChange = { loginScreenViewModel.onEmailChange(it) },
                 emailStringValue = loginScreenUiState.email,
                 onPasswordTextFieldChange = { loginScreenViewModel.onPasswordChange(it) },
                 passwordStringValue = loginScreenUiState.password,
+                errorMessage = loginScreenUiState.errorMessage,
                 onLoginClick = {
                     loginScreenViewModel.onLoginButtonClick()
-                    //navController.navigate(AppScreen.Main)
                },
                 onSignUpClick = {
                     loginScreenViewModel.onSignUpTextClick()
-                    navController.navigate(AppScreen.SignUp)
+                    navController.navigate(AppScreen.SignUp.name)
                 },
                 onSkipClick = {
-                    navController.navigate(AppScreen.Main)
+                    navController.navigate(AppScreen.Main.name)
                 },
             )
         }

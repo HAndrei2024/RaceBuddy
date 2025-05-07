@@ -17,6 +17,13 @@ class AppRepository(
         return localDataSource.verifyLogin(username, password)
     }
 
+    suspend fun verifySupabaseLogin(
+        email: String,
+        password: String
+    ) : String {
+        return remoteDataSource.verifyLogin(email, password)
+    }
+
     suspend fun createNewAccount(athlete: Athlete) {
         localDataSource.createNewAccount(athlete)
     }

@@ -73,6 +73,7 @@ fun LoginScreen(
     emailStringValue: String,
     onPasswordTextFieldChange: (String) -> Unit,
     passwordStringValue: String,
+    errorMessage: Boolean,
     onLoginClick: () -> Unit,
     onSignUpClick: () -> Unit,
     onSkipClick: () -> Unit,
@@ -96,6 +97,11 @@ fun LoginScreen(
             passwordStringValue = passwordStringValue,
             onValueChange = onPasswordTextFieldChange
         )
+
+        if(errorMessage) {
+            ErrorText()
+        }
+
         LoginButton(
             onClick = onLoginClick
         )
@@ -155,7 +161,6 @@ fun LoginText(
         )
         ClickableText(
             text = annotatedLinkString,
-            //style = AppTypography.bodyMedium, //gabaritoMediumBoldTextStyle,
             onClick = {
                 annotatedLinkString
                     .getStringAnnotations("SignUp", it, it)
@@ -165,15 +170,6 @@ fun LoginText(
                     }
             },
         )
-//        Text(
-//            text = annotatedLinkString,
-//            style = gabaritoMediumBoldTextStyle,
-//            color = Color.Gray,
-//            modifier = Modifier
-//                .clickable {
-//                    Log.d("from", "Pressed!")
-//                }
-//        )
     }
 }
 
@@ -447,6 +443,15 @@ fun SkipText(
     }
 }
 
+@Composable
+fun ErrorText() {
+    Text(
+        text = "Incorrect email or password.",
+        style = AppTypography.bodyLarge,
+        color = Color.Red
+    )
+}
+
 @Preview
 @Composable
 fun LoginScreenPreview() {
@@ -457,7 +462,8 @@ fun LoginScreenPreview() {
         onSkipClick = {},
         onPasswordTextFieldChange = {},
         passwordStringValue = "Password",
-        onSignUpClick = {}
+        onSignUpClick = {},
+        errorMessage = false
     )
 }
 

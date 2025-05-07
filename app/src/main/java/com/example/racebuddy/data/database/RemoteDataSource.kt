@@ -2,13 +2,35 @@ package com.example.racebuddy.data.database
 
 //import kotlinx.datetime.Instant
 //import kotlinx.datetime.LocalDate
+import android.util.Log
+import androidx.lifecycle.viewModelScope
 import io.github.jan.supabase.auth.Auth
+import io.github.jan.supabase.auth.auth
+import io.github.jan.supabase.auth.exception.AuthRestException
+import io.github.jan.supabase.auth.providers.builtin.Email
 import io.github.jan.supabase.createSupabaseClient
 import io.github.jan.supabase.postgrest.Postgrest
+import kotlinx.coroutines.flow.update
+import kotlinx.coroutines.launch
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 
 class RemoteDataSource {
+
+    suspend fun verifyLogin(
+        email: String,
+        password: String): String {
+        try {
+            SupabaseClient.client.auth.signInWith(Email) {
+                this.email = email
+                this.password = password
+            }
+        } catch (authException: AuthRestException) {
+            return authException.message.toString()
+        }
+
+        return "true"
+    }
 
 }
 

@@ -9,6 +9,7 @@ import androidx.lifecycle.viewModelScope
 import androidx.lifecycle.viewmodel.initializer
 import androidx.lifecycle.viewmodel.viewModelFactory
 import com.example.racebuddy.Application
+import com.example.racebuddy.data.database.AppRepository
 import com.example.racebuddy.data.database.AthleteInfo
 import com.example.racebuddy.data.database.SupabaseClient
 import io.github.jan.supabase.auth.OtpType
@@ -21,7 +22,9 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 
-class LoginScreenViewModel : ViewModel() {
+class LoginScreenViewModel(
+    val appRepository: AppRepository
+) : ViewModel() {
     private val _uiState = MutableStateFlow(LoginScreenUiState("", ""))
     val uiState = _uiState.asStateFlow()
 
@@ -41,19 +44,36 @@ class LoginScreenViewModel : ViewModel() {
         }
     }
 
-    fun onLoginButtonClick() {
-        Log.d("LOGIN", "Login button pressed.")
-        viewModelScope.launch {
-            try {
-                val r = SupabaseClient.client.auth.signInWith(Email) {
-                    email = uiState.value.email
-                    password = uiState.value.password
-                }
+    private fun loginSuccesUpdate(value: Boolean) {
+        _uiState.update { currentValue ->
+            currentValue.copy(
+                loginSucces = value
+            )
+        }
+    }
 
-                Log.d("LOGON", "Login succes!")
-            } catch (exception: Exception) {
-                onEmailChange(exception.message.toString())
-                Log.d("LOGON", "Login Failed!")
+    private fun errorMessageSuccesUpdate(value: Boolean) {
+        _uiState.update { currentValue ->
+            currentValue.copy(
+                errorMessage = true
+            )
+        }
+    }
+
+    fun onLoginButtonClick() {
+        viewModelScope.launch {
+            val responseString = appRepository.verifySupabaseLogin(
+                email = _uiState.value.email,
+                password = _uiState.value.password
+            )
+
+            if(responseString == "true") {
+                loginSuccesUpdate(true)
+                errorMessageSuccesUpdate(false)
+            } else {
+                loginSuccesUpdate(false)
+                errorMessageSuccesUpdate(true)
+                Log.d("LOGIN", responseString)
             }
         }
     }
@@ -70,7 +90,9 @@ class LoginScreenViewModel : ViewModel() {
         val factory: ViewModelProvider.Factory = viewModelFactory {
             initializer {
                 val application = (this[APPLICATION_KEY] as Application)
-                LoginScreenViewModel()
+                LoginScreenViewModel(
+                    appRepository = application.container.appRepository
+                )
             }
         }
     }
