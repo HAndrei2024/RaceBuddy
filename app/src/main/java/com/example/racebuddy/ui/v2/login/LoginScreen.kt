@@ -29,6 +29,7 @@ import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.Shapes
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
 import androidx.compose.material3.TextFieldColors
@@ -64,6 +65,7 @@ import androidx.compose.ui.unit.sp
 import com.example.racebuddy.R
 import com.example.racebuddy.ui.theme.AppTypography
 import com.example.racebuddy.ui.theme.Spacing
+import com.example.racebuddy.ui.theme.heights
 import com.example.racebuddy.ui.theme.paddings
 import com.example.racebuddy.ui.theme.shapes
 
@@ -166,6 +168,7 @@ fun LoginText(
                     .getStringAnnotations("SignUp", it, it)
                     .firstOrNull()?.let { stringAnnotation ->
                         //Function call or just function reference? -> onSignUpClick
+                        Log.d("LOGIN", "Should go to signup")
                         onSignUpClick()
                     }
             },
@@ -243,9 +246,10 @@ fun LoginButton(
 ) {
     Spacer(modifier = Modifier.size(paddings.spacingSmall))
     Column(
-        horizontalAlignment = Alignment.End,
+        horizontalAlignment = Alignment.CenterHorizontally,
         modifier = Modifier
             .padding(paddings.spacingSmall)
+            .offset(paddings.spacingExtraLarge)
             .fillMaxWidth()
     ) {
         Button(
@@ -253,6 +257,7 @@ fun LoginButton(
             colors = ButtonDefaults.buttonColors(
                 containerColor = MaterialTheme.colorScheme.primary
             ),
+            shape = shapes.small,
             modifier = Modifier
                 .padding(paddings.spacingSmall)
         ) {

@@ -30,6 +30,10 @@ import com.example.racebuddy.data.network.StravaScreenIntent
 import com.example.racebuddy.ui.v1.event.EventScreen
 import com.example.racebuddy.ui.theme.RaceBuddyTheme
 import com.example.racebuddy.ui.v2.login.LoginScreen
+import com.example.racebuddy.ui.v2.signup.BirthdateInputFields
+import com.example.racebuddy.ui.v2.signup.BirthdateTextField
+import com.example.racebuddy.ui.v2.signup.TestDate
+import com.example.racebuddy.ui.v2.signup.TestDateScreen
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
