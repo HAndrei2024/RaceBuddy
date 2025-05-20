@@ -1,14 +1,7 @@
 package com.example.racebuddy.ui.v2.signup
 
 import android.util.Log
-import android.widget.Button
-import androidx.compose.animation.AnimatedVisibility
-import androidx.compose.animation.fadeIn
-import androidx.compose.animation.fadeOut
-import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.gestures.detectTapGestures
-import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -21,14 +14,11 @@ import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowDropDown
-import androidx.compose.material.icons.filled.ArrowForward
 import androidx.compose.material.icons.filled.DateRange
-import androidx.compose.material.icons.filled.Email
 import androidx.compose.material.icons.filled.Person
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
@@ -40,33 +30,31 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.OutlinedTextField
-import androidx.compose.material3.OutlinedTextFieldDefaults
+import androidx.compose.material3.Scaffold
+import androidx.compose.material3.SnackbarHost
+import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Switch
 import androidx.compose.material3.SwitchDefaults
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
-import androidx.compose.material3.TextFieldColors
 import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.lerp
 import androidx.compose.ui.graphics.vector.ImageVector
-import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
-import androidx.compose.ui.text.intl.Locale
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -74,16 +62,17 @@ import com.example.racebuddy.ui.theme.AppTypography
 import com.example.racebuddy.ui.theme.paddings
 import com.example.racebuddy.ui.theme.shapes
 import com.example.racebuddy.ui.v2.common.CustomTextField
-import com.example.racebuddy.ui.v2.login.LoginButton
-import com.example.racebuddy.ui.v2.login.PasswordTextField
 import kotlinx.datetime.LocalDate
 import network.chaintech.kmp_date_time_picker.ui.datepicker.WheelDatePickerView
 import network.chaintech.kmp_date_time_picker.utils.DateTimePickerView
 import network.chaintech.kmp_date_time_picker.utils.now
-import kotlin.math.exp
 
 @Composable
 fun SignupSecondScreen(
+    firstNameValue: String,
+    onFirstNameChange: (String) -> Unit,
+    lastNameValue: String,
+    onLastNameChange: (String) -> Unit,
     onNationalityTextFieldChange: (String) -> Unit,
     nationalityStringValue: String,
     onDayTextFieldChange: (String) -> Unit,
@@ -98,30 +87,65 @@ fun SignupSecondScreen(
     licenseNumberStringValue: String,
     onBirthdateTextFieldClick: () -> Unit,
     birthdateStringValue: String,
-    onEmailTexFieldChange: (String) -> Unit,
-    emailStringValue: String,
-    onPasswordTextFieldChange: (String) -> Unit,
-    passwordStringValue: String,
     errorMessage: Boolean,
-    onContinueClick: () -> Unit,
+    onSkipClick: () -> Unit,
+    onDoneClick: () -> Unit,
     showDatePicker: Boolean,
     onDatePickerDoneClick: () -> Unit,
     onDatePickerDissmisClick: () -> Unit,
     modifier: Modifier = Modifier
 ) {
-    Column(
-        verticalArrangement = Arrangement.Center,
-        horizontalAlignment = Alignment.Start,
-        modifier = modifier
-            .fillMaxSize()
-            .padding(start = paddings.spacingExtraLarge)
-    ) {
-        SignUpText2ndScreen()
+    val snackbarHostState = remember { SnackbarHostState() }
 
-        CountrySelectorWithFlags(
-            onNationalityTextFieldChange = onNationalityTextFieldChange
-        )
-        //CountrySelector()
+    // Triggered when the composable enters the composition
+    LaunchedEffect(Unit) {
+        snackbarHostState.showSnackbar("Account created succesfuly!")
+    }
+
+    Scaffold(
+        snackbarHost = { SnackbarHost(hostState = snackbarHostState) },
+        //topBar = { TopBar(onNavigationClick = {}, showBackNavigation = true)},
+        containerColor = Color.White,
+        contentColor = Color.Gray
+    ) { innerPadding ->
+
+        Column(
+            verticalArrangement = Arrangement.Center,
+            horizontalAlignment = Alignment.Start,
+            modifier = modifier
+                .fillMaxSize()
+                //.padding(innerPadding)
+                .padding(start = paddings.spacingExtraLarge)
+                .padding(top = innerPadding.calculateTopPadding())
+        ) {
+//            SignUpText2ndScreen(
+//                modifier = Modifier.padding(innerPadding)
+//            )
+            Spacer(
+                modifier.size(paddings.spacingExtraLarge)
+            )
+            FirstNameTextField(
+                textStringValue = firstNameValue,
+                placeholderString = "First Name",
+                iconImageVector = Icons.Filled.Person,
+                onValueChange = onFirstNameChange
+
+            )
+            LastNameTextField(
+                textStringValue = lastNameValue,
+                placeholderString = "Last Name",
+                iconImageVector = Icons.Filled.Person,
+                onValueChange = onLastNameChange,
+                modifier = modifier.padding()
+            )
+
+            GenderSelector(
+                selectedGender = selectedGender,
+                onGenderSelected = onGenderButtonClick
+            )
+
+
+            //CountrySelector()
 
 //        CustomTextField(
 //            textStringValue = "",
@@ -129,14 +153,18 @@ fun SignupSecondScreen(
 //            iconImageVector = Icons.Filled.Person,
 //            onValueChange = {}
 //        )
-        BirthdateInputFields(
-            dayValue = dayStringValue,
-            onDayValueChange = onDayTextFieldChange,
-            yearValue = yearStringValue,
-            onYearValueChange = onYearTextFieldChange,
-            monthValue = monthStringValue,
-            onMonthValueChange = onMonthTextFieldChange
-        )
+            BirthdateInputFields(
+                dayValue = dayStringValue,
+                onDayValueChange = onDayTextFieldChange,
+                yearValue = yearStringValue,
+                onYearValueChange = onYearTextFieldChange,
+                monthValue = monthStringValue,
+                onMonthValueChange = onMonthTextFieldChange
+            )
+
+            CountrySelectorWithFlags(
+                onNationalityTextFieldChange = onNationalityTextFieldChange
+            )
 //        BirthdatePicker(
 //            birthdateString = "",
 //            onValueChange = onBirthdateTextFieldChange,
@@ -158,15 +186,12 @@ fun SignupSecondScreen(
 //            iconImageVector = Icons.Filled.Person,
 //            onValueChange = {}
 //        )
-        GenderSelector(
-            selectedGender = selectedGender,
-            onGenderSelected = onGenderButtonClick
-        )
 
-        SwitchWithCustomColors(
-            licenseNumberStringValue = licenseNumberStringValue,
-            onLicenseNumberTextFieldChange = onLicenseNumberTextFieldChange
-        )
+
+            SwitchWithCustomColors(
+                licenseNumberStringValue = licenseNumberStringValue,
+                onLicenseNumberTextFieldChange = onLicenseNumberTextFieldChange
+            )
 
 //        CustomTextField(
 //            textStringValue = "",
@@ -175,15 +200,48 @@ fun SignupSecondScreen(
 //            onValueChange = {},
 //        )
 
-        SignupButton(
-            onClick = onContinueClick
-        )
-        //PageIndicator(1)
+            SkipButton(
+                onClick = onSkipClick
+            )
+
+            SignupButton(
+                onClick = onDoneClick
+            )
+            //PageIndicator(1)
+        }
     }
 }
 
 @Composable
-fun SignUpText2ndScreen() {
+fun FirstNameTextField(
+    textStringValue: String,
+    placeholderString: String,
+    iconImageVector: ImageVector,
+    onValueChange: (String) -> Unit
+) {
+    Text(
+        text = "Enter your name",
+        style = MaterialTheme.typography.labelMedium,
+        color = Color.Gray,
+        modifier = Modifier
+            .padding(
+                start = paddings.spacingXSmall/2,
+                top = paddings.spacingXSmall
+            )
+            .offset(y = paddings.spacingXSmall)
+    )
+    CustomTextField(
+        textStringValue = textStringValue,
+        placeholderString = placeholderString,
+        iconImageVector = iconImageVector,
+        onValueChange = onValueChange,
+    )
+}
+
+@Composable
+fun SignUpText2ndScreen(
+    modifier: Modifier = Modifier
+) {
     Column(
         modifier = Modifier
             .padding(bottom = paddings.spacingExtraLarge)
@@ -191,8 +249,11 @@ fun SignUpText2ndScreen() {
         Text(
             text = "Sign Up",
             style = AppTypography.displayLarge,
+            color = Color.Black,
             modifier = Modifier
-                .padding(bottom = paddings.spacingXSmall)
+                .padding(
+                    top = paddings.spacingMedium,
+                    bottom = paddings.spacingXSmall)
         )
         Text(
             text = "Just a few more details...",
@@ -269,7 +330,7 @@ fun LicenseNumberTextField(
 fun SignupButton(
     onClick: () -> Unit
 ) {
-    Spacer(modifier = Modifier.size(paddings.spacingLarge))
+    //Spacer(modifier = Modifier.size(paddings.spacingLarge))
 
     Row(
         horizontalArrangement = Arrangement.Center,
@@ -284,18 +345,55 @@ fun SignupButton(
             ),
             shape = shapes.small,
             modifier = Modifier
-                .padding(paddings.spacingSmall)
+                //.padding(paddings.spacingSmall)
                 .width(281.dp)
                 .height(50.dp)
         ) {
             Text(
-                text = "Sign Up",
+                text = "Done!",
                 fontWeight = FontWeight.Bold,
                 style = AppTypography.bodyLarge.copy(
                     letterSpacing = 2.sp
                 ) //gabaritoMediumBoldTextStyle
             )
-            Spacer(modifier = Modifier.width(8.dp))
+            //Spacer(modifier = Modifier.width(8.dp))
+        }
+    }
+    Spacer(modifier = Modifier.size(paddings.spacingMedium))
+}
+
+@Composable
+fun SkipButton(
+    onClick: () -> Unit
+) {
+    //Spacer(modifier = Modifier.size(paddings.spacingLarge))
+
+    Row(
+        horizontalArrangement = Arrangement.Center,
+        modifier = Modifier
+            .fillMaxWidth()
+            .offset(x = -paddings.spacingExtraLarge/2)
+    ) {
+        Button(
+            onClick = onClick,
+            colors = ButtonDefaults.buttonColors(
+                containerColor = Color.LightGray,
+                contentColor = Color.White
+            ),
+            shape = shapes.small,
+            modifier = Modifier
+                .padding(paddings.spacingSmall)
+                .width(281.dp)
+                .height(40.dp)
+        ) {
+            Text(
+                text = "Skip",
+                fontWeight = FontWeight.Bold,
+                style = AppTypography.bodyLarge.copy(
+                    letterSpacing = 2.sp
+                ) //gabaritoMediumBoldTextStyle
+            )
+            //Spacer(modifier = Modifier.width(8.dp))
         }
     }
 }
@@ -443,7 +541,7 @@ fun BirthdateInputFields(
             horizontalArrangement = Arrangement.spacedBy(8.dp), // Space between fields
             verticalAlignment = Alignment.CenterVertically,
             modifier = Modifier
-                .padding(bottom = paddings.spacingSmall)
+                .padding(bottom = paddings.spacingSmall, top = paddings.spacingSmall)
         ) {
             // Day input
             OutlinedTextField(
@@ -460,7 +558,15 @@ fun BirthdateInputFields(
                     }
                 },
                 singleLine = true,
-                label = { Text("DD") },
+                //label = { Text("DD") },
+                placeholder = { Text("DD") },
+                textStyle = AppTypography.bodyLarge.copy(
+                    color = if (dayValue == "DD") {
+                        MaterialTheme.colorScheme.onSurface
+                    } else {
+                        Color.Black
+                    }
+                ),
                 isError = dayValue.isNotEmpty() && !isValidDay(dayValue), // Error state is only true when there is invalid input
                 keyboardOptions = KeyboardOptions.Default.copy(
                     keyboardType = KeyboardType.Number,
@@ -488,7 +594,15 @@ fun BirthdateInputFields(
                         }
                     }
                 },
-                label = { Text("MM") },
+                //label = { Text("MM") },
+                placeholder = { Text("MM") },
+                textStyle = AppTypography.bodyLarge.copy(
+                    color = if (monthValue == "MM") {
+                        MaterialTheme.colorScheme.onSurface
+                    } else {
+                        Color.Black
+                    }
+                ),
                 isError = monthValue.isNotEmpty() && !isValidMonth(monthValue), // Error state is only true when there is invalid input
                 keyboardOptions = KeyboardOptions.Default.copy(
                     keyboardType = KeyboardType.Number,
@@ -513,7 +627,15 @@ fun BirthdateInputFields(
                         onYearValueChange(it)
                     }
                 },
-                label = { Text("YYYY") },
+                //label = { Text("YYYY") },
+                placeholder = { Text("YYYY") },
+                textStyle = AppTypography.bodyLarge.copy(
+                    color = if (yearValue == "YYYY") {
+                        MaterialTheme.colorScheme.onSurface
+                    } else {
+                        Color.Black
+                    }
+                ),
                 isError = yearValue.isNotEmpty() && !isValidYear(yearValue), // Error state is only true when there is invalid input
                 keyboardOptions = KeyboardOptions.Default.copy(
                     keyboardType = KeyboardType.Number,
@@ -738,6 +860,13 @@ fun CountrySelectorWithFlags(
             onValueChange = {},
             placeholder = { Text("Select Country") },
             shape = shapes.small,
+            textStyle = AppTypography.bodyLarge.copy(
+                color = if (selectedCountry?.name == "") {
+                    MaterialTheme.colorScheme.onSurface
+                } else {
+                    Color.Black
+                }
+            ),
             //leadingIcon = { Icon(imageVector = Icons.Filled.Flag) },
             trailingIcon = {
                 Icon(
@@ -797,12 +926,9 @@ data class Country(val name: String, val flag: String)
 @Composable
 fun SignupSecondScreenPreview() {
     SignupSecondScreen(
-        onEmailTexFieldChange = {},
-        emailStringValue = "",
-        onPasswordTextFieldChange = {},
-        passwordStringValue = "",
         errorMessage = false,
-        onContinueClick = {},
+        onDoneClick = {},
+        onSkipClick = {},
         onBirthdateTextFieldClick = { },
         birthdateStringValue = "",
         showDatePicker = false,
@@ -821,5 +947,9 @@ fun SignupSecondScreenPreview() {
         onLicenseNumberTextFieldChange = {},
         licenseNumberStringValue = "",
         modifier = Modifier,
+        firstNameValue = "",
+        onFirstNameChange = {},
+        lastNameValue = "",
+        onLastNameChange = {},
     )
 }

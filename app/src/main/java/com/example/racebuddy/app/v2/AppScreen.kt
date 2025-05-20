@@ -1,5 +1,6 @@
 package com.example.racebuddy.app.v2
 
+import androidx.activity.compose.BackHandler
 import androidx.compose.animation.AnimatedContentTransitionScope
 import androidx.compose.animation.core.tween
 import androidx.compose.runtime.Composable
@@ -79,6 +80,7 @@ fun Appv2(
                 onPasswordTextFieldChange = { loginScreenViewModel.onPasswordChange(it) },
                 passwordStringValue = loginScreenUiState.password,
                 errorMessage = loginScreenUiState.errorMessage,
+                isLoading = loginScreenUiState.isLoading,
                 onLoginClick = {
                     loginScreenViewModel.onLoginButtonClick()
                },
@@ -105,6 +107,12 @@ fun Appv2(
                 )
             }
         ) {
+            LaunchedEffect(signupScreensUiState) {
+                if (signupScreensUiState.signupSucces) {
+                    navController.navigate(AppScreen.SignUpSecond.name)
+                }
+            }
+
             SignUpFirstScreen(
                 onFirstNameTextFieldChange = { signupScreensViewModel.onFirstNameChange(it) },
                 firstNameStringValue = signupScreensUiState.firstName,
@@ -114,10 +122,15 @@ fun Appv2(
                 emailStringValue = signupScreensUiState.email,
                 onPasswordTextFieldChange = { signupScreensViewModel.onPasswordChange(it) },
                 passwordStringValue = signupScreensUiState.password,
+                onVerifyPasswordTextFieldChange = { signupScreensViewModel.onVerifyPasswordChange(it) },
+                verifyPasswordStringValue = signupScreensUiState.verifyPassword,
                 errorMessage = signupScreensUiState.errorMessage,
+                showError = signupScreensUiState.showError,
+                isLoading = signupScreensUiState.isLoading,
                 onContinueClick = {
+                    //signupScreensViewModel.signUp()
                     signupScreensViewModel.onContinueButtonClick()
-                    navController.navigate(AppScreen.SignUpSecond.name)
+                    //navController.navigate(AppScreen.SignUpSecond.name)
                 },
             )
         }
@@ -136,12 +149,11 @@ fun Appv2(
             }
         ) {
             SignupSecondScreen(
-                onEmailTexFieldChange = {},
-                emailStringValue = "",
-                onPasswordTextFieldChange = {},
-                passwordStringValue = "",
+                onFirstNameChange = { signupScreensViewModel.onFirstNameChange(it) },
+                firstNameValue = signupScreensUiState.firstName,
+                onLastNameChange = { signupScreensViewModel.onLastNameChange(it) },
+                lastNameValue = signupScreensUiState.lastName,
                 errorMessage = false,
-                onContinueClick = {},
                 onBirthdateTextFieldClick = { signupScreensViewModel.onBirthdateTextfieldClick() },
                 birthdateStringValue = "",
                 showDatePicker = signupScreensUiState.showDatePicker,
@@ -159,8 +171,16 @@ fun Appv2(
                 onGenderButtonClick = { signupScreensViewModel.onGenderChange(it) },
                 onLicenseNumberTextFieldChange = { signupScreensViewModel.onLicenseNumberChange(it)},
                 licenseNumberStringValue = signupScreensUiState.localRegistrationNumber,
+                onSkipClick = {
+                    navController.navigate(AppScreen.Main.name)
+                },
+                onDoneClick = {
+                    signupScreensViewModel.onDoneClick()
+                    navController.navigate(AppScreen.Main.name)
+                },
                 modifier = Modifier,
             )
+            BackHandler {  }
         }
     }
 }

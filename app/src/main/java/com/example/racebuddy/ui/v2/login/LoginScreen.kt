@@ -1,7 +1,14 @@
 package com.example.racebuddy.ui.v2.login
 
 import android.util.Log
+import androidx.compose.animation.core.LinearEasing
+import androidx.compose.animation.core.animateDpAsState
+import androidx.compose.animation.core.animateFloat
+import androidx.compose.animation.core.infiniteRepeatable
+import androidx.compose.animation.core.rememberInfiniteTransition
+import androidx.compose.animation.core.tween
 import androidx.compose.foundation.Canvas
+import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.Arrangement
@@ -16,6 +23,7 @@ import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.text.ClickableText
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
@@ -23,8 +31,10 @@ import androidx.compose.material.icons.filled.ArrowForward
 import androidx.compose.material.icons.filled.Email
 import androidx.compose.material.icons.filled.Lock
 import androidx.compose.material.icons.filled.PlayArrow
+import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
@@ -41,9 +51,15 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.BlurredEdgeTreatment
+import androidx.compose.ui.draw.blur
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.rotate
+import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Rect
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalDensity
@@ -68,6 +84,7 @@ import com.example.racebuddy.ui.theme.Spacing
 import com.example.racebuddy.ui.theme.heights
 import com.example.racebuddy.ui.theme.paddings
 import com.example.racebuddy.ui.theme.shapes
+import com.example.racebuddy.ui.v2.common.LoadingAnimation
 
 @Composable
 fun LoginScreen(
@@ -77,39 +94,57 @@ fun LoginScreen(
     passwordStringValue: String,
     errorMessage: Boolean,
     onLoginClick: () -> Unit,
+    isLoading: Boolean,
     onSignUpClick: () -> Unit,
     onSkipClick: () -> Unit,
     modifier: Modifier = Modifier
 ) {
-    Column(
-        verticalArrangement = Arrangement.Center,
-        horizontalAlignment = Alignment.Start,
-        modifier = modifier
-            .fillMaxSize()
-            .padding(start = paddings.spacingExtraLarge)
-    ) {
-        LoginText(
-            onSignUpClick = onSignUpClick
-        )
-        EmailTextField(
-            emailStringValue = emailStringValue,
-            onValueChange = onEmailTexFieldChange
-        )
-        PasswordTextField(
-            passwordStringValue = passwordStringValue,
-            onValueChange = onPasswordTextFieldChange
-        )
+    val animatedBlur by animateDpAsState(targetValue = if(isLoading) 1.dp else 0.dp)
 
-        if(errorMessage) {
-            ErrorText()
+    Box(
+        modifier = Modifier
+            .fillMaxSize()
+    ) {
+        if (isLoading) {
+            LoadingAnimation()
+            //RotatingLoader()
         }
 
-        LoginButton(
-            onClick = onLoginClick
-        )
-        SkipText(
-            onClick = onSkipClick
-        )
+        Column(
+            verticalArrangement = Arrangement.Center,
+            horizontalAlignment = Alignment.Start,
+            modifier = modifier
+                .fillMaxSize()
+                .padding(start = paddings.spacingExtraLarge)
+                .blur(
+                    radius = animatedBlur,
+                    edgeTreatment = BlurredEdgeTreatment.Unbounded
+                )
+        ) {
+            LoginText(
+                onSignUpClick = onSignUpClick
+            )
+            EmailTextField(
+                emailStringValue = emailStringValue,
+                onValueChange = onEmailTexFieldChange
+            )
+            PasswordTextField(
+                passwordStringValue = passwordStringValue,
+                onValueChange = onPasswordTextFieldChange,
+                onFocusChange = {}
+            )
+
+            if (errorMessage) {
+                ErrorText()
+            }
+
+            LoginButton(
+                onClick = onLoginClick
+            )
+            SkipText(
+                onClick = onSkipClick
+            )
+        }
     }
 }
 
@@ -214,13 +249,18 @@ fun EmailTextField(
 @Composable
 fun PasswordTextField(
     passwordStringValue: String,
-    onValueChange: (String) -> Unit = {}
+    onValueChange: (String) -> Unit = {},
+    onFocusChange: () -> Unit = {}
 ) {
+    var hasFocus by remember { mutableStateOf(false) }
+
+
     OutlinedTextField(
         value = passwordStringValue,
         textStyle = AppTypography.bodyLarge,
         placeholder = {
-            Text("********")
+            Text(
+                text = if(!hasFocus) "********" else "")
         },
         onValueChange = onValueChange,
         shape = shapes.small,
@@ -237,6 +277,13 @@ fun PasswordTextField(
                 bottom = paddings.spacingSmall,
                 top = paddings.spacingSmall
                 )
+            .onFocusChanged { focusState ->
+                // If focus was lost
+                if (hasFocus && !focusState.isFocused) {
+                    onFocusChange()
+                }
+                hasFocus = focusState.isFocused
+            }
     )
 }
 
@@ -457,6 +504,29 @@ fun ErrorText() {
     )
 }
 
+
+
+@Composable
+fun RotatingLoader() {
+    val infiniteTransition = rememberInfiniteTransition()
+    val rotation by infiniteTransition.animateFloat(
+        initialValue = 0f,
+        targetValue = 360f,
+        animationSpec = infiniteRepeatable(
+            animation = tween(1000, easing = LinearEasing)
+        )
+    )
+
+    Icon(
+        imageVector = Icons.Default.Refresh,
+        contentDescription = null,
+        modifier = Modifier
+            .size(40.dp)
+            .rotate(rotation),
+        tint = Color.Blue
+    )
+}
+
 @Preview
 @Composable
 fun LoginScreenPreview() {
@@ -468,7 +538,8 @@ fun LoginScreenPreview() {
         onPasswordTextFieldChange = {},
         passwordStringValue = "Password",
         onSignUpClick = {},
-        errorMessage = false
+        errorMessage = false,
+        isLoading = true
     )
 }
 
