@@ -89,9 +89,14 @@ class LoginScreenViewModel(
                     password = _uiState.value.password
                 )
 
-                if (responseString == "true") {
+                if (responseString.substring(0, 4) == "true") {
                     loginSuccesUpdate(true)
                     errorMessageSuccesUpdate(false)
+
+                    // Update user preferences (id)
+
+                    //userPreferencesRepository.saveSupabaseAthleteId(responseString.substring(6))
+                    Log.d("LOGIN", "Current logged in supabase user: " + appRepository.getSupabaseLoggedInAthlete())
                 } else {
                     loginSuccesUpdate(false)
                     errorMessageSuccesUpdate(true)

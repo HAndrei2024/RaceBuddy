@@ -92,4 +92,14 @@ class AppRepository(
             id = id
         )
     }
+
+    fun getSupabaseLoggedInAthlete(): String {
+        return remoteDataSource.getLoggedInAthlete()
+    }
+
+    suspend fun updateSupabaseAthleteDetails(
+        athleteInfo: AthleteInfo
+    ): Boolean {
+        return remoteDataSource.updateUserDetails(athleteInfo)
+    }
 }

@@ -1,19 +1,29 @@
 package com.example.racebuddy.ui.v2.main
 
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
 
 @Composable
-fun MainScreen() {
+fun MainScreen(
+    athleteId: String
+) {
     Column(
+        verticalArrangement = Arrangement.Center,
+        horizontalAlignment = Alignment.CenterHorizontally,
         modifier = Modifier
             .fillMaxSize()
     ) {
-        Text("This is Main Screen")
+        var id =
+
+        Text(
+            text = athleteId
+        )
     }
 }
 
@@ -21,5 +31,7 @@ fun MainScreen() {
 @Preview
 @Composable
 fun MainScreenPreview() {
-    MainScreen()
+    MainScreen(
+        athleteId = ""
+    )
 }

@@ -4,6 +4,7 @@ package com.example.racebuddy.data.database
 //import kotlinx.datetime.LocalDate
 import android.util.Log
 import androidx.lifecycle.viewModelScope
+import io.github.jan.supabase.SupabaseClient
 import io.github.jan.supabase.auth.Auth
 import io.github.jan.supabase.auth.OtpType
 import io.github.jan.supabase.auth.auth
@@ -11,6 +12,8 @@ import io.github.jan.supabase.auth.exception.AuthRestException
 import io.github.jan.supabase.auth.providers.builtin.Email
 import io.github.jan.supabase.createSupabaseClient
 import io.github.jan.supabase.postgrest.Postgrest
+import io.github.jan.supabase.postgrest.from
+import io.github.jan.supabase.postgrest.postgrest
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import kotlinx.serialization.SerialName
@@ -32,11 +35,13 @@ class RemoteDataSource {
             val id = SupabaseClient.client.auth.currentUserOrNull()?.id ?: "null"
 
             Log.d("LOGIN", id)
+
+            return "true $id"
         } catch (authException: AuthRestException) {
             return authException.message.toString()
         }
 
-        return "true"
+
     }
 
     suspend fun signUp(
@@ -49,7 +54,13 @@ class RemoteDataSource {
                 this.email = email
                 this.password = password
             }
-            Log.d("SIGNUP1", result.toString())
+
+            if(result == null) {
+                Log.d("SIGNUP1", "Result is null, getting logged in athlete..." + " From Remote Data source")
+                return "true " + getLoggedInAthlete()
+            }
+
+            Log.d("SIGNUP1", result.toString() + " From Remote Data source")
 
             return "true " + result?.id
         } catch (e: Exception) {
@@ -76,9 +87,37 @@ class RemoteDataSource {
     }
 
     suspend fun updateUserDetails(
+        athleteInfo: AthleteInfo
+    ): Boolean {
+        val response = SupabaseClient.client.from("Athlete").update(
+            {
+                //or
+                set("first_name", athleteInfo.firstName)
+                set("last_name", athleteInfo.lastName)
+                set("gender", athleteInfo.gender)
+                set("birthdate", athleteInfo.birthdate)
+                set("nationality", athleteInfo.country)
+                set("local_registration_number", athleteInfo.licenseNumber)
+            }
+        ) {
+            select()
+            filter {
+                athleteInfo.athleteId?.let { eq("athlete_uuid", it) }
+            }
+        }.decodeSingle<AthleteInfo>()
 
-    ) {
+        if (response != null) {
+            Log.d("SIGNUP2", "Updated database succesfuly.")
 
+            return true
+        } else {
+            Log.d("SIGNUP2", "Database NOT updated succesfuly.")
+            return false
+        }
+    }
+
+    fun getLoggedInAthlete(): String {
+        return SupabaseClient.client.auth.currentUserOrNull()?.id ?: ""
     }
 
     object SupabaseClient {
@@ -94,15 +133,17 @@ class RemoteDataSource {
 
 @Serializable
 data class AthleteInfo(
-    @SerialName("created_at") val createdAt: String,
-    @SerialName("first_name") val firstName: String,
-    @SerialName("last_name") val lastName: String,
-    @SerialName("birthdate") val birthdate: String,
-    @SerialName("gender") val gender: String,
-    @SerialName("country") val country: String,
-    @SerialName("phone_number") val phoneNumber: String,
-    @SerialName("username") val username: String,
+    @SerialName("created_at") val createdAt: String?,
+    @SerialName("first_name") val firstName: String?,
+    @SerialName("last_name") val lastName: String?,
+    @SerialName("birthdate") val birthdate: String?,
+    @SerialName("gender") val gender: String?,
+    @SerialName("nationality") val country: String?,
+    @SerialName("phone_number") val phoneNumber: String?,
+    @SerialName("username") val username: String?,
 
     // Mapping athlete_id to athleteId
-    @SerialName("athlete_uuid") val athleteId: String
+    @SerialName("athlete_uuid") val athleteId: String?,
+    @SerialName("local_registration_number") val licenseNumber: String?,
+    @SerialName("uci_registration_number") val uciLicenseNumber: String?,
 )

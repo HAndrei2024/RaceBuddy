@@ -62,6 +62,7 @@ import com.example.racebuddy.ui.theme.AppTypography
 import com.example.racebuddy.ui.theme.paddings
 import com.example.racebuddy.ui.theme.shapes
 import com.example.racebuddy.ui.v2.common.CustomTextField
+import com.example.racebuddy.ui.v2.common.ErrorText
 import kotlinx.datetime.LocalDate
 import network.chaintech.kmp_date_time_picker.ui.datepicker.WheelDatePickerView
 import network.chaintech.kmp_date_time_picker.utils.DateTimePickerView
@@ -87,7 +88,8 @@ fun SignupSecondScreen(
     licenseNumberStringValue: String,
     onBirthdateTextFieldClick: () -> Unit,
     birthdateStringValue: String,
-    errorMessage: Boolean,
+    errorMessage: String,
+    showError:Boolean,
     onSkipClick: () -> Unit,
     onDoneClick: () -> Unit,
     showDatePicker: Boolean,
@@ -199,6 +201,12 @@ fun SignupSecondScreen(
 //            iconImageVector = Icons.Filled.Person,
 //            onValueChange = {},
 //        )
+
+            if(showError) {
+                ErrorText(
+                    textString = errorMessage
+                )
+            }
 
             SkipButton(
                 onClick = onSkipClick
@@ -926,7 +934,7 @@ data class Country(val name: String, val flag: String)
 @Composable
 fun SignupSecondScreenPreview() {
     SignupSecondScreen(
-        errorMessage = false,
+        errorMessage = "",
         onDoneClick = {},
         onSkipClick = {},
         onBirthdateTextFieldClick = { },
@@ -951,5 +959,6 @@ fun SignupSecondScreenPreview() {
         onFirstNameChange = {},
         lastNameValue = "",
         onLastNameChange = {},
+        showError = true
     )
 }

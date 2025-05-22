@@ -3,10 +3,12 @@ package com.example.racebuddy.app.v2
 import androidx.activity.compose.BackHandler
 import androidx.compose.animation.AnimatedContentTransitionScope
 import androidx.compose.animation.core.tween
+import androidx.compose.material3.SnackbarHostState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
@@ -27,6 +29,7 @@ import com.example.racebuddy.data.database.UserPreferencesRepository
 import com.example.racebuddy.ui.v2.login.LoginScreen
 import com.example.racebuddy.ui.v2.login.LoginScreenViewModel
 import com.example.racebuddy.ui.v2.main.MainScreen
+import com.example.racebuddy.ui.v2.main.MainScreenViewModel
 import com.example.racebuddy.ui.v2.signup.SignUpFirstScreen
 import com.example.racebuddy.ui.v2.signup.SignupScreensViewModel
 import com.example.racebuddy.ui.v2.signup.SignupSecondScreen
@@ -53,10 +56,14 @@ fun Appv2(
     signupScreensViewModel: SignupScreensViewModel = viewModel(
         factory = SignupScreensViewModel.factory
     ),
+    mainScreenViewModel: MainScreenViewModel = viewModel(
+        factory = MainScreenViewModel.factory
+    ),
     navController: NavHostController = rememberNavController()
 ) {
     val loginScreenUiState by loginScreenViewModel.uiState.collectAsState()
     val signupScreensUiState by signupScreensViewModel.uiState.collectAsState()
+    val mainScreenUiState by mainScreenViewModel.uiState.collectAsState()
 
     val startDestination = AppScreen.Login.name
 
@@ -72,6 +79,7 @@ fun Appv2(
             LaunchedEffect(loginScreenUiState) {
                 if (loginScreenUiState.loginSucces) {
                     navController.navigate(AppScreen.Main.name)
+                    mainScreenViewModel.updateAthleteId()
                 }
             }
             LoginScreen(
@@ -95,7 +103,10 @@ fun Appv2(
         }
 
         composable(route = AppScreen.Main.name) {
-            MainScreen()
+            MainScreen(
+                athleteId = mainScreenUiState.athleteId
+            )
+            BackHandler {  }
         }
 
         composable(
@@ -148,12 +159,29 @@ fun Appv2(
                 )
             }
         ) {
+            LaunchedEffect(signupScreensUiState) {
+//                if(signupScreensUiState.signupSucces) {
+//                    //val snackbarHostState = remember { SnackbarHostState() }
+//
+//                    // Triggered when the composable enters the composition
+//
+//                    signupScreensUiState.snackbarHostState.showSnackbar("Account created succesfuly!")
+//
+//                }
+                if (signupScreensUiState.updatedDatabase) {
+                    navController.navigate(AppScreen.Main.name)
+                }
+            }
+
+
+
             SignupSecondScreen(
                 onFirstNameChange = { signupScreensViewModel.onFirstNameChange(it) },
                 firstNameValue = signupScreensUiState.firstName,
                 onLastNameChange = { signupScreensViewModel.onLastNameChange(it) },
                 lastNameValue = signupScreensUiState.lastName,
-                errorMessage = false,
+                errorMessage = signupScreensUiState.errorMessage,
+                showError = signupScreensUiState.showError,
                 onBirthdateTextFieldClick = { signupScreensViewModel.onBirthdateTextfieldClick() },
                 birthdateStringValue = "",
                 showDatePicker = signupScreensUiState.showDatePicker,
@@ -176,7 +204,7 @@ fun Appv2(
                 },
                 onDoneClick = {
                     signupScreensViewModel.onDoneClick()
-                    navController.navigate(AppScreen.Main.name)
+                    //navController.navigate(AppScreen.Main.name)
                 },
                 modifier = Modifier,
             )
