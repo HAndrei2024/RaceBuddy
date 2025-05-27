@@ -215,7 +215,25 @@ fun EventCard(
 @Preview
 @Composable
 fun EventCardPreview() {
-    //EventCard(Event(title = "Preview"))
+    EventCard(
+        event = Event(
+            id = 1,
+            picture = R.drawable.default_background,
+            title = "Title",
+            startDateString = "Start date",
+            endDateString = "End date",
+            county = "County",
+            country = "Country",
+            city = "City",
+            locationName = "Location name",
+            organizerName = "Organizer Name",
+            description = "Description"
+        ),//Event(title = "Preview"),
+        isUserLoggedIn = true,
+        favoriteIcon = painterResource(R.drawable.baseline_favorite_24),
+        onFavoriteIconClick = {},
+        onEventClick = {}
+    )
 }
 
 @Preview

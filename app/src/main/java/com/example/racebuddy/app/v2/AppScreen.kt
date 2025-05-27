@@ -26,6 +26,7 @@ import com.example.racebuddy.app.v2.AppScreen
 import com.example.racebuddy.app.v1.AppUiState
 import com.example.racebuddy.data.database.AppRepository
 import com.example.racebuddy.data.database.UserPreferencesRepository
+import com.example.racebuddy.data.database.cyclingEvents
 import com.example.racebuddy.ui.v2.login.LoginScreen
 import com.example.racebuddy.ui.v2.login.LoginScreenViewModel
 import com.example.racebuddy.ui.v2.main.MainScreen
@@ -104,7 +105,9 @@ fun Appv2(
 
         composable(route = AppScreen.Main.name) {
             MainScreen(
-                athleteId = mainScreenUiState.athleteId
+                athleteId = mainScreenUiState.athleteId,
+                events = cyclingEvents,
+                modifier = Modifier,
             )
             BackHandler {  }
         }

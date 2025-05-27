@@ -16,8 +16,10 @@ import io.github.jan.supabase.postgrest.from
 import io.github.jan.supabase.postgrest.postgrest
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import kotlinx.datetime.LocalDate
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
+import network.chaintech.kmp_date_time_picker.utils.now
 
 class RemoteDataSource {
 
@@ -146,4 +148,71 @@ data class AthleteInfo(
     @SerialName("athlete_uuid") val athleteId: String?,
     @SerialName("local_registration_number") val licenseNumber: String?,
     @SerialName("uci_registration_number") val uciLicenseNumber: String?,
+)
+
+
+@Serializable
+data class EventInfo(
+    @SerialName("title") val title: String,
+    @SerialName("start_date") val startDate: LocalDate,
+    @SerialName("end_date") val endDate: LocalDate,
+    @SerialName("country") val country: String,
+    @SerialName("county") val county: String,
+    @SerialName("city") val city: String,
+    @SerialName("details") val details: String,
+    @SerialName("track") val track: String,
+    @SerialName("category") val category: String,
+    @SerialName("organizer_id") val organizerId: String
+)
+
+val testEvent: EventInfo = EventInfo(
+    title = "Title",
+    startDate = LocalDate.now(),
+    endDate = LocalDate.now(),
+    country = "Country",
+    county = "County",
+    city = "City",
+    details = "Details",
+    track = "Track",
+    organizerId = "",
+    category = "XC"
+)
+
+val cyclingEvents = listOf(
+    EventInfo(
+        title = "Tour Down Under",
+        startDate = LocalDate(2025, 1, 14),
+        endDate = LocalDate(2025, 1, 21),
+        country = "Australia",
+        county = "South Australia",
+        city = "Adelaide",
+        details = "The Tour Down Under is the opening event of the UCI World Tour and features top-tier international cyclists.",
+        track = "Urban and countryside roads",
+        category = "Stage Race",
+        organizerId = "org001"
+    ),
+    EventInfo(
+        title = "Amgen Tour of California",
+        startDate = LocalDate(2025, 5, 12),
+        endDate = LocalDate(2025, 5, 18),
+        country = "USA",
+        county = "Various",
+        city = "Sacramento",
+        details = "One of the largest cycling events in the United States, covering diverse Californian terrain.",
+        track = "Mountain and coastal roads",
+        category = "Stage Race",
+        organizerId = "org002"
+    ),
+    EventInfo(
+        title = "Tour de Pologne",
+        startDate = LocalDate(2025, 8, 3),
+        endDate = LocalDate(2025, 8, 9),
+        country = "Poland",
+        county = "Various",
+        city = "Kraków",
+        details = "An important European stage race that is part of the UCI World Tour.",
+        track = "Hilly terrain with city finishes",
+        category = "Stage Race",
+        organizerId = "org003"
+    )
 )
