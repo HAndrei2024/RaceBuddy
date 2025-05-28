@@ -14,6 +14,9 @@ import io.github.jan.supabase.createSupabaseClient
 import io.github.jan.supabase.postgrest.Postgrest
 import io.github.jan.supabase.postgrest.from
 import io.github.jan.supabase.postgrest.postgrest
+import io.github.jan.supabase.postgrest.query.Columns
+import io.github.jan.supabase.postgrest.query.Order
+import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import kotlinx.datetime.LocalDate
@@ -122,6 +125,46 @@ class RemoteDataSource {
         return SupabaseClient.client.auth.currentUserOrNull()?.id ?: ""
     }
 
+    suspend fun getEvents(): List<EventInfo> {
+
+        val events =  SupabaseClient.client.from("Event").select(){
+            filter { 
+                gt(
+                    column = "start_date",
+                    value = LocalDate.now()
+                )
+            }
+            
+            order(
+                column = "created_at",
+                order = Order.ASCENDING,
+            )
+        }.decodeList<EventInfo>()
+        Log.d("Supabase", "Getting events... - ${events}")
+        return events
+    }
+
+    suspend fun getAthleteInfo(athleteId: String): AthleteInfo {
+        return SupabaseClient.client.from("Athlete").select() {
+            filter {
+                eq("athlete_uuid", athleteId)
+            }
+        }
+            .decodeSingle()
+    }
+
+    suspend fun getFavoriteEvents(athleteId: String): List<EventIdForFavorite> {
+        val eventIds =  SupabaseClient.client.from("Favorites").select(columns = Columns.list("event_id")) {
+            filter {
+                eq("athlete_uuid", athleteId)
+            }
+        }.decodeList<EventIdForFavorite>()
+
+        Log.d("SUPABASE", "Favorite events: $eventIds")
+
+        return eventIds
+    }
+
     object SupabaseClient {
         val client = createSupabaseClient(
             supabaseUrl = "https://mkiafnnklxyysprdgmcb.supabase.co",
@@ -148,11 +191,14 @@ data class AthleteInfo(
     @SerialName("athlete_uuid") val athleteId: String?,
     @SerialName("local_registration_number") val licenseNumber: String?,
     @SerialName("uci_registration_number") val uciLicenseNumber: String?,
+    @SerialName("profile_picture_url") val profilePictureUrl: String?
 )
 
 
 @Serializable
 data class EventInfo(
+    @SerialName("event_id") val eventId: Int,
+    @SerialName("created_at") val createdAt: String,
     @SerialName("title") val title: String,
     @SerialName("start_date") val startDate: LocalDate,
     @SerialName("end_date") val endDate: LocalDate,
@@ -165,6 +211,11 @@ data class EventInfo(
     @SerialName("organizer_id") val organizerId: String
 )
 
+@Serializable
+data class EventIdForFavorite(
+    @SerialName("event_id") val eventId: Int
+)
+
 val testEvent: EventInfo = EventInfo(
     title = "Title",
     startDate = LocalDate.now(),
@@ -175,7 +226,24 @@ val testEvent: EventInfo = EventInfo(
     details = "Details",
     track = "Track",
     organizerId = "",
-    category = "XC"
+    category = "XC",
+    createdAt = LocalDate.now().toString(),
+    eventId = 1,
+)
+
+val testAthlete: AthleteInfo = AthleteInfo(
+    createdAt = "Today",
+    firstName = "Test",
+    lastName = "Last",
+    birthdate = LocalDate.now().toString(),
+    gender = "Male",
+    country = "Romania",
+    phoneNumber = "",
+    username = "",
+    athleteId = "-1",
+    licenseNumber = "",
+    uciLicenseNumber = "",
+    profilePictureUrl = "https://mkiafnnklxyysprdgmcb.supabase.co/storage/v1/object/public/pictures//4fc5528145aac3fcd27b68038b821e4420f6f8a08725d3a2b8e19a1ccff67d51.jpg"
 )
 
 val cyclingEvents = listOf(
@@ -189,7 +257,9 @@ val cyclingEvents = listOf(
         details = "The Tour Down Under is the opening event of the UCI World Tour and features top-tier international cyclists.",
         track = "Urban and countryside roads",
         category = "Stage Race",
-        organizerId = "org001"
+        organizerId = "org001",
+        createdAt = LocalDate.now().toString(),
+        eventId = 2,
     ),
     EventInfo(
         title = "Amgen Tour of California",
@@ -201,7 +271,9 @@ val cyclingEvents = listOf(
         details = "One of the largest cycling events in the United States, covering diverse Californian terrain.",
         track = "Mountain and coastal roads",
         category = "Stage Race",
-        organizerId = "org002"
+        organizerId = "org002",
+        createdAt = LocalDate.now().toString(),
+        eventId = 3,
     ),
     EventInfo(
         title = "Tour de Pologne",
@@ -213,6 +285,8 @@ val cyclingEvents = listOf(
         details = "An important European stage race that is part of the UCI World Tour.",
         track = "Hilly terrain with city finishes",
         category = "Stage Race",
-        organizerId = "org003"
+        organizerId = "org003",
+        createdAt = LocalDate.now().toString(),
+        eventId = 4,
     )
 )

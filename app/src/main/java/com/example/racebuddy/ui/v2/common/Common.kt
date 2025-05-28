@@ -26,9 +26,12 @@ import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Email
 import androidx.compose.material.icons.filled.Favorite
 import androidx.compose.material.icons.filled.FavoriteBorder
+import androidx.compose.material.icons.filled.Home
 import androidx.compose.material.icons.filled.KeyboardArrowRight
+import androidx.compose.material.icons.filled.Person
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material.icons.filled.Settings
+import androidx.compose.material3.BottomAppBarDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
@@ -39,6 +42,9 @@ import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.NavigationBar
+import androidx.compose.material3.NavigationBarItem
+import androidx.compose.material3.NavigationBarItemDefaults
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
@@ -334,7 +340,7 @@ fun EventCardUpdated(
 ) {
     Card(
         shape = CardDefaults.elevatedShape,
-        elevation = CardDefaults.cardElevation(5.dp),
+        elevation = CardDefaults.cardElevation(3.dp),
         colors = CardDefaults.elevatedCardColors(containerColor = Color.White),
         modifier = modifier
             .fillMaxWidth()
@@ -365,6 +371,7 @@ fun EventCardUpdated(
                         maxLines = 1,
                         overflow = TextOverflow.Ellipsis,
                         style = MaterialTheme.typography.titleMedium,
+                        color = Color.Black,
                         modifier = Modifier
                             .padding(top = paddings.spacingXSmall)
                     )
@@ -375,7 +382,9 @@ fun EventCardUpdated(
                                 .replaceFirstChar { it.uppercase() }
                         } ${eventInfo.startDate.year}",
                         maxLines = 1,
+                        color = Color.Black,
                         overflow = TextOverflow.Ellipsis,
+                        fontWeight = FontWeight.Normal,
                         style = MaterialTheme.typography.bodyMedium,
 //                    color = Color.Gray,
 //                    fontWeight = FontWeight.Bold,
@@ -413,8 +422,10 @@ fun EventCardUpdated(
                         maxLines = 1,
                         overflow = TextOverflow.Ellipsis,
                         style = MaterialTheme.typography.bodyMedium,
+                        color = Color.Black,
+                        fontWeight = FontWeight.Normal,
                         modifier = Modifier
-                            .padding(top = paddings.spacingSmall/2)
+                            .padding(top = paddings.spacingSmall)
                     )
 
 
@@ -441,7 +452,7 @@ fun EventCardUpdated(
                 Icon(
                     imageVector = Icons.Filled.KeyboardArrowRight,
                     contentDescription = "Arrow Right", // For accessibility tools
-                    tint = Color.Gray,
+                    tint = MaterialTheme.colorScheme.primary,
                     modifier = Modifier
                         .padding(
                             top = paddings.spacingSmall,
@@ -464,16 +475,47 @@ fun MainScreenTopAppBar() {
                    .fillMaxWidth()
                    .padding(end = paddings.spacingSmall)
            ) {
-               Text(
-                   text = "LOGO"
-               )
+               Row() {
+                   Icon(
+                       painterResource(R.drawable.baseline_pedal_bike_24),
+                       contentDescription = "",
+                       modifier = Modifier
+                           .padding(end = paddings.spacingXSmall)
+                   )
 
-               Icon(
-                   imageVector = Icons.Filled.Settings,
-                   contentDescription = "",
-                   modifier = Modifier
+                   Text(
+                       text = "Cycling",
+                       style = MaterialTheme.typography.titleMedium,
+                       fontWeight = FontWeight.Normal,
+                       modifier = Modifier
+                           .padding(start = paddings.spacingXSmall)
+                   )
 
-               )
+                   Icon(
+                       imageVector = Icons.Filled.ArrowDropDown,
+                       contentDescription = "",
+                       modifier = Modifier
+                   )
+               }
+
+               Row(
+                   horizontalArrangement = Arrangement.SpaceEvenly
+               ) {
+
+                   Icon(
+                       imageVector = Icons.Filled.Search,
+                       contentDescription = "",
+                       modifier = Modifier
+                           .padding(end = paddings.spacingSmall)
+                   )
+
+                   Icon(
+                       imageVector = Icons.Filled.Settings,
+                       contentDescription = "",
+                       modifier = Modifier
+                           .padding(end = paddings.spacingXSmall)
+                   )
+               }
            }
        },
         colors = TopAppBarDefaults.topAppBarColors(
@@ -597,7 +639,8 @@ fun BottomAppBarUpdated(
     onProfileClick: () -> Unit = { }
 ) {
     androidx.compose.material3.BottomAppBar(
-        containerColor = Color(0xFFF5F5F5),
+        containerColor = Color.White,//Color(0xFFF5F5F5),
+        tonalElevation = 5.dp
     ) {
         Row(
             horizontalArrangement = Arrangement.SpaceEvenly,
@@ -625,6 +668,50 @@ fun BottomAppBarUpdated(
         }
     }
 }
+
+
+@Composable
+fun BottomNavigationBarChat(selectedItem: Int, onItemSelected: (Int) -> Unit) {
+    val royalBlue = Color(0xFF4169E1)
+
+    NavigationBar(
+        containerColor = Color.White,
+        //tonalElevation = 8.dp
+    ) {
+        val items = listOf(
+            Pair("Home", Icons.Default.Home),
+            Pair("Favorite", Icons.Default.Favorite),
+            Pair("Profile", Icons.Default.Person)
+        )
+
+        items.forEachIndexed { index, item ->
+            NavigationBarItem(
+                icon = {
+                    Icon(
+                        imageVector = item.second,
+                        contentDescription = item.first
+                    )
+                },
+                selected = selectedItem == index,
+                onClick = { onItemSelected(index) },
+                colors = NavigationBarItemDefaults.colors(
+                    selectedIconColor = MaterialTheme.colorScheme.primary,
+                    //unselectedIconColor = Color.Gray,
+                    indicatorColor = royalBlue.copy(alpha = 0.12f) // optional background circle
+                ),
+                label = {
+                    Text(
+                        text = item.first,
+                        style = MaterialTheme.typography.labelMedium,
+                        fontWeight = FontWeight.Normal
+                    )
+                }
+            )
+        }
+    }
+}
+
+
 
 @Composable
 fun BottomBarIconUpdated(
@@ -668,6 +755,8 @@ fun TopBarPreview() {
 @Composable
 fun BottomBar() {
     BottomAppBarUpdated()
+
+    BottomNavigationBarChat(0, {})
 }
 
 

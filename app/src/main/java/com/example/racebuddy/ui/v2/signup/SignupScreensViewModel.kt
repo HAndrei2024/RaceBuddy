@@ -174,7 +174,8 @@ class SignupScreensViewModel(
                         username = null,
                         athleteId = athleteId,
                         licenseNumber = _uiState.value.localRegistrationNumber,
-                        uciLicenseNumber = null
+                        uciLicenseNumber = null,
+                        profilePictureUrl = ""
                     )
 
                     updateUpdatedDatabase(appRepository.updateSupabaseAthleteDetails(athleteInfo))

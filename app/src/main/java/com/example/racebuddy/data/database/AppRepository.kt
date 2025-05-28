@@ -102,4 +102,16 @@ class AppRepository(
     ): Boolean {
         return remoteDataSource.updateUserDetails(athleteInfo)
     }
+
+    suspend fun getSupabaseEvents(): List<EventInfo> {
+        return remoteDataSource.getEvents()
+    }
+
+    suspend fun getSupabaseAthleteInfo(athleteId: String): AthleteInfo {
+        return remoteDataSource.getAthleteInfo(athleteId)
+    }
+
+    suspend fun getSupabaseFavoriteEventIds(athleteId: String): List<EventIdForFavorite> {
+        return remoteDataSource.getFavoriteEvents(athleteId)
+    }
 }

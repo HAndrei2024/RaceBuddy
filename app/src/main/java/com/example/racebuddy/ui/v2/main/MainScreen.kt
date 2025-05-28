@@ -15,13 +15,17 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Favorite
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.CardElevation
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
@@ -39,12 +43,17 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import coil.compose.AsyncImage
 import com.example.racebuddy.R
+import com.example.racebuddy.data.database.AthleteInfo
+import com.example.racebuddy.data.database.EventIdForFavorite
 import com.example.racebuddy.data.database.EventInfo
 import com.example.racebuddy.data.database.cyclingEvents
+import com.example.racebuddy.data.database.testAthlete
 import com.example.racebuddy.ui.theme.paddings
 import com.example.racebuddy.ui.theme.shapes
 import com.example.racebuddy.ui.v2.common.BottomAppBarUpdated
+import com.example.racebuddy.ui.v2.common.BottomNavigationBarChat
 import com.example.racebuddy.ui.v2.common.EventCardUpdated
 import com.example.racebuddy.ui.v2.common.MainScreenTopAppBar
 import com.example.racebuddy.ui.v2.common.TopBarWithCategoryAndSearchChat
@@ -95,8 +104,10 @@ val countryMap = countries.associate { it.name to it.flag }
 
 @Composable
 fun MainScreen(
-    athleteId: String,
+    athleteInfo: AthleteInfo,
     events: List<EventInfo>,
+    onFilterButtonClick: (String) -> Unit,
+    favoriteEventsId: List<Int> = emptyList(),
     modifier: Modifier = Modifier
 ) {
 
@@ -109,9 +120,27 @@ fun MainScreen(
 //                onSearchQueryChanged = {}
 //            )
             MainScreenTopAppBar()
+//            Row(
+//                horizontalArrangement = Arrangement.SpaceBetween,
+//                modifier = Modifier
+//                    .padding(start = paddings.spacingMedium, top = paddings.spacingSmall, end = paddings.spacingSmall, bottom = paddings.spacingSmall)
+//                    .fillMaxWidth()
+//            ) {
+//                Text(
+//                    text = countryMap["Romania"] ?: ""
+//                )
+//                Text(
+//                    text = "Some text",
+//                    style = MaterialTheme.typography.labelMedium
+//                )
+//            }
         },
         bottomBar = {
-            BottomAppBarUpdated()
+            //BottomAppBarUpdated()
+            BottomNavigationBarChat(
+                selectedItem = 0,
+                onItemSelected = {}
+            )
         },
         containerColor = Color.White,
         contentColor = Color.Black
@@ -119,24 +148,30 @@ fun MainScreen(
         Column(
             modifier = modifier
                 .padding(innerPadding)
+                .verticalScroll(rememberScrollState())
         ) {
             HelloText(
-                athleteFirstName = "Name",
-                imageUrl = "",
+                athleteFirstName = athleteInfo.firstName ?: "",
+                imageUrl = athleteInfo.profilePictureUrl ?: "",
             )
 
             Spacer(
                 modifier = Modifier
                     .padding(paddings.spacingSmall)
             )
-            FilterButtons()
+
+
+            FilterButtons(
+                onFilterButtonClick = onFilterButtonClick
+            )
             Spacer(
                 modifier = Modifier
                     .padding(paddings.spacingSmall)
             )
 
             Events(
-                events = events
+                events = events,
+                favoriteEventsId = favoriteEventsId
             )
         }
     }
@@ -149,45 +184,73 @@ fun HelloText(
     imageUrl: String,
     modifier: Modifier = Modifier
 ) {
-    Row(
-        horizontalArrangement = Arrangement.SpaceBetween,
-        modifier = modifier
-          .fillMaxWidth()
-            .padding(paddings.spacingMedium)
-    ) {
-        Column() {
-            Text(
-                text = "Hello, $athleteFirstName!",
-                style = MaterialTheme.typography.titleLarge,
+//    Spacer(
+//        modifier = Modifier
+//            .padding(paddings.spacingSmall)
+//    )
+
+    Card(
+        elevation = CardDefaults.cardElevation(2.dp),
+        colors = CardDefaults.elevatedCardColors(containerColor = Color.White),
+        shape = RoundedCornerShape(0.dp)
+        ) {
+        Row(
+            horizontalArrangement = Arrangement.SpaceBetween,
+            modifier = modifier
+                .fillMaxWidth()
+                .padding(paddings.spacingMedium)
+        ) {
+            Column(
                 modifier = Modifier
-                    .padding(bottom = paddings.spacingXSmall)
-            )
+                    .padding(
+                        start = paddings.spacingXSmall,
+                        top = paddings.spacingXSmall,
+                        bottom = paddings.spacingXSmall
+                    )
+            ) {
+                Text(
+                    text = "Hello, $athleteFirstName!",
+                    style = MaterialTheme.typography.titleLarge,
+                    modifier = Modifier
+                )
 
-            Text(
-                text = "Let's explore events nearby...",
-                style = MaterialTheme.typography.bodyLarge,
-                color = Color.Gray
+                Text(
+                    text = "Let's explore events nearby...",
+                    style = MaterialTheme.typography.bodyLarge,
+                    color = Color.Gray
+                )
+            }
+
+            AsyncImage(
+                model = imageUrl,
+                contentDescription = "Profile Picture",
+                placeholder = painterResource(R.drawable.default_profile),
+                contentScale = ContentScale.Crop,
+                modifier = Modifier
+                    .size(52.dp) // Adjust size as needed
+                    .clip(CircleShape)
+                    .border(2.dp, MaterialTheme.colorScheme.primary, CircleShape)
             )
+//        Image(
+//            painter = painterResource(R.drawable.default_profile),
+//            contentDescription = "Profile Image",
+//            contentScale = ContentScale.Crop,
+//            modifier = Modifier
+//                .size(52.dp) // Adjust size as needed
+//                .clip(CircleShape)
+//                .border(2.dp, MaterialTheme.colorScheme.primary, CircleShape)
+//        )
+
         }
-
-        Image(
-            painter = painterResource(R.drawable.default_profile),
-            contentDescription = "Profile Image",
-            contentScale = ContentScale.Crop,
-            modifier = Modifier
-                .size(52.dp) // Adjust size as needed
-                .clip(CircleShape)
-                .border(2.dp, MaterialTheme.colorScheme.primary, CircleShape)
-        )
-
     }
 }
 
 @Composable
 fun FilterButtons(
-    items: List<String> = listOf("Road", "XC", "XCO", "Enduro", "Downhill")
+    items: List<String> = listOf("All", "Road", "XC", "XCO", "Enduro", "Downhill"),
+    onFilterButtonClick: (String) -> Unit
 ) {
-    var selectedItem by remember { mutableStateOf<String?>(null) }
+    var selectedItem by remember { mutableStateOf<String?>("All") }
 
 
     Column() {
@@ -216,6 +279,7 @@ fun FilterButtons(
                     onClick = {
                         selectedItem = item
                         // TODO: Implement actual action here
+                        onFilterButtonClick(item)
                     },
                     colors = ButtonDefaults.buttonColors(
                         containerColor = if (isSelected) MaterialTheme.colorScheme.primary else Color.White,
@@ -235,6 +299,7 @@ fun FilterButtons(
 @Composable
 fun Events(
     events: List<EventInfo>,
+    favoriteEventsId: List<Int>,
     modifier: Modifier = Modifier
 ) {
     Column() {
@@ -251,18 +316,30 @@ fun Events(
             //.offset(y = paddings.spacingXSmall)
         )
 
-        LazyColumn {
-            items(events) { eventInfo ->
-                EventCardUpdated(
+        events.forEach { eventInfo ->
+            EventCardUpdated(
                     eventInfo = eventInfo,
                     isUserLoggedIn = true,
                     countryCodeEmoji = countryMap[eventInfo.city] ?: "",
+                    favoriteIcon = if(favoriteEventsId.contains(eventInfo.eventId)) painterResource(R.drawable.baseline_favorite_24) else painterResource(R.drawable.baseline_favorite_border_24),
                     onFavoriteIconClick = {},
                     onEventClick = {},
                     modifier = Modifier
                 )
-            }
         }
+
+//        LazyColumn {
+//            items(events) { eventInfo ->
+//                EventCardUpdated(
+//                    eventInfo = eventInfo,
+//                    isUserLoggedIn = true,
+//                    countryCodeEmoji = countryMap[eventInfo.city] ?: "",
+//                    onFavoriteIconClick = {},
+//                    onEventClick = {},
+//                    modifier = Modifier
+//                )
+//            }
+//        }
     }
 }
 
@@ -271,7 +348,8 @@ fun Events(
 @Composable
 fun MainScreenPreview() {
     MainScreen(
-        athleteId = "",
-        events = cyclingEvents
+        athleteInfo = testAthlete,
+        events = cyclingEvents,
+        onFilterButtonClick = {}
     )
 }

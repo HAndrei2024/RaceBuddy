@@ -80,7 +80,7 @@ fun Appv2(
             LaunchedEffect(loginScreenUiState) {
                 if (loginScreenUiState.loginSucces) {
                     navController.navigate(AppScreen.Main.name)
-                    mainScreenViewModel.updateAthleteId()
+                    mainScreenViewModel.updateAthlete()
                 }
             }
             LoginScreen(
@@ -105,9 +105,12 @@ fun Appv2(
 
         composable(route = AppScreen.Main.name) {
             MainScreen(
-                athleteId = mainScreenUiState.athleteId,
-                events = cyclingEvents,
+                athleteInfo = mainScreenUiState.athleteInfo,
+                events = mainScreenUiState.filteredEvents, //cyclingEvents,
+                onFilterButtonClick = { category: String -> mainScreenViewModel.updateFilteredEventsByCategory(category) },
+                favoriteEventsId = mainScreenUiState.favoriteEventIds.map {it.eventId},
                 modifier = Modifier,
+
             )
             BackHandler {  }
         }
@@ -123,6 +126,7 @@ fun Appv2(
         ) {
             LaunchedEffect(signupScreensUiState) {
                 if (signupScreensUiState.signupSucces) {
+                    mainScreenViewModel.updateAthlete()
                     navController.navigate(AppScreen.SignUpSecond.name)
                 }
             }
