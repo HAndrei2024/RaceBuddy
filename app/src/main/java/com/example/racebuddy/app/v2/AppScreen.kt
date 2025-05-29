@@ -3,12 +3,10 @@ package com.example.racebuddy.app.v2
 import androidx.activity.compose.BackHandler
 import androidx.compose.animation.AnimatedContentTransitionScope
 import androidx.compose.animation.core.tween
-import androidx.compose.material3.SnackbarHostState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
@@ -20,13 +18,9 @@ import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
-import androidx.room.util.createCancellationSignal
 import com.example.racebuddy.Application
-import com.example.racebuddy.app.v2.AppScreen
-import com.example.racebuddy.app.v1.AppUiState
 import com.example.racebuddy.data.database.AppRepository
 import com.example.racebuddy.data.database.UserPreferencesRepository
-import com.example.racebuddy.data.database.cyclingEvents
 import com.example.racebuddy.ui.v2.login.LoginScreen
 import com.example.racebuddy.ui.v2.login.LoginScreenViewModel
 import com.example.racebuddy.ui.v2.main.MainScreen
@@ -37,7 +31,6 @@ import com.example.racebuddy.ui.v2.signup.SignupSecondScreen
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
-import kotlin.math.sign
 
 enum class AppScreen {
     Login,
@@ -107,10 +100,14 @@ fun Appv2(
             MainScreen(
                 athleteInfo = mainScreenUiState.athleteInfo,
                 events = mainScreenUiState.filteredEvents, //cyclingEvents,
-                onFilterButtonClick = { category: String -> mainScreenViewModel.updateFilteredEventsByCategory(category) },
-                favoriteEventsId = mainScreenUiState.favoriteEventIds.map {it.eventId},
-                modifier = Modifier,
+                onFavoriteIconClick = {
+                    eventUuid: String, delete: Boolean -> mainScreenViewModel.onFavoriteIconClick(eventUuid, delete)
 
+
+                },
+                onFilterButtonClick = { category: String -> mainScreenViewModel.updateFilteredEventsByCategory(category) },
+                favoriteEventsId = mainScreenUiState.favoriteEventIds.map {it.eventUuid},
+                modifier = Modifier,
             )
             BackHandler {  }
         }

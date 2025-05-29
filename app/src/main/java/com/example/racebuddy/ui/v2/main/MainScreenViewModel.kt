@@ -51,9 +51,7 @@ class MainScreenViewModel(
 
         }
 
-        fun onFavoriteIconClick() {
 
-        }
 
 
 //        viewModelScope.launch {
@@ -94,6 +92,43 @@ class MainScreenViewModel(
 //        }
 //    }
 
+    fun addFavoriteEventInList(eventUuid: String) {
+        Log.d("MAINSCREEN", "adding favorite event to the list...")
+        _uiState.update { currentState ->
+            val newFavoriteEvents = _uiState.value.favoriteEventIds.toMutableList()
+            newFavoriteEvents += EventIdForFavorite(eventUuid)
+            Log.d("MAINSREEN", "Updated list: $newFavoriteEvents")
+            currentState.copy(
+                favoriteEventIds = newFavoriteEvents
+            )
+        }
+    }
+
+    fun deleteFavoriteEventInList(eventUuid: String) {
+        _uiState.update { currentState ->
+            val newFavoriteEvents = _uiState.value.favoriteEventIds.toMutableList()
+            newFavoriteEvents -= EventIdForFavorite(eventUuid)
+            Log.d("MAINSREEN", "Updated list: $newFavoriteEvents")
+            currentState.copy(
+                favoriteEventIds = newFavoriteEvents
+            )
+        }
+    }
+
+    fun onFavoriteIconClick(eventUuid: String, delete: Boolean) {
+        viewModelScope.launch {
+            if (delete) {
+                appRepository.deleteSupabaseFavoriteEvent(_uiState.value.athleteInfo.athleteId ?: "", eventUuid)
+                deleteFavoriteEventInList(eventUuid)
+            }
+            else {
+                appRepository.addSupabaseFavoriteEvent(_uiState.value.athleteInfo.athleteId ?: "", eventUuid)
+                addFavoriteEventInList(eventUuid)
+            }
+        }
+    }
+
+
     fun updateAthlete() {
         viewModelScope.launch {
             _uiState.update { currentState ->
@@ -114,6 +149,9 @@ class MainScreenViewModel(
     }
 
     fun getFavoriteEventIds() {
+        //TODO: Check how many times the database is interogated
+        //TODO: Ideally, the function should be called only once
+
 
         // Verifies if there is a user logged in
         if(isUserLoggedin()) {

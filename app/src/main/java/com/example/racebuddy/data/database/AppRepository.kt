@@ -114,4 +114,12 @@ class AppRepository(
     suspend fun getSupabaseFavoriteEventIds(athleteId: String): List<EventIdForFavorite> {
         return remoteDataSource.getFavoriteEvents(athleteId)
     }
+
+    suspend fun addSupabaseFavoriteEvent(athleteUuid: String, eventUuid: String) {
+        remoteDataSource.addFavoriteEvent(athleteUuid, eventUuid)
+
+    }
+    suspend fun deleteSupabaseFavoriteEvent(athleteUuid: String, eventUuid: String) {
+        remoteDataSource.deleteFavoriteEvent(athleteUuid, eventUuid)
+    }
 }

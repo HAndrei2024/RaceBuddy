@@ -1,31 +1,25 @@
 package com.example.racebuddy.ui.v2.main
 
-import androidx.compose.foundation.Image
+import android.util.Log
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Favorite
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
-import androidx.compose.material3.CardElevation
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
@@ -34,7 +28,6 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
@@ -46,17 +39,14 @@ import androidx.compose.ui.unit.dp
 import coil.compose.AsyncImage
 import com.example.racebuddy.R
 import com.example.racebuddy.data.database.AthleteInfo
-import com.example.racebuddy.data.database.EventIdForFavorite
 import com.example.racebuddy.data.database.EventInfo
 import com.example.racebuddy.data.database.cyclingEvents
 import com.example.racebuddy.data.database.testAthlete
 import com.example.racebuddy.ui.theme.paddings
 import com.example.racebuddy.ui.theme.shapes
-import com.example.racebuddy.ui.v2.common.BottomAppBarUpdated
 import com.example.racebuddy.ui.v2.common.BottomNavigationBarChat
 import com.example.racebuddy.ui.v2.common.EventCardUpdated
 import com.example.racebuddy.ui.v2.common.MainScreenTopAppBar
-import com.example.racebuddy.ui.v2.common.TopBarWithCategoryAndSearchChat
 import com.example.racebuddy.ui.v2.signup.Country
 
 val countries = listOf(
@@ -107,7 +97,8 @@ fun MainScreen(
     athleteInfo: AthleteInfo,
     events: List<EventInfo>,
     onFilterButtonClick: (String) -> Unit,
-    favoriteEventsId: List<Int> = emptyList(),
+    onFavoriteIconClick: (String, Boolean) -> Unit,
+    favoriteEventsId: List<String> = emptyList(),
     modifier: Modifier = Modifier
 ) {
 
@@ -171,7 +162,8 @@ fun MainScreen(
 
             Events(
                 events = events,
-                favoriteEventsId = favoriteEventsId
+                favoriteEventsId = favoriteEventsId,
+                onFavoriteIconClick = onFavoriteIconClick
             )
         }
     }
@@ -211,6 +203,7 @@ fun HelloText(
                 Text(
                     text = "Hello, $athleteFirstName!",
                     style = MaterialTheme.typography.titleLarge,
+                    color = Color.Black,
                     modifier = Modifier
                 )
 
@@ -299,7 +292,8 @@ fun FilterButtons(
 @Composable
 fun Events(
     events: List<EventInfo>,
-    favoriteEventsId: List<Int>,
+    favoriteEventsId: List<String>,
+    onFavoriteIconClick: (String, Boolean) -> Unit,
     modifier: Modifier = Modifier
 ) {
     Column() {
@@ -321,8 +315,15 @@ fun Events(
                     eventInfo = eventInfo,
                     isUserLoggedIn = true,
                     countryCodeEmoji = countryMap[eventInfo.city] ?: "",
-                    favoriteIcon = if(favoriteEventsId.contains(eventInfo.eventId)) painterResource(R.drawable.baseline_favorite_24) else painterResource(R.drawable.baseline_favorite_border_24),
-                    onFavoriteIconClick = {},
+                    favoriteIcon = if(favoriteEventsId.contains(eventInfo.evenUuid)) painterResource(R.drawable.baseline_favorite_24) else painterResource(R.drawable.baseline_favorite_border_24),
+                    onFavoriteIconClick = {
+                        //TODO: Pass the event id, and update the database and local favorite list
+                        Log.d("MainScreen UI", "onFavoriteClickFromUi -> ${eventInfo.evenUuid}, ${favoriteEventsId.contains(eventInfo.evenUuid)}")
+                        onFavoriteIconClick(
+                            eventInfo.evenUuid,
+                            favoriteEventsId.contains(eventInfo.evenUuid)
+                        )
+                    },
                     onEventClick = {},
                     modifier = Modifier
                 )
@@ -350,6 +351,9 @@ fun MainScreenPreview() {
     MainScreen(
         athleteInfo = testAthlete,
         events = cyclingEvents,
+        onFavoriteIconClick = {
+            string: String, boolean: Boolean ->
+        },
         onFilterButtonClick = {}
     )
 }

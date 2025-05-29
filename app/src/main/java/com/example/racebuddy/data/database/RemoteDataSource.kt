@@ -154,7 +154,8 @@ class RemoteDataSource {
     }
 
     suspend fun getFavoriteEvents(athleteId: String): List<EventIdForFavorite> {
-        val eventIds =  SupabaseClient.client.from("Favorites").select(columns = Columns.list("event_id")) {
+        val eventIds =  SupabaseClient.client.from("Favorites")
+            .select(columns = Columns.list("event_uuid")) {
             filter {
                 eq("athlete_uuid", athleteId)
             }
@@ -163,6 +164,29 @@ class RemoteDataSource {
         Log.d("SUPABASE", "Favorite events: $eventIds")
 
         return eventIds
+    }
+
+    suspend fun addFavoriteEvent(athleteUuid: String, eventUuid: String) {
+
+        Log.d("Supabase", "Adding favorite event... $athleteUuid , $eventUuid")
+        try {
+            SupabaseClient.client.from("Favorites").insert(Favorites(athleteUuid, eventUuid))
+        } catch (exception: Exception) {
+            Log.d("Favorites Table", "Couldn't add favorite event: $exception")
+        }
+    }
+
+    suspend fun deleteFavoriteEvent(athleteUuid: String, eventUuid: String) {
+        try {
+            SupabaseClient.client.from("Favorites").delete() {
+                filter {
+                    eq("athlete_uuid", athleteUuid)
+                    eq("event_uuid", eventUuid)
+                }
+            }
+        } catch (exception: Exception) {
+            Log.d("Favorites Table", "Couldn't delete favorite event: $exception")
+        }
     }
 
     object SupabaseClient {
@@ -197,7 +221,7 @@ data class AthleteInfo(
 
 @Serializable
 data class EventInfo(
-    @SerialName("event_id") val eventId: Int,
+    @SerialName("event_uuid") val evenUuid: String,
     @SerialName("created_at") val createdAt: String,
     @SerialName("title") val title: String,
     @SerialName("start_date") val startDate: LocalDate,
@@ -213,7 +237,13 @@ data class EventInfo(
 
 @Serializable
 data class EventIdForFavorite(
-    @SerialName("event_id") val eventId: Int
+    @SerialName("event_uuid") val eventUuid: String
+)
+
+@Serializable
+data class Favorites(
+    @SerialName("athlete_uuid") val athleteUuid: String,
+    @SerialName("event_uuid") val eventUuid: String,
 )
 
 val testEvent: EventInfo = EventInfo(
@@ -228,7 +258,7 @@ val testEvent: EventInfo = EventInfo(
     organizerId = "",
     category = "XC",
     createdAt = LocalDate.now().toString(),
-    eventId = 1,
+    evenUuid = "1",
 )
 
 val testAthlete: AthleteInfo = AthleteInfo(
@@ -259,7 +289,7 @@ val cyclingEvents = listOf(
         category = "Stage Race",
         organizerId = "org001",
         createdAt = LocalDate.now().toString(),
-        eventId = 2,
+        evenUuid = "2",
     ),
     EventInfo(
         title = "Amgen Tour of California",
@@ -273,7 +303,7 @@ val cyclingEvents = listOf(
         category = "Stage Race",
         organizerId = "org002",
         createdAt = LocalDate.now().toString(),
-        eventId = 3,
+        evenUuid = "3",
     ),
     EventInfo(
         title = "Tour de Pologne",
@@ -287,6 +317,6 @@ val cyclingEvents = listOf(
         category = "Stage Race",
         organizerId = "org003",
         createdAt = LocalDate.now().toString(),
-        eventId = 4,
+        evenUuid = "4",
     )
 )
