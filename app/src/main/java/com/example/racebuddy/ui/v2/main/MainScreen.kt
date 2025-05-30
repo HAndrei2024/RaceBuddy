@@ -137,6 +137,9 @@ fun MainScreen(
     favoriteEventsId: List<String> = emptyList(),
     searchFilters: List<String> = listOf("All", "Past", "Upcoming"),
     onSearchIconClick: () -> Unit,
+    onFavoriteIconBottomBarClick: () -> Unit,
+    onProfileIconBottomBarClick: () -> Unit,
+    onBottomBarIconClicked: (Int) -> Unit,
     modifier: Modifier = Modifier
 ) {
     var showSearch by remember { mutableStateOf(false) }
@@ -188,7 +191,7 @@ fun MainScreen(
                 //BottomAppBarUpdated()
                 BottomNavigationBarChat(
                     selectedItem = 0,
-                    onItemSelected = {}
+                    onItemSelected = { int: Int -> onBottomBarIconClicked(int) }
                 )
             },
             containerColor = Color.White,
@@ -749,6 +752,9 @@ fun MainScreenPreview() {
         onFilterButtonClick = {},
         favoriteEventsId = emptyList(),
         onSearchIconClick = {},
-        searchEvents = emptyList()
+        searchEvents = emptyList(),
+        onProfileIconBottomBarClick = {},
+        onFavoriteIconBottomBarClick = {},
+        onBottomBarIconClicked = {}
     )
 }

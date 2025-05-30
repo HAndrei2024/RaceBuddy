@@ -493,7 +493,8 @@ fun EventCardUpdated(
 @Composable
 fun MainScreenTopAppBar(
     onSearchIconClick: () -> Unit,
-    onSettingsIconClick: () -> Unit
+    onSettingsIconClick: () -> Unit,
+    showSearchIcon: Boolean = true
 ) {
     TopAppBar(
        title = {
@@ -532,17 +533,18 @@ fun MainScreenTopAppBar(
                    horizontalArrangement = Arrangement.SpaceEvenly
                ) {
 
-                   IconButton(
-                       onClick = onSearchIconClick,
-                   ) {
-                       Icon(
-                           imageVector = Icons.Filled.Search,
-                           contentDescription = "",
-                           modifier = Modifier
-                               .padding(end = paddings.spacingSmall)
-                       )
+                   if(showSearchIcon) {
+                       IconButton(
+                           onClick = onSearchIconClick,
+                       ) {
+                           Icon(
+                               imageVector = Icons.Filled.Search,
+                               contentDescription = "",
+                               modifier = Modifier
+                                   .padding(end = paddings.spacingSmall)
+                           )
+                       }
                    }
-
                    IconButton(
                        onClick = onSettingsIconClick
                    ) {
@@ -725,7 +727,9 @@ fun BottomAppBarUpdated(
 
 
 @Composable
-fun BottomNavigationBarChat(selectedItem: Int, onItemSelected: (Int) -> Unit) {
+fun BottomNavigationBarChat(
+    selectedItem: Int,
+    onItemSelected: (Int) -> Unit) {
     val royalBlue = Color(0xFF4169E1)
 
     NavigationBar(

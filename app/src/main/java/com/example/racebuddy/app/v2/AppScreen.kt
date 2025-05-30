@@ -3,7 +3,9 @@ package com.example.racebuddy.app.v2
 import androidx.activity.compose.BackHandler
 import androidx.compose.animation.AnimatedContentTransitionScope
 import androidx.compose.animation.core.tween
+import androidx.compose.animation.slideInHorizontally
 import androidx.compose.animation.slideInVertically
+import androidx.compose.animation.slideOutHorizontally
 import androidx.compose.animation.slideOutVertically
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -21,8 +23,11 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import com.example.racebuddy.Application
+import com.example.racebuddy.app.v1.App
 import com.example.racebuddy.data.database.AppRepository
+import com.example.racebuddy.data.database.EventInfo
 import com.example.racebuddy.data.database.UserPreferencesRepository
+import com.example.racebuddy.ui.v2.favorite.FavoriteScreen
 import com.example.racebuddy.ui.v2.login.LoginScreen
 import com.example.racebuddy.ui.v2.login.LoginScreenViewModel
 import com.example.racebuddy.ui.v2.main.MainScreen
@@ -76,7 +81,9 @@ fun Appv2(
         composable(route = AppScreen.Login.name) {
             LaunchedEffect(loginScreenUiState) {
                 if (loginScreenUiState.loginSucces) {
-                    navController.navigate(AppScreen.Main.name)
+                    navController.navigate(AppScreen.Main.name) {
+                        launchSingleTop = true
+                    }
                     mainScreenViewModel.updateAthlete()
                 }
             }
@@ -92,10 +99,14 @@ fun Appv2(
                },
                 onSignUpClick = {
                     loginScreenViewModel.onSignUpTextClick()
-                    navController.navigate(AppScreen.SignUpFirst.name)
+                    navController.navigate(AppScreen.SignUpFirst.name) {
+                        launchSingleTop = true
+                    }
                 },
                 onSkipClick = {
-                    navController.navigate(AppScreen.Main.name)
+                    navController.navigate(AppScreen.Main.name) {
+                        launchSingleTop = true
+                    }
                 },
             )
         }
@@ -117,6 +128,24 @@ fun Appv2(
                 onSearchIconClick = {
                     //navController.navigate(AppScreen.Search.name)
                 },
+                onBottomBarIconClicked = { int: Int ->
+                    when(int) {
+                        1 -> navController.navigate(AppScreen.Favorite.name) {
+                            launchSingleTop = true
+                        }
+                        2 -> navController.navigate(AppScreen.Profile.name) {
+                            launchSingleTop = true
+                        }
+                        else -> {
+
+                        }
+                    }
+
+                },
+                onFavoriteIconBottomBarClick = {
+
+                },
+                onProfileIconBottomBarClick = {},
                 modifier = Modifier,
             )
             BackHandler {  }
@@ -149,7 +178,9 @@ fun Appv2(
             LaunchedEffect(signupScreensUiState) {
                 if (signupScreensUiState.signupSucces) {
                     mainScreenViewModel.updateAthlete()
-                    navController.navigate(AppScreen.SignUpSecond.name)
+                    navController.navigate(AppScreen.SignUpSecond.name) {
+                        launchSingleTop = true
+                    }
                 }
             }
 
@@ -198,7 +229,9 @@ fun Appv2(
 //
 //                }
                 if (signupScreensUiState.updatedDatabase) {
-                    navController.navigate(AppScreen.Main.name)
+                    navController.navigate(AppScreen.Main.name) {
+                        launchSingleTop = true
+                    }
                 }
             }
 
@@ -229,7 +262,9 @@ fun Appv2(
                 onLicenseNumberTextFieldChange = { signupScreensViewModel.onLicenseNumberChange(it)},
                 licenseNumberStringValue = signupScreensUiState.localRegistrationNumber,
                 onSkipClick = {
-                    navController.navigate(AppScreen.Main.name)
+                    navController.navigate(AppScreen.Main.name) {
+                        launchSingleTop = true
+                    }
                 },
                 onDoneClick = {
                     signupScreensViewModel.onDoneClick()
@@ -238,6 +273,39 @@ fun Appv2(
                 modifier = Modifier,
             )
             BackHandler {  }
+        }
+
+        composable(
+            route = AppScreen.Favorite.name,
+        ) {
+
+            val favoriteEventIds: List<String> = mainScreenUiState.favoriteEventIds.map { it -> it.eventUuid }
+            val favoriteEventsInfo: List<EventInfo> = mainScreenUiState.events.filter { eventInfo ->
+                favoriteEventIds.contains(eventInfo.evenUuid)
+            }
+            FavoriteScreen(
+                favoriteEvents = favoriteEventsInfo,
+                onFavoriteIconClick = {id: String, value: Boolean -> mainScreenViewModel.onFavoriteIconClick(id, value) },
+                onHomeIconClick = {
+
+                },
+                onProfileIconClick = {
+
+                },
+                onBottomBarIconClick = {int: Int ->
+                    when(int) {
+                        0 -> navController.navigate(AppScreen.Main.name) {
+                            launchSingleTop = true
+                        }
+                        2 -> navController.navigate(AppScreen.Profile.name) {
+                            launchSingleTop = true
+                        }
+                        else -> {
+
+                        }
+                    }
+                }
+            )
         }
     }
 }
