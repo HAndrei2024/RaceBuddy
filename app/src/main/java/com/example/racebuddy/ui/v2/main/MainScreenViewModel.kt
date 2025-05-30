@@ -22,6 +22,9 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import kotlinx.datetime.LocalDate
+import network.chaintech.kmp_date_time_picker.utils.now
+import kotlin.math.log
 
 class MainScreenViewModel(
     val appRepository: AppRepository,
@@ -39,13 +42,29 @@ class MainScreenViewModel(
     init {
         viewModelScope.launch {
 
+
             val events = appRepository.getSupabaseEvents()
             Log.d("MAINSCREEN", "Event Request made by viewmodel... - $events")
+
+            val filteredEvents = events.filter { eventInfo ->
+                eventInfo.startDate >= LocalDate.now()
+            }
+
+            val loggedInAthleteId = appRepository.getSupabaseLoggedInAthlete()
+            val loggedInAthleteInfo = appRepository.getSupabaseAthleteInfo(loggedInAthleteId)
+
+            val favoriteEventIds = appRepository.getSupabaseFavoriteEventIds(
+                athleteId =  loggedInAthleteId
+            )
+            Log.d("MAINSCREEN", "Favorite events: $favoriteEventIds")
+
 
             _uiState.update { currentState ->
                 currentState.copy(
                     events = events,
-                    filteredEvents = events
+                    filteredEvents = filteredEvents,
+                    athleteInfo = loggedInAthleteInfo,
+                    favoriteEventIds = favoriteEventIds
                 )
             }
 
@@ -162,7 +181,7 @@ class MainScreenViewModel(
                 val favoriteEventIds = appRepository.getSupabaseFavoriteEventIds(
                     _uiState.value.athleteInfo.athleteId ?: ""
                 )
-                Log.d("MAINSCREEN ViewModel", "Favorite events: $favoriteEventIds")
+                Log.d("MAINSCREENVM", "Favorite events: $favoriteEventIds")
 
                 _uiState.update { currentState ->
                     currentState.copy(
@@ -171,12 +190,15 @@ class MainScreenViewModel(
                 }
             }
         }
+        else {
+            Log.d("MAINSCREEN", "Tried getting favorite events -> user it not logged in")
+        }
     }
 
     fun updateFilteredEventsByCategory(category: String) {
         _uiState.update { currentState ->
             currentState.copy(
-                filteredEvents = if(category != "All") _uiState.value.events.filter { it.category == category } else _uiState.value.events
+                filteredEvents = if(category != "All") _uiState.value.events.filter { it.category == category && it.startDate >= LocalDate.now ()} else _uiState.value.events.filter { it.startDate >= LocalDate.now () }
             )
         }
     }

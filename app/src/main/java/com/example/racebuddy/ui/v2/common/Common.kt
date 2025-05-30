@@ -1,5 +1,6 @@
 package com.example.racebuddy.ui.v2.common
 
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -31,6 +32,7 @@ import androidx.compose.material.icons.filled.KeyboardArrowRight
 import androidx.compose.material.icons.filled.Person
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material.icons.filled.Settings
+import androidx.compose.material3.BottomAppBar
 import androidx.compose.material3.BottomAppBarDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
@@ -86,7 +88,9 @@ import com.example.racebuddy.ui.theme.AppTypography
 import com.example.racebuddy.ui.theme.heights
 import com.example.racebuddy.ui.theme.paddings
 import com.example.racebuddy.ui.theme.shapes
+import com.example.racebuddy.ui.theme.sizes
 import com.example.racebuddy.ui.v2.signup.Country
+import kotlin.math.exp
 
 @Composable
 fun CustomTextField(
@@ -342,21 +346,41 @@ fun EventCardUpdated(
         shape = CardDefaults.elevatedShape,
         elevation = CardDefaults.cardElevation(3.dp),
         colors = CardDefaults.elevatedCardColors(containerColor = Color.White),
+        //border = BorderStroke(1.dp, MaterialTheme.colorScheme.primary),
         modifier = modifier
             .fillMaxWidth()
             .clickable { onEventClick() }
             .padding(paddings.spacingSmall)
+            .height(120.dp)
     ) {
-        Row() {
-            Image(
-                painter = painterResource(R.drawable.ic_launcher_background),
-                contentDescription = "",
+        Row(
+            horizontalArrangement = Arrangement.Center,
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            AsyncImage(
+                model = eventInfo.backgroundPictureUrl.takeIf { it.isNotBlank() },
+                contentDescription = "Profile Picture",
+                placeholder = painterResource(R.drawable.default_background),
+                error = painterResource(R.drawable.default_background),
+                fallback = painterResource(R.drawable.default_background),
+                contentScale = ContentScale.Crop,
                 modifier = Modifier
                     .padding(paddings.spacingSmall)
                     .clip(RoundedCornerShape(paddings.spacingSmall))
                     .weight(2f)
-
+                    .height(heights.extraLarge)
+                    .width(sizes.large)
+                    //.border(1.dp, MaterialTheme.colorScheme.primary)
             )
+//            Image(
+//                painter = painterResource(R.drawable.ic_launcher_background),
+//                contentDescription = "",
+//                modifier = Modifier
+//                    .padding(paddings.spacingSmall)
+//                    .clip(RoundedCornerShape(paddings.spacingSmall))
+//                    .weight(2f)
+//
+//            )
             Column(
                 verticalArrangement = Arrangement.SpaceEvenly,
                 horizontalAlignment = Alignment.Start,
@@ -437,6 +461,7 @@ fun EventCardUpdated(
                 verticalArrangement = Arrangement.SpaceEvenly,
                 modifier = Modifier
                     .weight(1f)
+                    .align(Alignment.Top)
             ) {
                 if(isUserLoggedIn) {
                     IconButton(
@@ -466,64 +491,78 @@ fun EventCardUpdated(
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun MainScreenTopAppBar() {
+fun MainScreenTopAppBar(
+    onSearchIconClick: () -> Unit,
+    onSettingsIconClick: () -> Unit
+) {
     TopAppBar(
        title = {
            Row(
                horizontalArrangement = Arrangement.SpaceBetween,
+               verticalAlignment = Alignment.CenterVertically,
                modifier = Modifier
                    .fillMaxWidth()
                    .padding(end = paddings.spacingSmall)
            ) {
-               Row() {
-                   Icon(
-                       painterResource(R.drawable.baseline_pedal_bike_24),
-                       contentDescription = "",
-                       modifier = Modifier
-                           .padding(end = paddings.spacingXSmall)
-                   )
-
-                   Text(
-                       text = "Cycling",
-                       style = MaterialTheme.typography.titleMedium,
-                       fontWeight = FontWeight.Normal,
-                       modifier = Modifier
-                           .padding(start = paddings.spacingXSmall)
-                   )
-
-                   Icon(
-                       imageVector = Icons.Filled.ArrowDropDown,
-                       contentDescription = "",
-                       modifier = Modifier
-                   )
-               }
+               Text(
+                   text = "RaceBuddy",
+                   style = MaterialTheme.typography.titleMedium,
+                   fontWeight = FontWeight.Normal,
+                   modifier = Modifier
+                       .padding(start = paddings.spacingXSmall)
+               )
+//               Row() {
+////                   Icon(
+////                       painterResource(R.drawable.baseline_pedal_bike_24),
+////                       contentDescription = "",
+////                       modifier = Modifier
+////                           .padding(end = paddings.spacingXSmall)
+////                   )
+////
+//
+//
+////                   Icon(
+////                       imageVector = Icons.Filled.ArrowDropDown,
+////                       contentDescription = "",
+////                       modifier = Modifier
+////                   )
+//               }
 
                Row(
                    horizontalArrangement = Arrangement.SpaceEvenly
                ) {
 
-                   Icon(
-                       imageVector = Icons.Filled.Search,
-                       contentDescription = "",
-                       modifier = Modifier
-                           .padding(end = paddings.spacingSmall)
-                   )
+                   IconButton(
+                       onClick = onSearchIconClick,
+                   ) {
+                       Icon(
+                           imageVector = Icons.Filled.Search,
+                           contentDescription = "",
+                           modifier = Modifier
+                               .padding(end = paddings.spacingSmall)
+                       )
+                   }
 
-                   Icon(
-                       imageVector = Icons.Filled.Settings,
-                       contentDescription = "",
-                       modifier = Modifier
-                           .padding(end = paddings.spacingXSmall)
-                   )
+                   IconButton(
+                       onClick = onSettingsIconClick
+                   ) {
+                       Icon(
+                           imageVector = Icons.Filled.Settings,
+                           contentDescription = "",
+                           modifier = Modifier
+                               .padding(end = paddings.spacingXSmall)
+                       )
+                   }
                }
            }
        },
         colors = TopAppBarDefaults.topAppBarColors(
-            containerColor = Color(0xFFF5F5F5),
+            containerColor = Color.White, //Color(0xFFF5F5F5),
             titleContentColor = Color.Black,
             //actionIconContentColor = Color(0xFF4169E1)
         ),
         modifier = Modifier
+            .border(1.dp, Color(0xFFEEEEEE))
     )
 }
 
@@ -531,6 +570,7 @@ fun MainScreenTopAppBar() {
 @Composable
 fun TopBarWithCategoryAndSearchChat(
     categories: List<String>,
+    onCloseClick: () -> Unit,
     selectedCategory: String,
     onCategorySelected: (String) -> Unit,
     onSearchQueryChanged: (String) -> Unit
@@ -538,7 +578,6 @@ fun TopBarWithCategoryAndSearchChat(
     var categoryMenuExpanded by remember { mutableStateOf(false) }
     var searchQuery by remember { mutableStateOf("") }
 
-    Column {
         TopAppBar(
             title = {
                 Row(
@@ -573,6 +612,18 @@ fun TopBarWithCategoryAndSearchChat(
 
                     //Spacer(modifier = Modifier.width(16.dp))
 
+                    IconButton(
+                        onClick = onCloseClick,
+                        modifier = Modifier
+                            .weight(0.2f)
+                    ) {
+                        Icon(
+                            imageVector = Icons.Filled.Close,
+                            contentDescription = ""
+                        )
+                    }
+
+
                     TextField(
                         value = searchQuery,
                         onValueChange = {
@@ -588,7 +639,7 @@ fun TopBarWithCategoryAndSearchChat(
                         },
                         singleLine = true,
                         modifier = Modifier
-                            .weight(1f)
+                            .weight(3f)
                             .padding(paddings.spacingXSmall)
                             .scale(scaleY = 0.9F, scaleX = 0.9F)
                             //.height(80.dp)
@@ -605,8 +656,10 @@ fun TopBarWithCategoryAndSearchChat(
                             focusedIndicatorColor = Color.White,
                             unfocusedIndicatorColor = Color.White
                         ),
-                        shape = shapes.large
+                        shape = shapes.large,
+
                     )
+
 
 
                 }
@@ -617,6 +670,7 @@ fun TopBarWithCategoryAndSearchChat(
                 //actionIconContentColor = Color(0xFF4169E1)
             ),
             modifier = Modifier
+                //.height(heights.medium)
 //                .border(
 //                    width = 1.dp,
 //                    color = Color(0xFF4169E1),
@@ -626,7 +680,7 @@ fun TopBarWithCategoryAndSearchChat(
 
         // Subtle Royal Blue bottom line (shadow effect)
         //Divider(color = Color(0xFF4169E1), thickness = 1.dp)
-    }
+
 }
 
 @Composable
@@ -638,7 +692,7 @@ fun BottomAppBarUpdated(
     onFavoriteClick: () -> Unit = { },
     onProfileClick: () -> Unit = { }
 ) {
-    androidx.compose.material3.BottomAppBar(
+    BottomAppBar(
         containerColor = Color.White,//Color(0xFFF5F5F5),
         tonalElevation = 5.dp
     ) {
@@ -746,7 +800,8 @@ fun TopBarPreview() {
         categories = listOf("XC", "Downhill", "Road", "All"),
         selectedCategory = "All",
         onCategorySelected = {},
-        onSearchQueryChanged = {}
+        onSearchQueryChanged = {},
+        onCloseClick = {}
     )
 
 }
@@ -763,7 +818,10 @@ fun BottomBar() {
 @Preview
 @Composable
 fun MainScreenTopAppBarPreview() {
-    MainScreenTopAppBar()
+    MainScreenTopAppBar(
+        onSearchIconClick = {},
+        onSettingsIconClick = {}
+    )
 }
 
 @Preview

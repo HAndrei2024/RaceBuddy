@@ -3,6 +3,8 @@ package com.example.racebuddy.app.v2
 import androidx.activity.compose.BackHandler
 import androidx.compose.animation.AnimatedContentTransitionScope
 import androidx.compose.animation.core.tween
+import androidx.compose.animation.slideInVertically
+import androidx.compose.animation.slideOutVertically
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
@@ -25,6 +27,7 @@ import com.example.racebuddy.ui.v2.login.LoginScreen
 import com.example.racebuddy.ui.v2.login.LoginScreenViewModel
 import com.example.racebuddy.ui.v2.main.MainScreen
 import com.example.racebuddy.ui.v2.main.MainScreenViewModel
+import com.example.racebuddy.ui.v2.search.SearchScreen
 import com.example.racebuddy.ui.v2.signup.SignUpFirstScreen
 import com.example.racebuddy.ui.v2.signup.SignupScreensViewModel
 import com.example.racebuddy.ui.v2.signup.SignupSecondScreen
@@ -39,7 +42,8 @@ enum class AppScreen {
     Main,
     Favorite,
     Profile,
-    Event
+    Event,
+    Search
 }
 
 @Composable
@@ -59,7 +63,7 @@ fun Appv2(
     val signupScreensUiState by signupScreensViewModel.uiState.collectAsState()
     val mainScreenUiState by mainScreenViewModel.uiState.collectAsState()
 
-    val startDestination = AppScreen.Login.name
+    val startDestination = AppScreen.Main.name
 
 
     //appViewModel.updateScreenSelected(AppScreen.valueOf(startDestination))
@@ -100,17 +104,38 @@ fun Appv2(
             MainScreen(
                 athleteInfo = mainScreenUiState.athleteInfo,
                 events = mainScreenUiState.filteredEvents, //cyclingEvents,
-                onFavoriteIconClick = {
-                    eventUuid: String, delete: Boolean -> mainScreenViewModel.onFavoriteIconClick(eventUuid, delete)
-
-
+                searchEvents = mainScreenUiState.events,
+                onFavoriteIconClick = { eventUuid: String, delete: Boolean ->
+                    mainScreenViewModel.onFavoriteIconClick(eventUuid, delete)
                 },
-                onFilterButtonClick = { category: String -> mainScreenViewModel.updateFilteredEventsByCategory(category) },
-                favoriteEventsId = mainScreenUiState.favoriteEventIds.map {it.eventUuid},
+                onFilterButtonClick = { category: String ->
+                    mainScreenViewModel.updateFilteredEventsByCategory(
+                        category
+                    )
+                },
+                favoriteEventsId = mainScreenUiState.favoriteEventIds.map { it.eventUuid },
+                onSearchIconClick = {
+                    //navController.navigate(AppScreen.Search.name)
+                },
                 modifier = Modifier,
             )
             BackHandler {  }
         }
+        
+//        composable(
+//            route = AppScreen.Search.name,
+//            enterTransition = { slideInVertically(initialOffsetY = { it }) },
+//            exitTransition = { slideOutVertically(targetOffsetY = { it }) },
+//            popEnterTransition = { slideInVertically(initialOffsetY = { it }) },
+//            popExitTransition = { slideOutVertically(targetOffsetY = { it }) }
+//        ) {
+//            SearchScreen(
+//                events = emptyList(),
+//                onCloseClick = {
+//                    //navController.popBackStack()
+//                },
+//            )
+//        }
 
         composable(
             route = AppScreen.SignUpFirst.name,

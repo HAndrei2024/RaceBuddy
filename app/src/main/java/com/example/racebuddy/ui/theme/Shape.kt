@@ -15,6 +15,7 @@ val shapes = Shapes(
 
 val paddings = Spacing()
 val heights = ElementHeights()
+val sizes = Sizes()
 
 data class Spacing(
     val spacingNone: Dp = 1.dp,
@@ -26,6 +27,16 @@ data class Spacing(
 )
 
 data class ElementHeights(
+    val xSmall: Dp = 30.dp,
+    val small: Dp = 40.dp,
+    val medium: Dp = 56.dp, // standard TextField/Button height
+    val large: Dp = 72.dp,
+    val largeish: Dp = 80.dp,
+    val extraLarge: Dp = 88.dp
+)
+
+data class Sizes(
+    val xSmall: Dp = 20.dp,
     val small: Dp = 40.dp,
     val medium: Dp = 56.dp, // standard TextField/Button height
     val large: Dp = 72.dp,

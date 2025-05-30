@@ -193,6 +193,10 @@ dependencies {
     implementation(libs.androidx.junit.ktx)
     implementation(libs.androidx.ui.text.google.fonts)
 
+    // Bottom sheet
+    implementation("androidx.compose.material:material:1.5.4") // or latest
+
+
     debugImplementation("androidx.compose.ui:ui-test-manifest")
     debugImplementation("androidx.compose.ui:ui-tooling")
 

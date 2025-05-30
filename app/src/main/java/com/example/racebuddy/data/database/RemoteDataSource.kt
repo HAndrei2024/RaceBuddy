@@ -128,12 +128,12 @@ class RemoteDataSource {
     suspend fun getEvents(): List<EventInfo> {
 
         val events =  SupabaseClient.client.from("Event").select(){
-            filter { 
-                gt(
-                    column = "start_date",
-                    value = LocalDate.now()
-                )
-            }
+//            filter {
+//                gt(
+//                    column = "start_date",
+//                    value = LocalDate.now()
+//                )
+//            }
             
             order(
                 column = "created_at",
@@ -232,7 +232,8 @@ data class EventInfo(
     @SerialName("details") val details: String,
     @SerialName("track") val track: String,
     @SerialName("category") val category: String,
-    @SerialName("organizer_id") val organizerId: String
+    @SerialName("organizer_id") val organizerId: String,
+    @SerialName("background_picture_url") val backgroundPictureUrl: String
 )
 
 @Serializable
@@ -259,6 +260,7 @@ val testEvent: EventInfo = EventInfo(
     category = "XC",
     createdAt = LocalDate.now().toString(),
     evenUuid = "1",
+    backgroundPictureUrl = ""
 )
 
 val testAthlete: AthleteInfo = AthleteInfo(
@@ -290,6 +292,7 @@ val cyclingEvents = listOf(
         organizerId = "org001",
         createdAt = LocalDate.now().toString(),
         evenUuid = "2",
+        backgroundPictureUrl = ""
     ),
     EventInfo(
         title = "Amgen Tour of California",
@@ -304,6 +307,7 @@ val cyclingEvents = listOf(
         organizerId = "org002",
         createdAt = LocalDate.now().toString(),
         evenUuid = "3",
+        backgroundPictureUrl = ""
     ),
     EventInfo(
         title = "Tour de Pologne",
@@ -318,5 +322,6 @@ val cyclingEvents = listOf(
         organizerId = "org003",
         createdAt = LocalDate.now().toString(),
         evenUuid = "4",
+        backgroundPictureUrl = ""
     )
 )
