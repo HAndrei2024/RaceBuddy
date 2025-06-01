@@ -26,16 +26,20 @@ import com.example.racebuddy.Application
 import com.example.racebuddy.app.v1.App
 import com.example.racebuddy.data.database.AppRepository
 import com.example.racebuddy.data.database.EventInfo
+import com.example.racebuddy.data.database.RemoteDataSource
 import com.example.racebuddy.data.database.UserPreferencesRepository
 import com.example.racebuddy.ui.v2.favorite.FavoriteScreen
 import com.example.racebuddy.ui.v2.login.LoginScreen
 import com.example.racebuddy.ui.v2.login.LoginScreenViewModel
 import com.example.racebuddy.ui.v2.main.MainScreen
 import com.example.racebuddy.ui.v2.main.MainScreenViewModel
+import com.example.racebuddy.ui.v2.profile.ProfileScreen
+import com.example.racebuddy.ui.v2.profile.ProfileScreenViewModel
 import com.example.racebuddy.ui.v2.search.SearchScreen
 import com.example.racebuddy.ui.v2.signup.SignUpFirstScreen
 import com.example.racebuddy.ui.v2.signup.SignupScreensViewModel
 import com.example.racebuddy.ui.v2.signup.SignupSecondScreen
+import io.github.jan.supabase.auth.auth
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
@@ -62,13 +66,21 @@ fun Appv2(
     mainScreenViewModel: MainScreenViewModel = viewModel(
         factory = MainScreenViewModel.factory
     ),
+    profileScreenViewModel: ProfileScreenViewModel = viewModel(
+        factory = ProfileScreenViewModel.factory
+    ),
+    appScreenViewModel: AppScreenViewModel = viewModel(
+        factory = AppScreenViewModel.factory
+    ),
     navController: NavHostController = rememberNavController()
 ) {
     val loginScreenUiState by loginScreenViewModel.uiState.collectAsState()
     val signupScreensUiState by signupScreensViewModel.uiState.collectAsState()
     val mainScreenUiState by mainScreenViewModel.uiState.collectAsState()
 
-    val startDestination = AppScreen.Main.name
+    val athleteInfo by appScreenViewModel.athleteInfo.collectAsState()
+
+    val startDestination = if(athleteInfo.athleteId == "-1") AppScreen.Login.name else AppScreen.Main.name
 
 
     //appViewModel.updateScreenSelected(AppScreen.valueOf(startDestination))
@@ -84,7 +96,7 @@ fun Appv2(
                     navController.navigate(AppScreen.Main.name) {
                         launchSingleTop = true
                     }
-                    mainScreenViewModel.updateAthlete()
+                    //mainScreenViewModel.updateAthlete()
                 }
             }
             LoginScreen(
@@ -113,7 +125,7 @@ fun Appv2(
 
         composable(route = AppScreen.Main.name) {
             MainScreen(
-                athleteInfo = mainScreenUiState.athleteInfo,
+                athleteInfo = athleteInfo,
                 events = mainScreenUiState.filteredEvents, //cyclingEvents,
                 searchEvents = mainScreenUiState.events,
                 onFavoriteIconClick = { eventUuid: String, delete: Boolean ->
@@ -146,6 +158,7 @@ fun Appv2(
 
                 },
                 onProfileIconBottomBarClick = {},
+                isUserLoggedIn = RemoteDataSource.SupabaseClient.client.auth.currentUserOrNull() != null,
                 modifier = Modifier,
             )
             BackHandler {  }
@@ -286,6 +299,7 @@ fun Appv2(
             FavoriteScreen(
                 favoriteEvents = favoriteEventsInfo,
                 onFavoriteIconClick = {id: String, value: Boolean -> mainScreenViewModel.onFavoriteIconClick(id, value) },
+                isUserLoggedIn = RemoteDataSource.SupabaseClient.client.auth.currentUserOrNull() != null,
                 onHomeIconClick = {
 
                 },
@@ -307,6 +321,36 @@ fun Appv2(
                 }
             )
         }
+        
+        composable(route = AppScreen.Profile.name) { 
+            ProfileScreen(
+                athleteInfo = athleteInfo,
+                isUserLoggedIn = athleteInfo.athleteId != "-1", //TODO: is it possible to be ""?
+                onLogoutButtonClick = {
+                    loginScreenViewModel.loginSuccesUpdate(false)
+                    profileScreenViewModel.onLogoutClick()
+                },
+                onLoginButtonClick = {
+                    navController.navigate(AppScreen.Login.name) {
+                        launchSingleTop = true
+                    }
+                },
+                onBottomBarIconClick = {int: Int ->
+                    when(int) {
+                        0 -> navController.navigate(AppScreen.Main.name) {
+                            launchSingleTop = true
+                        }
+                        1 -> navController.navigate(AppScreen.Favorite.name) {
+                            launchSingleTop = true
+                        }
+                        else -> {
+
+                        }
+                    }
+                }
+            )
+        }
+        
     }
 }
 

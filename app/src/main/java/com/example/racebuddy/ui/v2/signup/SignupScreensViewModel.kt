@@ -118,6 +118,7 @@ class SignupScreensViewModel(
                     // TODO: This line of code causes recomposition => signup second screen composes twice
                     //userPreferencesRepository.saveSupabaseAthleteId(responeString.substring(6))
 
+
                     Log.d("SINGUP1", responeString.substring(6))
                 } else {
                     updateSignUpSucces(false)

@@ -28,6 +28,7 @@ import kotlinx.coroutines.launch
 fun FavoriteScreen(
     favoriteEvents: List<EventInfo>,
     onFavoriteIconClick: (String, Boolean) -> Unit,
+    isUserLoggedIn: Boolean,
     onHomeIconClick: () -> Unit,
     onProfileIconClick: () -> Unit,
     onBottomBarIconClick: (Int) -> Unit,
@@ -86,7 +87,7 @@ fun FavoriteScreen(
             items(favoriteEvents) { eventInfo ->
                 EventCardUpdated(
                     eventInfo = eventInfo,
-                    isUserLoggedIn = true,
+                    isUserLoggedIn = isUserLoggedIn,
                     countryCodeEmoji = countryMap[eventInfo.city] ?: "",
                     favoriteIcon =  painterResource(R.drawable.baseline_favorite_24),
                     onFavoriteIconClick = {

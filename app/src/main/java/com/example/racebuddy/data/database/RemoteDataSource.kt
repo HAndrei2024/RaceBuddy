@@ -19,7 +19,9 @@ import io.github.jan.supabase.postgrest.query.Order
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import kotlinx.datetime.DateTimeUnit
 import kotlinx.datetime.LocalDate
+import kotlinx.datetime.plus
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 import network.chaintech.kmp_date_time_picker.utils.now
@@ -189,6 +191,14 @@ class RemoteDataSource {
         }
     }
 
+    suspend fun logoutAthlete() {
+        try {
+            SupabaseClient.client.auth.signOut()
+        } catch (exception: Exception) {
+            Log.d("SUPABASE", "Tried to logged out athlete, exception: $exception")
+        }
+    }
+
     object SupabaseClient {
         val client = createSupabaseClient(
             supabaseUrl = "https://mkiafnnklxyysprdgmcb.supabase.co",
@@ -248,13 +258,18 @@ data class Favorites(
 )
 
 val testEvent: EventInfo = EventInfo(
-    title = "Title",
+    title = "Campionatul National de Downhill Cheile Gradistei",
     startDate = LocalDate.now(),
-    endDate = LocalDate.now(),
-    country = "Country",
-    county = "County",
-    city = "City",
-    details = "Details",
+    endDate = LocalDate.now().plus(1, DateTimeUnit.DAY),
+    country = "Romania",
+    county = "Brasov",
+    city = "Cheile Gradistei",
+    details = "Complexul de la Cheile Grădiștei găzduiește între 24-25 septembrie Campionatul Național de Downhill.\n\n" +
+            "Traseul este cel binecunoscut, a fost curățat temeinic, cu contrapantele și săriturile refăcute. A suferit modificări și ajustări minore, are câteva elemente și linii noi.\n\n" +
+            "Antrenamentele au loc vineri, calificările și finala sâmbăta. Sâmbătă seară avem la restaurantul cu autoservire de lângă Sala Sporturilor un party cu DJ, foc de tabără și o gustare din partea casei. În afară de asta, în zonă, la doi pași, se află și pumptrack-ul nostru modular, care sigur va ține lumea activată.\n\n" +
+            "Cazarea se face la complexul Cheile Grădiștei Moieciu sau complexul Cheile Grădiștei Fundata: ambele au restaurant, piscină cu jacuzzi și saună și sunt situate foarte aproape de traseul de concurs.\n\n" +
+            "Taxa de participare este de 200 de lei, pentru cei care se înscriu on-line, și de 250 de lei, pentru cei care se înscriu la fața locului.\n\n" +
+            "Categoriile de concurs sunt: Feminin Open, Copii (12-14 ani), Juniori (15-18 ani), Elite (19-29 ani), Masters 1 (30-39 ani), Masters 2 (40-49 ani) și Hobby.",
     track = "Track",
     organizerId = "",
     category = "XC",
@@ -273,6 +288,21 @@ val testAthlete: AthleteInfo = AthleteInfo(
     phoneNumber = "",
     username = "",
     athleteId = "-1",
+    licenseNumber = "",
+    uciLicenseNumber = "",
+    profilePictureUrl = "https://mkiafnnklxyysprdgmcb.supabase.co/storage/v1/object/public/pictures//4fc5528145aac3fcd27b68038b821e4420f6f8a08725d3a2b8e19a1ccff67d51.jpg"
+)
+
+val firstAthlete: AthleteInfo = AthleteInfo(
+    createdAt = "Today",
+    firstName = "Test",
+    lastName = "Last",
+    birthdate = LocalDate.now().toString(),
+    gender = "Male",
+    country = "Romania",
+    phoneNumber = "",
+    username = "",
+    athleteId = "-2",
     licenseNumber = "",
     uciLicenseNumber = "",
     profilePictureUrl = "https://mkiafnnklxyysprdgmcb.supabase.co/storage/v1/object/public/pictures//4fc5528145aac3fcd27b68038b821e4420f6f8a08725d3a2b8e19a1ccff67d51.jpg"

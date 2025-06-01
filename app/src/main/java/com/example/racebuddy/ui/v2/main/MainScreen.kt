@@ -140,6 +140,7 @@ fun MainScreen(
     onFavoriteIconBottomBarClick: () -> Unit,
     onProfileIconBottomBarClick: () -> Unit,
     onBottomBarIconClicked: (Int) -> Unit,
+    isUserLoggedIn: Boolean,
     modifier: Modifier = Modifier
 ) {
     var showSearch by remember { mutableStateOf(false) }
@@ -224,7 +225,8 @@ fun MainScreen(
                 Events(
                     events = events,
                     favoriteEventsId = favoriteEventsId,
-                    onFavoriteIconClick = onFavoriteIconClick
+                    onFavoriteIconClick = onFavoriteIconClick,
+                    isUserLoggedIn = isUserLoggedIn
                 )
             }
         }
@@ -337,6 +339,7 @@ fun MainScreen(
 
                     SearchEventList(
                         events = searchFilteredEvents,
+                        isUserLoggedIn = isUserLoggedIn,
                         favoriteEventsId = favoriteEventsId,
                         onFavoriteIconClick = onFavoriteIconClick,
                     )
@@ -351,6 +354,7 @@ fun MainScreen(
 @Composable
 fun SearchEventList(
     events: List<EventInfo>,
+    isUserLoggedIn: Boolean,
     favoriteEventsId: List<String>,
     onFavoriteIconClick: (String, Boolean) -> Unit
 ) {
@@ -358,7 +362,7 @@ fun SearchEventList(
         items(events) { eventInfo ->
             EventCardUpdated(
                 eventInfo = eventInfo,
-                isUserLoggedIn = true,
+                isUserLoggedIn = isUserLoggedIn,
                 countryCodeEmoji = countryMap[eventInfo.city] ?: "",
                 favoriteIcon = if(favoriteEventsId.contains(eventInfo.evenUuid)) painterResource(R.drawable.baseline_favorite_24) else painterResource(R.drawable.baseline_favorite_border_24),
                 onFavoriteIconClick = {
@@ -665,6 +669,7 @@ fun Events(
     events: List<EventInfo>,
     favoriteEventsId: List<String>,
     onFavoriteIconClick: (String, Boolean) -> Unit,
+    isUserLoggedIn: Boolean,
     modifier: Modifier = Modifier
 ) {
     Column() {
@@ -697,7 +702,7 @@ fun Events(
         events.forEach { eventInfo ->
             EventCardUpdated(
                     eventInfo = eventInfo,
-                    isUserLoggedIn = true,
+                    isUserLoggedIn = isUserLoggedIn,
                     countryCodeEmoji = countryMap[eventInfo.city] ?: "",
                     favoriteIcon = if(favoriteEventsId.contains(eventInfo.evenUuid)) painterResource(R.drawable.baseline_favorite_24) else painterResource(R.drawable.baseline_favorite_border_24),
                     onFavoriteIconClick = {
@@ -755,6 +760,7 @@ fun MainScreenPreview() {
         searchEvents = emptyList(),
         onProfileIconBottomBarClick = {},
         onFavoriteIconBottomBarClick = {},
-        onBottomBarIconClicked = {}
+        onBottomBarIconClicked = {},
+        isUserLoggedIn = true
     )
 }

@@ -12,6 +12,7 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -61,11 +62,14 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.drawBehind
 import androidx.compose.ui.draw.scale
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.focus.onFocusChanged
+import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.RectangleShape
 import androidx.compose.ui.graphics.painter.Painter
@@ -458,14 +462,17 @@ fun EventCardUpdated(
             }
             Column(
                 horizontalAlignment = Alignment.End,
-                verticalArrangement = Arrangement.SpaceEvenly,
+                verticalArrangement = if(isUserLoggedIn) Arrangement.Top else Arrangement.Center,
                 modifier = Modifier
+                    .fillMaxHeight()
                     .weight(1f)
                     .align(Alignment.Top)
             ) {
                 if(isUserLoggedIn) {
                     IconButton(
-                        onClick = onFavoriteIconClick
+                        onClick = onFavoriteIconClick,
+                        enabled = isUserLoggedIn,
+                        modifier = Modifier.alpha(if (isUserLoggedIn) 1f else 0f)
                     ) {
                         Icon(
                             painter = favoriteIcon,
@@ -734,6 +741,16 @@ fun BottomNavigationBarChat(
 
     NavigationBar(
         containerColor = Color.White,
+        modifier = Modifier
+            .drawBehind {
+                val strokeWidth = 1.dp.toPx()
+                drawLine(
+                    color = Color(0xFFDDDDDD),
+                    start = Offset(0f, 0f),
+                    end = Offset(size.width, 0f),
+                    strokeWidth = strokeWidth
+                )
+            }
         //tonalElevation = 8.dp
     ) {
         val items = listOf(

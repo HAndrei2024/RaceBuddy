@@ -10,6 +10,7 @@ import androidx.datastore.preferences.core.stringPreferencesKey
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.map
+import kotlinx.serialization.json.Json
 import java.io.IOException
 
 
@@ -18,7 +19,7 @@ class UserPreferencesRepository(
 ) {
     companion object {
         val ATHLETE_LOGIN_ID = intPreferencesKey("ATHLETE_LOGIN_ID")
-        val SUPABASE_ATHLETE_ID = stringPreferencesKey("SUPABASE_ATHLETE_ID")
+        val SUPABASE_ATHLETE_INFO = stringPreferencesKey("SUPABASE_ATHLETE_INFO")
     }
 
     val athleteLoginId: Flow<Int> = dataStore.data
@@ -35,7 +36,7 @@ class UserPreferencesRepository(
             preferences[ATHLETE_LOGIN_ID] ?: -1
         }
 
-    val supabaseAthleteId: Flow<String> = dataStore.data
+    val supabaseAthleteInfo: Flow<AthleteInfo> = dataStore.data
         .catch {
             if(it is IOException) {
                 Log.e("UserPreferencesRepository", "IOException", it)
@@ -46,7 +47,14 @@ class UserPreferencesRepository(
             }
         }
         .map { preferences ->
-            preferences[SUPABASE_ATHLETE_ID] ?: ""
+            preferences[SUPABASE_ATHLETE_INFO] ?: Json.encodeToString(testAthlete)
+        }.map { jsonString ->
+            try {
+                Json.decodeFromString<AthleteInfo>(jsonString)
+            } catch (e: Exception) {
+                Log.e("UserParseError", "Invalid JSON: $jsonString", e)
+                null
+            }!!
         }
 
     suspend fun saveAthleteLoginId(loginId: Int) {
@@ -55,9 +63,15 @@ class UserPreferencesRepository(
         }
     }
 
-    suspend fun saveSupabaseAthleteId(athleteId: String) {
+    suspend fun saveSupabaseAthleteInfo(athleteInfo: AthleteInfo) {
         dataStore.edit { preferences ->
-            preferences[SUPABASE_ATHLETE_ID] = athleteId
+            preferences[SUPABASE_ATHLETE_INFO] = Json.encodeToString(athleteInfo)
+        }
+    }
+
+    suspend fun logoutSupabaseAthleteInfo() {
+        dataStore.edit { prefereces ->
+            prefereces[SUPABASE_ATHLETE_INFO] = Json.encodeToString(testAthlete)
         }
     }
 

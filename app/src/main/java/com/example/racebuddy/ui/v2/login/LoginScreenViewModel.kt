@@ -23,6 +23,7 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.yield
+import kotlinx.serialization.json.Json
 
 class LoginScreenViewModel(
     val appRepository: AppRepository,
@@ -47,7 +48,7 @@ class LoginScreenViewModel(
         }
     }
 
-    private fun loginSuccesUpdate(value: Boolean) {
+    fun loginSuccesUpdate(value: Boolean) {
         _uiState.update { currentValue ->
             currentValue.copy(
                 isLoading = false,
@@ -93,7 +94,12 @@ class LoginScreenViewModel(
                     loginSuccesUpdate(true)
                     errorMessageSuccesUpdate(false)
 
-                    // Update user preferences (id)
+                    // Update user preferences (id
+                    val athleteInfo = appRepository.getSupabaseAthleteInfo(appRepository.getSupabaseLoggedInAthlete())
+                    userPreferencesRepository.saveSupabaseAthleteInfo(
+                        athleteInfo = athleteInfo
+                    )
+                    Log.d("LOGIN", "AthleteInfo saved to User Preferences")
 
                     //userPreferencesRepository.saveSupabaseAthleteId(responseString.substring(6))
                     Log.d("LOGIN", "Current logged in supabase user: " + appRepository.getSupabaseLoggedInAthlete())

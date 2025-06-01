@@ -122,4 +122,8 @@ class AppRepository(
     suspend fun deleteSupabaseFavoriteEvent(athleteUuid: String, eventUuid: String) {
         remoteDataSource.deleteFavoriteEvent(athleteUuid, eventUuid)
     }
+
+    suspend fun logoutSupabaseAthlete() {
+        remoteDataSource.logoutAthlete()
+    }
 }

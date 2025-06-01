@@ -24,11 +24,15 @@ import com.example.racebuddy.app.v1.App
 import com.example.racebuddy.app.v2.Appv2
 import com.example.racebuddy.data.database.AppRepository
 import com.example.racebuddy.data.database.LocalDataSource
+import com.example.racebuddy.data.database.testAthlete
+import com.example.racebuddy.data.database.testEvent
 import com.example.racebuddy.data.network.StravaApi
 import com.example.racebuddy.data.network.StravaApiService
 import com.example.racebuddy.data.network.StravaScreenIntent
 import com.example.racebuddy.ui.v1.event.EventScreen
 import com.example.racebuddy.ui.theme.RaceBuddyTheme
+import com.example.racebuddy.ui.v2.event.EventScreen2
+import com.example.racebuddy.ui.v2.event.EventScreenCollapsing
 import com.example.racebuddy.ui.v2.login.LoginScreen
 import com.example.racebuddy.ui.v2.signup.BirthdateInputFields
 import com.example.racebuddy.ui.v2.signup.BirthdateTextField
@@ -48,7 +52,14 @@ class MainActivity : ComponentActivity() {
         setContent {
             RaceBuddyTheme {
                 //App()
-                Appv2()
+                //Appv2()
+                EventScreen2(
+                    athleteInfo = testAthlete,
+                    eventInfo = testEvent,
+                    onBackClick = {},
+                    onFavoriteClick = {},
+                    onShowMoreTextClick = {}
+                )
             }
         }
     }

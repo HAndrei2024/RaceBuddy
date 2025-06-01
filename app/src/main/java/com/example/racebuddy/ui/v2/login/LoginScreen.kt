@@ -490,7 +490,7 @@ fun SkipText(
     ){
         ClickableText(
             text = annotatedLinkString,
-            onClick = { onClick }
+            onClick = { onClick() }
         )
     }
 }

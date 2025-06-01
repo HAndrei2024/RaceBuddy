@@ -9,6 +9,7 @@ import androidx.lifecycle.viewmodel.initializer
 import androidx.lifecycle.viewmodel.viewModelFactory
 import com.example.racebuddy.Application
 import com.example.racebuddy.data.database.AppRepository
+import com.example.racebuddy.data.database.Athlete
 import com.example.racebuddy.data.database.AthleteInfo
 import com.example.racebuddy.data.database.Event
 import com.example.racebuddy.data.database.EventIdForFavorite
@@ -18,11 +19,14 @@ import com.example.racebuddy.data.database.testAthlete
 import com.example.racebuddy.ui.v2.login.LoginScreenUiState
 import com.example.racebuddy.ui.v2.login.LoginScreenViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import kotlinx.datetime.LocalDate
+import kotlinx.serialization.json.Json
 import network.chaintech.kmp_date_time_picker.utils.now
 import kotlin.math.log
 
@@ -39,35 +43,51 @@ class MainScreenViewModel(
     ))
     val uiState = _uiState.asStateFlow()
 
+    val athleteInfo = userPreferencesRepository.supabaseAthleteInfo.map { athleteInfo ->
+        athleteInfo
+    }.stateIn(
+        viewModelScope,
+        SharingStarted.WhileSubscribed(5000),
+        testAthlete // or some default UserInfo
+    )
+
     init {
         viewModelScope.launch {
 
-
+//
             val events = appRepository.getSupabaseEvents()
             Log.d("MAINSCREEN", "Event Request made by viewmodel... - $events")
 
             val filteredEvents = events.filter { eventInfo ->
                 eventInfo.startDate >= LocalDate.now()
             }
+//
+//
+//            // TODO: Instead of getting info from database -> get info from shared preferences
+//            val loggedInAthleteId = appRepository.getSupabaseLoggedInAthlete()
+//            val loggedInAthleteInfo = appRepository.getSupabaseAthleteInfo(loggedInAthleteId)
 
-            val loggedInAthleteId = appRepository.getSupabaseLoggedInAthlete()
-            val loggedInAthleteInfo = appRepository.getSupabaseAthleteInfo(loggedInAthleteId)
+            athleteInfo.collect { athleteInfo ->
+                val favoriteEventIds = if(athleteInfo.athleteId != "-1") appRepository.getSupabaseFavoriteEventIds(
+                    athleteId =  athleteInfo.athleteId ?: ""
+                ) else emptyList()
 
-            val favoriteEventIds = appRepository.getSupabaseFavoriteEventIds(
-                athleteId =  loggedInAthleteId
-            )
-            Log.d("MAINSCREEN", "Favorite events: $favoriteEventIds")
+                Log.d("MAINSCREEN", "Favorite events: $favoriteEventIds")
 
-
-            _uiState.update { currentState ->
-                currentState.copy(
-                    events = events,
-                    filteredEvents = filteredEvents,
-                    athleteInfo = loggedInAthleteInfo,
-                    favoriteEventIds = favoriteEventIds
-                )
+                _uiState.update { currentState ->
+                    currentState.copy(
+                        events = events,
+                        filteredEvents = filteredEvents,
+                        athleteInfo = athleteInfo,
+                        favoriteEventIds = favoriteEventIds
+                    )
+                }
             }
 
+            // TODO: Where to put this?
+//            val favoriteEventIds = appRepository.getSupabaseFavoriteEventIds(
+//                athleteId =  loggedInAthleteInfo.
+//            )
         }
 
 
