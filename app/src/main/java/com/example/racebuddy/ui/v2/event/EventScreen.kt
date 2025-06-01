@@ -1,19 +1,10 @@
 package com.example.racebuddy.ui.v2.event
 
 import android.util.Log
-import android.widget.Space
-import androidx.compose.animation.AnimatedContent
 import androidx.compose.animation.ExperimentalAnimationApi
-import androidx.compose.animation.core.tween
-import androidx.compose.animation.expandVertically
-import androidx.compose.animation.fadeIn
-import androidx.compose.animation.fadeOut
-import androidx.compose.animation.togetherWith
-import androidx.compose.animation.with
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -34,13 +25,13 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.PagerState
-import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.ClickableText
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.Close
+import androidx.compose.material.icons.filled.Favorite
 import androidx.compose.material.icons.filled.FavoriteBorder
 import androidx.compose.material.icons.filled.ShoppingCart
 import androidx.compose.material3.Button
@@ -60,6 +51,7 @@ import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.isTraceInProgress
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
@@ -89,21 +81,15 @@ import androidx.compose.ui.zIndex
 import coil.compose.AsyncImage
 import com.example.racebuddy.R
 import com.example.racebuddy.data.database.AthleteInfo
-import com.example.racebuddy.data.database.Event
 import com.example.racebuddy.data.database.EventInfo
 import com.example.racebuddy.data.database.testAthlete
 import com.example.racebuddy.data.database.testEvent
-import com.example.racebuddy.ui.theme.AppTypography
 import com.example.racebuddy.ui.theme.heights
 import com.example.racebuddy.ui.theme.paddings
 import com.example.racebuddy.ui.theme.shapes
-import com.example.racebuddy.ui.theme.sizes
-import com.example.racebuddy.ui.v1.event.EventDetailsRow
-import com.example.racebuddy.ui.v1.profile.DetailsCard
 import com.example.racebuddy.ui.v2.main.countryMap
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
-import okhttp3.internal.notify
 
 @Composable
 fun EventScreen(
@@ -129,8 +115,9 @@ fun EventScreen(
 
             EventScreenTopBar(
                 isUserLoggedIn = athleteInfo.athleteId != "-1",
+                isFavorite = false,
                 onBackClick = onBackClick,
-                onFavoriteClick = onFavoriteClick
+                onFavoriteClick = {}
             )
 
             // Add the rest of your screen content below
@@ -168,6 +155,7 @@ fun EventScreen(
 @Composable
 fun EventScreenTopBar(
     isUserLoggedIn: Boolean,
+    isFavorite: Boolean,
     onBackClick: () -> Unit,
     onFavoriteClick: () -> Unit,
     modifier: Modifier = Modifier
@@ -201,7 +189,7 @@ fun EventScreenTopBar(
             }
         }
 
-        if(true) {
+        if(isUserLoggedIn) {
             // Heart Icon (favorite)
             Card(
                 shape = CircleShape,
@@ -214,7 +202,7 @@ fun EventScreenTopBar(
                     modifier = Modifier.fillMaxSize()
                 ) {
                     Icon(
-                        imageVector = Icons.Default.FavoriteBorder,
+                        imageVector = if(isFavorite) Icons.Default.Favorite else Icons.Default.FavoriteBorder,
                         contentDescription = "Favorite",
                     )
                 }
@@ -229,6 +217,7 @@ fun EventScreenTopBar(
 fun EventScreen2(
     athleteInfo: AthleteInfo,
     eventInfo: EventInfo,
+    isFavorite: Boolean,
     onShowMoreTextClick: () -> Unit = {},
     onBackClick: () -> Unit,
     onFavoriteClick: () -> Unit,
@@ -312,19 +301,29 @@ fun EventScreen2(
                             .padding(top = paddings.spacingMedium)
                     ) {
                         EventScreenTopBar(
-                            isUserLoggedIn = true,
-                            onBackClick = {},
-                            onFavoriteClick = {},
+                            isUserLoggedIn = athleteInfo.athleteId != "-1",
+                            isFavorite = isFavorite,
+                            onBackClick = onBackClick,
+                            onFavoriteClick = onFavoriteClick,
                             modifier = Modifier.zIndex(1f)
                         )
-                        Image(
-                            painter = painterResource(id = R.drawable.default_background), // Replace with your image
-                            contentDescription = null,
+                        AsyncImage(
+                            model = eventInfo.backgroundPictureUrl.takeIf { it.isNotBlank() },
+                            contentDescription = "Background Picture",
+                            placeholder = painterResource(R.drawable.default_background),
+                            error = painterResource(R.drawable.default_background),
+                            fallback = painterResource(R.drawable.default_background),
                             modifier = Modifier
                                 .fillMaxWidth()
                                 .height(imageHeight),
                             contentScale = ContentScale.Crop
                         )
+
+//                        Image(
+//                            painter = painterResource(id = R.drawable.default_background), // Replace with your image
+//                            contentDescription = null,
+//
+//                        )
                     }
                 }
 
@@ -759,6 +758,7 @@ fun EventDetails(
                     //top = paddings.spacingSmall
                 )
                 .fillMaxWidth()
+
 //                .drawBehind {
 //                    val borderSize = 2.dp.toPx()
 //                    drawLine(
@@ -903,6 +903,7 @@ fun EventDetails(
             overflow = TextOverflow.Ellipsis,
             modifier = Modifier
                 .padding(paddings.spacingSmall)
+                .align(Alignment.Start)
         )
 
         AnnotatedShowMoreText(
@@ -1300,10 +1301,11 @@ fun EventScreenCollapsing(
 @Composable
 fun EventScreenPreview() {
     EventScreen2(
-        athleteInfo = testAthlete,
+        athleteInfo = testAthlete.copy(athleteId = "not 1"),
         eventInfo = testEvent,
         onBackClick = {},
         onFavoriteClick = {},
-        onShowMoreTextClick = {}
+        onShowMoreTextClick = {},
+        isFavorite = true
     )
 }

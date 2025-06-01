@@ -137,6 +137,7 @@ fun MainScreen(
     favoriteEventsId: List<String> = emptyList(),
     searchFilters: List<String> = listOf("All", "Past", "Upcoming"),
     onSearchIconClick: () -> Unit,
+    onEventClick: (eventInfo: EventInfo) -> Unit,
     onFavoriteIconBottomBarClick: () -> Unit,
     onProfileIconBottomBarClick: () -> Unit,
     onBottomBarIconClicked: (Int) -> Unit,
@@ -226,7 +227,8 @@ fun MainScreen(
                     events = events,
                     favoriteEventsId = favoriteEventsId,
                     onFavoriteIconClick = onFavoriteIconClick,
-                    isUserLoggedIn = isUserLoggedIn
+                    isUserLoggedIn = isUserLoggedIn,
+                    onEventClick = onEventClick
                 )
             }
         }
@@ -669,6 +671,7 @@ fun Events(
     events: List<EventInfo>,
     favoriteEventsId: List<String>,
     onFavoriteIconClick: (String, Boolean) -> Unit,
+    onEventClick: (eventInfo: EventInfo) -> Unit,
     isUserLoggedIn: Boolean,
     modifier: Modifier = Modifier
 ) {
@@ -713,7 +716,9 @@ fun Events(
                             favoriteEventsId.contains(eventInfo.evenUuid)
                         )
                     },
-                    onEventClick = {},
+                    onEventClick = {
+                        onEventClick(eventInfo)
+                    },
                     modifier = Modifier
                 )
         }
@@ -761,6 +766,7 @@ fun MainScreenPreview() {
         onProfileIconBottomBarClick = {},
         onFavoriteIconBottomBarClick = {},
         onBottomBarIconClicked = {},
-        isUserLoggedIn = true
+        isUserLoggedIn = true,
+        onEventClick = {}
     )
 }

@@ -52,14 +52,7 @@ class MainActivity : ComponentActivity() {
         setContent {
             RaceBuddyTheme {
                 //App()
-                //Appv2()
-                EventScreen2(
-                    athleteInfo = testAthlete,
-                    eventInfo = testEvent,
-                    onBackClick = {},
-                    onFavoriteClick = {},
-                    onShowMoreTextClick = {}
-                )
+                Appv2()
             }
         }
     }

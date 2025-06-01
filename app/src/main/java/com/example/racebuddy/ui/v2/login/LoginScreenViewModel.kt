@@ -103,6 +103,8 @@ class LoginScreenViewModel(
 
                     //userPreferencesRepository.saveSupabaseAthleteId(responseString.substring(6))
                     Log.d("LOGIN", "Current logged in supabase user: " + appRepository.getSupabaseLoggedInAthlete())
+
+                    resetFields()
                 } else {
                     loginSuccesUpdate(false)
                     errorMessageSuccesUpdate(true)
@@ -119,11 +121,23 @@ class LoginScreenViewModel(
     }
 
     fun onSignUpTextClick() {
-
+        resetFields()
     }
 
     fun onSkipButtonClick() {
+        resetFields()
+    }
 
+    fun resetFields() {
+        _uiState.update { currentValue ->
+            currentValue.copy(
+                email = "",
+                password = "",
+                errorMessage = false,
+                isLoading = false,
+                loginSucces = false
+            )
+        }
     }
 
     companion object {

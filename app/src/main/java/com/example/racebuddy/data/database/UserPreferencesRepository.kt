@@ -64,6 +64,7 @@ class UserPreferencesRepository(
     }
 
     suspend fun saveSupabaseAthleteInfo(athleteInfo: AthleteInfo) {
+        Log.d("PREFERENCES", "Updating athlete info: ${athleteInfo.firstName}")
         dataStore.edit { preferences ->
             preferences[SUPABASE_ATHLETE_INFO] = Json.encodeToString(athleteInfo)
         }

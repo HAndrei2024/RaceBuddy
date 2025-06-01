@@ -63,6 +63,7 @@ import com.example.racebuddy.ui.theme.paddings
 import com.example.racebuddy.ui.theme.shapes
 import com.example.racebuddy.ui.v2.common.CustomTextField
 import com.example.racebuddy.ui.v2.common.ErrorText
+import com.example.racebuddy.ui.v2.common.LoadingAnimation
 import kotlinx.datetime.LocalDate
 import network.chaintech.kmp_date_time_picker.ui.datepicker.WheelDatePickerView
 import network.chaintech.kmp_date_time_picker.utils.DateTimePickerView
@@ -92,6 +93,7 @@ fun SignupSecondScreen(
     showError:Boolean,
     onSkipClick: () -> Unit,
     onDoneClick: () -> Unit,
+    isLoading: Boolean,
     showDatePicker: Boolean,
     onDatePickerDoneClick: () -> Unit,
     onDatePickerDissmisClick: () -> Unit,
@@ -111,43 +113,51 @@ fun SignupSecondScreen(
         contentColor = Color.Gray
     ) { innerPadding ->
 
-        Column(
-            verticalArrangement = Arrangement.Center,
-            horizontalAlignment = Alignment.Start,
-            modifier = modifier
+        Box(
+            modifier = Modifier
                 .fillMaxSize()
-                //.padding(innerPadding)
-                .padding(start = paddings.spacingExtraLarge)
-                .padding(top = innerPadding.calculateTopPadding())
         ) {
+            if (isLoading) {
+                LoadingAnimation()
+            }
+
+            Column(
+                verticalArrangement = Arrangement.Center,
+                horizontalAlignment = Alignment.Start,
+                modifier = modifier
+                    .fillMaxSize()
+                    //.padding(innerPadding)
+                    .padding(start = paddings.spacingExtraLarge)
+                    .padding(top = innerPadding.calculateTopPadding())
+            ) {
 //            SignUpText2ndScreen(
 //                modifier = Modifier.padding(innerPadding)
 //            )
-            Spacer(
-                modifier.size(paddings.spacingExtraLarge)
-            )
-            FirstNameTextField(
-                textStringValue = firstNameValue,
-                placeholderString = "First Name",
-                iconImageVector = Icons.Filled.Person,
-                onValueChange = onFirstNameChange
+                Spacer(
+                    modifier.size(paddings.spacingExtraLarge)
+                )
+                FirstNameTextField(
+                    textStringValue = firstNameValue,
+                    placeholderString = "First Name",
+                    iconImageVector = Icons.Filled.Person,
+                    onValueChange = onFirstNameChange
 
-            )
-            LastNameTextField(
-                textStringValue = lastNameValue,
-                placeholderString = "Last Name",
-                iconImageVector = Icons.Filled.Person,
-                onValueChange = onLastNameChange,
-                modifier = modifier.padding()
-            )
+                )
+                LastNameTextField(
+                    textStringValue = lastNameValue,
+                    placeholderString = "Last Name",
+                    iconImageVector = Icons.Filled.Person,
+                    onValueChange = onLastNameChange,
+                    modifier = modifier.padding()
+                )
 
-            GenderSelector(
-                selectedGender = selectedGender,
-                onGenderSelected = onGenderButtonClick
-            )
+                GenderSelector(
+                    selectedGender = selectedGender,
+                    onGenderSelected = onGenderButtonClick
+                )
 
 
-            //CountrySelector()
+                //CountrySelector()
 
 //        CustomTextField(
 //            textStringValue = "",
@@ -155,18 +165,18 @@ fun SignupSecondScreen(
 //            iconImageVector = Icons.Filled.Person,
 //            onValueChange = {}
 //        )
-            BirthdateInputFields(
-                dayValue = dayStringValue,
-                onDayValueChange = onDayTextFieldChange,
-                yearValue = yearStringValue,
-                onYearValueChange = onYearTextFieldChange,
-                monthValue = monthStringValue,
-                onMonthValueChange = onMonthTextFieldChange
-            )
+                BirthdateInputFields(
+                    dayValue = dayStringValue,
+                    onDayValueChange = onDayTextFieldChange,
+                    yearValue = yearStringValue,
+                    onYearValueChange = onYearTextFieldChange,
+                    monthValue = monthStringValue,
+                    onMonthValueChange = onMonthTextFieldChange
+                )
 
-            CountrySelectorWithFlags(
-                onNationalityTextFieldChange = onNationalityTextFieldChange
-            )
+                CountrySelectorWithFlags(
+                    onNationalityTextFieldChange = onNationalityTextFieldChange
+                )
 //        BirthdatePicker(
 //            birthdateString = "",
 //            onValueChange = onBirthdateTextFieldChange,
@@ -190,10 +200,10 @@ fun SignupSecondScreen(
 //        )
 
 
-            SwitchWithCustomColors(
-                licenseNumberStringValue = licenseNumberStringValue,
-                onLicenseNumberTextFieldChange = onLicenseNumberTextFieldChange
-            )
+                SwitchWithCustomColors(
+                    licenseNumberStringValue = licenseNumberStringValue,
+                    onLicenseNumberTextFieldChange = onLicenseNumberTextFieldChange
+                )
 
 //        CustomTextField(
 //            textStringValue = "",
@@ -202,20 +212,21 @@ fun SignupSecondScreen(
 //            onValueChange = {},
 //        )
 
-            if(showError) {
-                ErrorText(
-                    textString = errorMessage
+                if (showError) {
+                    ErrorText(
+                        textString = errorMessage
+                    )
+                }
+
+                SkipButton(
+                    onClick = onSkipClick
                 )
+
+                SignupButton(
+                    onClick = onDoneClick
+                )
+                //PageIndicator(1)
             }
-
-            SkipButton(
-                onClick = onSkipClick
-            )
-
-            SignupButton(
-                onClick = onDoneClick
-            )
-            //PageIndicator(1)
         }
     }
 }
@@ -960,6 +971,7 @@ fun SignupSecondScreenPreview() {
         onFirstNameChange = {},
         lastNameValue = "",
         onLastNameChange = {},
-        showError = true
+        showError = true,
+        isLoading = false
     )
 }

@@ -3,14 +3,11 @@ package com.example.racebuddy.app.v2
 import androidx.activity.compose.BackHandler
 import androidx.compose.animation.AnimatedContentTransitionScope
 import androidx.compose.animation.core.tween
-import androidx.compose.animation.slideInHorizontally
-import androidx.compose.animation.slideInVertically
-import androidx.compose.animation.slideOutHorizontally
-import androidx.compose.animation.slideOutVertically
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Modifier
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
@@ -23,11 +20,12 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import com.example.racebuddy.Application
-import com.example.racebuddy.app.v1.App
 import com.example.racebuddy.data.database.AppRepository
 import com.example.racebuddy.data.database.EventInfo
 import com.example.racebuddy.data.database.RemoteDataSource
 import com.example.racebuddy.data.database.UserPreferencesRepository
+import com.example.racebuddy.ui.v2.event.EventScreen2
+import com.example.racebuddy.ui.v2.event.EventScreenViewModel
 import com.example.racebuddy.ui.v2.favorite.FavoriteScreen
 import com.example.racebuddy.ui.v2.login.LoginScreen
 import com.example.racebuddy.ui.v2.login.LoginScreenViewModel
@@ -35,14 +33,15 @@ import com.example.racebuddy.ui.v2.main.MainScreen
 import com.example.racebuddy.ui.v2.main.MainScreenViewModel
 import com.example.racebuddy.ui.v2.profile.ProfileScreen
 import com.example.racebuddy.ui.v2.profile.ProfileScreenViewModel
-import com.example.racebuddy.ui.v2.search.SearchScreen
 import com.example.racebuddy.ui.v2.signup.SignUpFirstScreen
 import com.example.racebuddy.ui.v2.signup.SignupScreensViewModel
 import com.example.racebuddy.ui.v2.signup.SignupSecondScreen
 import io.github.jan.supabase.auth.auth
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
+import kotlinx.coroutines.launch
 
 enum class AppScreen {
     Login,
@@ -69,6 +68,9 @@ fun Appv2(
     profileScreenViewModel: ProfileScreenViewModel = viewModel(
         factory = ProfileScreenViewModel.factory
     ),
+    eventScreenViewModel: EventScreenViewModel = viewModel(
+        factory = EventScreenViewModel.factory
+    ),
     appScreenViewModel: AppScreenViewModel = viewModel(
         factory = AppScreenViewModel.factory
     ),
@@ -77,10 +79,12 @@ fun Appv2(
     val loginScreenUiState by loginScreenViewModel.uiState.collectAsState()
     val signupScreensUiState by signupScreensViewModel.uiState.collectAsState()
     val mainScreenUiState by mainScreenViewModel.uiState.collectAsState()
+    val eventScreenUiState by eventScreenViewModel.uiState.collectAsState()
 
     val athleteInfo by appScreenViewModel.athleteInfo.collectAsState()
 
-    val startDestination = if(athleteInfo.athleteId == "-1") AppScreen.Login.name else AppScreen.Main.name
+
+    val startDestination = AppScreen.Login.name //if (athleteInfo.athleteId == "-1") AppScreen.Login.name else AppScreen.Main.name
 
 
     //appViewModel.updateScreenSelected(AppScreen.valueOf(startDestination))
@@ -116,6 +120,7 @@ fun Appv2(
                     }
                 },
                 onSkipClick = {
+                    loginScreenViewModel.onSkipButtonClick()
                     navController.navigate(AppScreen.Main.name) {
                         launchSingleTop = true
                     }
@@ -139,6 +144,10 @@ fun Appv2(
                 favoriteEventsId = mainScreenUiState.favoriteEventIds.map { it.eventUuid },
                 onSearchIconClick = {
                     //navController.navigate(AppScreen.Search.name)
+                },
+                onEventClick = { eventInfo ->
+                    eventScreenViewModel.updateEvent(eventInfo)
+                    navController.navigate(AppScreen.Event.name)
                 },
                 onBottomBarIconClicked = { int: Int ->
                     when(int) {
@@ -192,7 +201,8 @@ fun Appv2(
                 if (signupScreensUiState.signupSucces) {
                     mainScreenViewModel.updateAthlete()
                     navController.navigate(AppScreen.SignUpSecond.name) {
-                        launchSingleTop = true
+                        //launchSingleTop = true
+                        popUpTo(AppScreen.SignUpFirst.name) { inclusive = true }
                     }
                 }
             }
@@ -242,11 +252,17 @@ fun Appv2(
 //
 //                }
                 if (signupScreensUiState.updatedDatabase) {
+                    delay(500L)
                     navController.navigate(AppScreen.Main.name) {
-                        launchSingleTop = true
+                        popUpTo(AppScreen.SignUpSecond.name) { inclusive = true }
+                        //launchSingleTop = true
                     }
+                    delay(500L)
+                    signupScreensViewModel.resetFirstScreenFields()
+                    signupScreensViewModel.resetSecondScreenFields()
                 }
             }
+            val scope = rememberCoroutineScope()
 
 
 
@@ -257,6 +273,7 @@ fun Appv2(
                 lastNameValue = signupScreensUiState.lastName,
                 errorMessage = signupScreensUiState.errorMessage,
                 showError = signupScreensUiState.showError,
+                isLoading = signupScreensUiState.isLoading,
                 onBirthdateTextFieldClick = { signupScreensViewModel.onBirthdateTextfieldClick() },
                 birthdateStringValue = "",
                 showDatePicker = signupScreensUiState.showDatePicker,
@@ -275,12 +292,29 @@ fun Appv2(
                 onLicenseNumberTextFieldChange = { signupScreensViewModel.onLicenseNumberChange(it)},
                 licenseNumberStringValue = signupScreensUiState.localRegistrationNumber,
                 onSkipClick = {
-                    navController.navigate(AppScreen.Main.name) {
-                        launchSingleTop = true
+
+
+                    scope.launch {
+                        appScreenViewModel.updateUserPreferencesRepository()
+                        signupScreensViewModel.updateIsLoading(true)
+                        signupScreensViewModel.onSkipButtonClick()
+                        delay(500L)
+                        navController.navigate(AppScreen.Main.name) {
+                            popUpTo(AppScreen.SignUpSecond.name) { inclusive = true }
+                            launchSingleTop = true
+                        }
+                        delay(500L)
+                        signupScreensViewModel.resetFirstScreenFields()
+                        signupScreensViewModel.resetSecondScreenFields()
                     }
+
                 },
                 onDoneClick = {
-                    signupScreensViewModel.onDoneClick()
+                    scope.launch {
+                        signupScreensViewModel.onDoneClick()
+                        delay(1000L) // wait 1 second
+                    }
+                    //appScreenViewModel.updateUserPreferencesRepository()
                     //navController.navigate(AppScreen.Main.name)
                 },
                 modifier = Modifier,
@@ -319,6 +353,26 @@ fun Appv2(
                         }
                     }
                 }
+            )
+        }
+        
+        composable(route = AppScreen.Event.name) {
+            val isFavorite = mainScreenUiState.favoriteEventIds.map { it -> it.eventUuid }.contains(eventScreenUiState.eventInfo.evenUuid)
+
+            EventScreen2(
+                athleteInfo = athleteInfo,
+                eventInfo = eventScreenUiState.eventInfo,
+                onShowMoreTextClick = { },
+                onBackClick = {
+                    navController.popBackStack()
+                },
+                isFavorite = isFavorite,
+                onFavoriteClick = {
+                    mainScreenViewModel.onFavoriteIconClick(
+                        eventUuid = eventScreenUiState.eventInfo.evenUuid,
+                        delete =  isFavorite
+                    )
+                },
             )
         }
         

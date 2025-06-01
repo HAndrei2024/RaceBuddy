@@ -117,9 +117,17 @@ class SignupScreensViewModel(
 
                     // TODO: This line of code causes recomposition => signup second screen composes twice
                     //userPreferencesRepository.saveSupabaseAthleteId(responeString.substring(6))
-
-
-                    Log.d("SINGUP1", responeString.substring(6))
+//                    viewModelScope.launch {
+//                        val athleteInfo =
+//                            appRepository.getSupabaseAthleteInfo(responeString.substring(5))
+//                        userPreferencesRepository.saveSupabaseAthleteInfo(
+//                            athleteInfo = athleteInfo
+//                        )
+//
+//                        Log.d("App", "The User Preferences has been updated with: ${athleteInfo.firstName}")
+//                    }
+                    //resetFirstScreenFields()
+                    Log.d("SINGUP1", responeString.substring(5))
                 } else {
                     updateSignUpSucces(false)
                     updateShowError(true)
@@ -181,7 +189,12 @@ class SignupScreensViewModel(
 
                     updateUpdatedDatabase(appRepository.updateSupabaseAthleteDetails(athleteInfo))
 
+                    userPreferencesRepository.saveSupabaseAthleteInfo(athleteInfo)
+
+                    //resetSecondScreenFields()
+
                     if(!_uiState.value.updatedDatabase) {
+                        updateIsLoading(false)
                         updateShowError(true)
                         updateErrorMessage("Something went wrong.")
                     }
@@ -192,9 +205,14 @@ class SignupScreensViewModel(
             }
         }
         else {
+            updateIsLoading(false)
             updateShowError(true)
             updateErrorMessage("Something went wrong. Press Skip.")
         }
+    }
+
+    fun onSkipButtonClick() {
+        updateIsLoading(true)
     }
 
     fun updateUpdatedDatabase(value: Boolean) {
@@ -263,6 +281,7 @@ class SignupScreensViewModel(
             _uiState.value.nationality.isNotEmpty()
             )
         ) {
+            updateIsLoading(false)
             updateShowError(true)
             updateErrorMessage("Some fields are completed improperly.")
             return false
@@ -359,6 +378,34 @@ class SignupScreensViewModel(
         _uiState.update { currentState ->
             currentState.copy(
                 localRegistrationNumber = localRegistrationNumber
+            )
+        }
+    }
+
+    fun resetFirstScreenFields() {
+        _uiState.update { currentState ->
+            currentState.copy(
+                email = "",
+                password = "",
+                verifyPassword = ""
+            )
+        }
+    }
+
+    fun resetSecondScreenFields() {
+        _uiState.update { currentState ->
+            currentState.copy(
+                firstName = "",
+                lastName = "",
+                day = "",
+                month = "",
+                year = "",
+                gender = "",
+                nationality = "",
+                localRegistrationNumber = "",
+                signupSucces = false,
+                isLoading = false,
+                updatedDatabase = false
             )
         }
     }

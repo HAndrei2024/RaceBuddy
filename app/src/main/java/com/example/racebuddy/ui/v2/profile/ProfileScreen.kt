@@ -36,7 +36,7 @@ fun ProfileScreen(
         bottomBar = {
             //BottomAppBarUpdated()
             BottomNavigationBarChat(
-                selectedItem = 1,
+                selectedItem = 2,
                 onItemSelected = { int: Int -> onBottomBarIconClick(int) },
             )
         },

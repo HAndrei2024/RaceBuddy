@@ -1,5 +1,6 @@
 package com.example.racebuddy.app.v2
 
+import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.ViewModelProvider.AndroidViewModelFactory.Companion.APPLICATION_KEY
@@ -36,6 +37,27 @@ class AppScreenViewModel(
             SharingStarted.WhileSubscribed(5000),
             testAthlete // or some default UserInfo
         )
+
+    fun updateUserPreferencesRepository() {
+        Log.d("App", "Updating User Preferences...")
+        viewModelScope.launch {
+            val athleteInfo =
+                appRepository.getSupabaseAthleteInfo(appRepository.getSupabaseLoggedInAthlete())
+            userPreferencesRepository.saveSupabaseAthleteInfo(
+                athleteInfo = athleteInfo
+            )
+
+            Log.d("App", "The User Preferences has been updated with: ${athleteInfo.firstName}")
+        }
+    }
+
+    fun updateUserPreferencesRepository(athleteInfo: AthleteInfo) {
+        viewModelScope.launch {
+            userPreferencesRepository.saveSupabaseAthleteInfo(
+                athleteInfo = athleteInfo
+            )
+        }
+    }
 
     companion object {
         val factory: ViewModelProvider.Factory = viewModelFactory {
