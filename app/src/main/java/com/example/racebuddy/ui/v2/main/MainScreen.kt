@@ -88,6 +88,7 @@ val countries = listOf(
     Country("Australia", "🇦🇺"),
     Country("Austria", "🇦🇹"),
     Country("Belgium", "🇧🇪"),
+    Country("Bulgaria", "\uD83C\uDDE7\uD83C\uDDEC"),
     Country("Brazil", "🇧🇷"),
     Country("Canada", "🇨🇦"),
     Country("China", "🇨🇳"),
@@ -273,7 +274,7 @@ fun MainScreen(
                                     searchFilteredEvents = searchEvents.filter { eventInfo ->
                                         eventInfo.title.contains(searchQuery, ignoreCase = true) ||
                                         eventInfo.category.contains(searchQuery, ignoreCase = true)
-                                    }
+                                    }.sortedBy { event -> event.startDate }
                                 }
                                 "Past" -> {
                                     searchFilteredEvents = searchEvents.filter { eventInfo ->
@@ -281,14 +282,14 @@ fun MainScreen(
                                                 || eventInfo.category.contains(searchQuery, ignoreCase = true)) &&
                                         eventInfo.startDate <= LocalDate.now()
 
-                                    }
+                                    }.sortedByDescending { event -> event.startDate }
                                 }
                                 "Upcoming" -> {
                                     searchFilteredEvents = searchEvents.filter { eventInfo ->
                                         (eventInfo.title.contains(searchQuery, ignoreCase = true)
                                                 || eventInfo.category.contains(searchQuery, ignoreCase = true)) &&
                                         eventInfo.startDate > LocalDate.now()
-                                    }
+                                    }.sortedBy { event -> event.startDate }
                                 }
                                 else -> {
 
@@ -344,6 +345,7 @@ fun MainScreen(
                         isUserLoggedIn = isUserLoggedIn,
                         favoriteEventsId = favoriteEventsId,
                         onFavoriteIconClick = onFavoriteIconClick,
+                        onEventClick = onEventClick
                     )
                 }
 
@@ -356,6 +358,7 @@ fun MainScreen(
 @Composable
 fun SearchEventList(
     events: List<EventInfo>,
+    onEventClick: (eventInfo: EventInfo) -> Unit,
     isUserLoggedIn: Boolean,
     favoriteEventsId: List<String>,
     onFavoriteIconClick: (String, Boolean) -> Unit
@@ -375,7 +378,9 @@ fun SearchEventList(
                         favoriteEventsId.contains(eventInfo.evenUuid)
                     )
                 },
-                onEventClick = {},
+                onEventClick = {
+                    onEventClick(eventInfo)
+                },
                 modifier = Modifier
             )
         }

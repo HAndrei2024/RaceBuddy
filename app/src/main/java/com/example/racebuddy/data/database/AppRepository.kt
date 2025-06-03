@@ -126,4 +126,9 @@ class AppRepository(
     suspend fun logoutSupabaseAthlete() {
         remoteDataSource.logoutAthlete()
     }
+
+    suspend fun getSupabaseEventResultAthleteInfo(eventUuid: String): List<ResultAthleteInfo> {
+        return remoteDataSource.getEventResultAthleteInfo(eventUuid)
+    }
+
 }

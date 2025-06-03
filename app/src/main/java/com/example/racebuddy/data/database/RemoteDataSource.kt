@@ -4,6 +4,7 @@ package com.example.racebuddy.data.database
 //import kotlinx.datetime.LocalDate
 import android.util.Log
 import androidx.lifecycle.viewModelScope
+import com.example.racebuddy.data.database.Result
 import io.github.jan.supabase.SupabaseClient
 import io.github.jan.supabase.auth.Auth
 import io.github.jan.supabase.auth.OtpType
@@ -16,6 +17,7 @@ import io.github.jan.supabase.postgrest.from
 import io.github.jan.supabase.postgrest.postgrest
 import io.github.jan.supabase.postgrest.query.Columns
 import io.github.jan.supabase.postgrest.query.Order
+import io.github.jan.supabase.postgrest.rpc
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
@@ -199,6 +201,23 @@ class RemoteDataSource {
         }
     }
 
+    suspend fun getEventResultAthleteInfo(eventUuid: String): List<ResultAthleteInfo> {
+        try {
+
+            val param = EventParam(eventUuid)
+            val response = SupabaseClient.client.postgrest
+                .rpc("get_event_users", param).decodeList<ResultAthleteInfo>()
+
+            Log.d("SUPABASE", "Fetched ResultAthlete info: ${response.size}")
+
+            return response
+        } catch (exception: Exception) {
+            Log.d("SUPABASE", "Tried fetching ResultAthlete join data and failed, exception: $exception")
+        }
+
+        return emptyList()
+    }
+
     object SupabaseClient {
         val client = createSupabaseClient(
             supabaseUrl = "https://mkiafnnklxyysprdgmcb.supabase.co",
@@ -209,6 +228,11 @@ class RemoteDataSource {
         }
     }
 }
+
+@Serializable
+data class EventParam(
+    @SerialName("given_event_uuid") val eventUuid: String
+)
 
 @Serializable
 data class AthleteInfo(
@@ -247,6 +271,60 @@ data class EventInfo(
 )
 
 @Serializable
+data class ResultInfo(
+    @SerialName("time") val time: Long,
+    @SerialName("penalties") val penalties : String,
+    @SerialName("rank") val rank: Int,
+    @SerialName("points") val points: Int,
+    @SerialName("athlete_event_number") val athleteEventNumber: String,
+    @SerialName("s1") val split1: Long,
+    @SerialName("s2") val split2: Long,
+    @SerialName("s3") val split3: Long,
+    @SerialName("s4") val split4: Long,
+    @SerialName("status") val status: String,
+    @SerialName("confirmed") val confirmed: Boolean,
+    @SerialName("athlete_uuid") val athleteUuid: String,
+    @SerialName("event_uui") val eventUuid: String,
+    @SerialName("category") val category: String,
+)
+
+// For the join of tables
+@Serializable
+data class ResultAthleteInfo(
+    @SerialName("athlete_uuid") val athleteUuid: String,
+    @SerialName("status") val status: String,
+    @SerialName("confirmed") val confirmed: Boolean,
+    @SerialName("category") val category: String,
+    @SerialName("athlete_event_number") val athleteEventNumber: String,
+    @SerialName("points") val points: Int,
+    @SerialName("rank") val rank: Int,
+    @SerialName("penalties") val penalties : String,
+    @SerialName("athlete_time") val time: Long,
+    @SerialName("first_name") val firstName: String,
+    @SerialName("last_name") val lastName: String,
+    @SerialName("gender") val gender: String,
+    @SerialName("nationality") val country: String,
+    @SerialName("profile_picture_url") val profilePictureUrl: String?
+)
+
+val testResultAthleteInfo = ResultAthleteInfo(
+    athleteUuid = "123-123",
+    status = "",
+    confirmed = false,
+    category = "Junior",
+    athleteEventNumber = "01",
+    points = 180,
+    rank = 1,
+    penalties = "-",
+    time = 8300,
+    firstName = "Jhon",
+    lastName = "Doe",
+    gender = "Male",
+    country = "Romania",
+    profilePictureUrl = ""
+)
+
+@Serializable
 data class EventIdForFavorite(
     @SerialName("event_uuid") val eventUuid: String
 )
@@ -255,6 +333,23 @@ data class EventIdForFavorite(
 data class Favorites(
     @SerialName("athlete_uuid") val athleteUuid: String,
     @SerialName("event_uuid") val eventUuid: String,
+)
+
+val testResult: ResultInfo = ResultInfo(
+    time = 83000,
+    penalties = "-",
+    rank = 1,
+    points = 75,
+    athleteEventNumber = "70",
+    split1 = 0,
+    split2 = 0,
+    split3 = 0,
+    split4 = 0,
+    status = "",
+    confirmed = false,
+    athleteUuid = "id 123 - 123",
+    eventUuid = "1",
+    category = "Junior"
 )
 
 val testEvent: EventInfo = EventInfo(

@@ -16,6 +16,7 @@ import androidx.compose.material3.Button
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
@@ -24,6 +25,7 @@ import com.example.racebuddy.app.v1.App
 import com.example.racebuddy.app.v2.Appv2
 import com.example.racebuddy.data.database.AppRepository
 import com.example.racebuddy.data.database.LocalDataSource
+import com.example.racebuddy.data.database.RemoteDataSource
 import com.example.racebuddy.data.database.testAthlete
 import com.example.racebuddy.data.database.testEvent
 import com.example.racebuddy.data.network.StravaApi

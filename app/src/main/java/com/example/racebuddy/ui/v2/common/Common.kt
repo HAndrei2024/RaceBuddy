@@ -83,6 +83,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.zIndex
 import coil.compose.AsyncImage
 import com.example.racebuddy.R
 import com.example.racebuddy.data.database.Event
@@ -813,6 +814,35 @@ fun BottomBarIconUpdated(
     }
 }
 
+@Composable
+fun TestElevation() {
+    Column(
+        modifier = Modifier.fillMaxWidth()
+    ) {
+        Card(
+            modifier = Modifier.fillMaxWidth().zIndex(1f),
+            elevation = CardDefaults.elevatedCardElevation(10.dp)
+        ) {
+            Text(
+                text = "This is a text!"
+            )
+        }
+        Card(
+            modifier = Modifier.fillMaxWidth().zIndex(2f),
+            elevation = CardDefaults.elevatedCardElevation(10.dp)
+        ) {
+            Text(
+                text = "This is a text!"
+            )
+        }
+    }
+}
+
+@Preview
+@Composable
+fun TestElevationPreview() {
+    TestElevation()
+}
 
 @Preview
 @Composable

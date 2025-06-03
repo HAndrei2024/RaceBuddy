@@ -42,6 +42,7 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import kotlinx.datetime.LocalDate
 
 enum class AppScreen {
     Login,
@@ -147,6 +148,7 @@ fun Appv2(
                 },
                 onEventClick = { eventInfo ->
                     eventScreenViewModel.updateEvent(eventInfo)
+                    eventScreenViewModel.getEventResultAthleteInfo(eventInfo.evenUuid)
                     navController.navigate(AppScreen.Event.name)
                 },
                 onBottomBarIconClicked = { int: Int ->
@@ -332,6 +334,11 @@ fun Appv2(
             }
             FavoriteScreen(
                 favoriteEvents = favoriteEventsInfo,
+                onEventClick = { eventInfo ->
+                    eventScreenViewModel.updateEvent(eventInfo)
+                    eventScreenViewModel.getEventResultAthleteInfo(eventInfo.evenUuid)
+                    navController.navigate(AppScreen.Event.name)
+                },
                 onFavoriteIconClick = {id: String, value: Boolean -> mainScreenViewModel.onFavoriteIconClick(id, value) },
                 isUserLoggedIn = RemoteDataSource.SupabaseClient.client.auth.currentUserOrNull() != null,
                 onHomeIconClick = {
@@ -360,6 +367,8 @@ fun Appv2(
             val isFavorite = mainScreenUiState.favoriteEventIds.map { it -> it.eventUuid }.contains(eventScreenUiState.eventInfo.evenUuid)
 
             EventScreen2(
+                resultAthleteInfoList = eventScreenUiState.resultAthleteInfoListFiltered,
+                eventCategories = listOf("General") + eventScreenUiState.resultAthleteInfoList.map { it.category }.distinct(), //eventScreenViewModel.getListOfCategories(),
                 athleteInfo = athleteInfo,
                 eventInfo = eventScreenUiState.eventInfo,
                 onShowMoreTextClick = { },
@@ -370,9 +379,12 @@ fun Appv2(
                 onFavoriteClick = {
                     mainScreenViewModel.onFavoriteIconClick(
                         eventUuid = eventScreenUiState.eventInfo.evenUuid,
-                        delete =  isFavorite
+                        delete = isFavorite
                     )
                 },
+                onFilterResultsButtonClick = { category: String ->
+                    eventScreenViewModel.updateFilterResultsOnCategory(category)
+                }
             )
         }
         

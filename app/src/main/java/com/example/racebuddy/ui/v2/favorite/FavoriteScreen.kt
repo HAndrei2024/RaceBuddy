@@ -29,6 +29,7 @@ fun FavoriteScreen(
     favoriteEvents: List<EventInfo>,
     onFavoriteIconClick: (String, Boolean) -> Unit,
     isUserLoggedIn: Boolean,
+    onEventClick: (eventInfo: EventInfo) -> Unit,
     onHomeIconClick: () -> Unit,
     onProfileIconClick: () -> Unit,
     onBottomBarIconClick: (Int) -> Unit,
@@ -98,7 +99,9 @@ fun FavoriteScreen(
                             true
                         )
                     },
-                    onEventClick = {},
+                    onEventClick = {
+                        onEventClick(eventInfo)
+                    },
                     modifier = Modifier
                 )
             }
