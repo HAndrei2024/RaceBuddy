@@ -149,12 +149,15 @@ class RemoteDataSource {
     }
 
     suspend fun getAthleteInfo(athleteId: String): AthleteInfo {
-        return SupabaseClient.client.from("Athlete").select() {
+        val athlete: AthleteInfo = SupabaseClient.client.from("Athlete").select() {
             filter {
                 eq("athlete_uuid", athleteId)
             }
         }
             .decodeSingle()
+        Log.d("SUPABASE User", "Selected user from database: ${athlete.firstName} ${athlete.gender}")
+
+        return athlete
     }
 
     suspend fun getFavoriteEvents(athleteId: String): List<EventIdForFavorite> {
@@ -217,6 +220,35 @@ class RemoteDataSource {
 
         return emptyList()
     }
+
+    suspend fun registerAthleteToAnEvent(athleteUuid: String, eventUuid: String, category: String) {
+        Log.d("Supabase", "Adding result... athlete: $athleteUuid , event: $eventUuid")
+        try {
+            SupabaseClient.client.from("Result")
+                .insert(
+                    ResultInfo(
+                        time = 0,
+                        penalties = "",
+                        rank = 0,
+                        points = 0,
+                        athleteEventNumber = "0",
+                        split1 = 0,
+                        split2 = 0,
+                        split3 = 0,
+                        split4 = 0,
+                        status = "",
+                        confirmed = false,
+                        athleteUuid = athleteUuid,
+                        eventUuid = eventUuid,
+                        category = category
+                    )
+                )
+        } catch (exception: Exception) {
+            Log.d("Result Table", "Couldn't add result: $exception")
+        }
+    }
+
+
 
     object SupabaseClient {
         val client = createSupabaseClient(
@@ -284,7 +316,7 @@ data class ResultInfo(
     @SerialName("status") val status: String,
     @SerialName("confirmed") val confirmed: Boolean,
     @SerialName("athlete_uuid") val athleteUuid: String,
-    @SerialName("event_uui") val eventUuid: String,
+    @SerialName("event_uuid") val eventUuid: String,
     @SerialName("category") val category: String,
 )
 
@@ -328,6 +360,7 @@ val testResultAthleteInfo = ResultAthleteInfo(
 data class EventIdForFavorite(
     @SerialName("event_uuid") val eventUuid: String
 )
+
 
 @Serializable
 data class Favorites(

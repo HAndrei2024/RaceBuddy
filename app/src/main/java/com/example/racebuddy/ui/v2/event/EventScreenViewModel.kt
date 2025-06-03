@@ -80,6 +80,16 @@ class EventScreenViewModel(
         }
     }
 
+    fun onRegisterButtonClick(athleteUuid: String, eventUuid: String, category: String) {
+        viewModelScope.launch {
+            appRepository.registerSupabaseAthleteToAnEvent(
+                athleteUuid = athleteUuid,
+                eventUuid = eventUuid,
+                category = category
+            )
+        }
+    }
+
     companion object {
         val factory: ViewModelProvider.Factory = viewModelFactory {
             initializer {

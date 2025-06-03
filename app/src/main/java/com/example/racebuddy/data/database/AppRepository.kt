@@ -13,14 +13,14 @@ class AppRepository(
     suspend fun verifyLogin(
         username: String,
         password: String
-    ) : Int {
+    ): Int {
         return localDataSource.verifyLogin(username, password)
     }
 
     suspend fun verifySupabaseLogin(
         email: String,
         password: String
-    ) : String {
+    ): String {
         return remoteDataSource.verifyLogin(email, password)
     }
 
@@ -86,7 +86,8 @@ class AppRepository(
     fun checkIfAthleteRegistered(athleteId: Int, eventId: Int): Flow<Int> {
         return localDataSource.checkIfAthleteRegistered(athleteId, eventId)
     }
-    suspend fun updateAthleteProfilePicture(profilePictureUrl: String, id: Int){
+
+    suspend fun updateAthleteProfilePicture(profilePictureUrl: String, id: Int) {
         localDataSource.updateAthleteProfilePicture(
             profilePictureUrl = profilePictureUrl,
             id = id
@@ -119,6 +120,7 @@ class AppRepository(
         remoteDataSource.addFavoriteEvent(athleteUuid, eventUuid)
 
     }
+
     suspend fun deleteSupabaseFavoriteEvent(athleteUuid: String, eventUuid: String) {
         remoteDataSource.deleteFavoriteEvent(athleteUuid, eventUuid)
     }
@@ -131,4 +133,7 @@ class AppRepository(
         return remoteDataSource.getEventResultAthleteInfo(eventUuid)
     }
 
+    suspend fun registerSupabaseAthleteToAnEvent(athleteUuid: String, eventUuid: String, category: String) {
+        remoteDataSource.registerAthleteToAnEvent(athleteUuid, eventUuid, category)
+    }
 }

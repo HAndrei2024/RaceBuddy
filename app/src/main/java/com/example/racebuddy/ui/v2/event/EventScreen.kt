@@ -36,6 +36,8 @@ import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Favorite
 import androidx.compose.material.icons.filled.FavoriteBorder
 import androidx.compose.material.icons.filled.ShoppingCart
+import androidx.compose.material.icons.filled.Warning
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
@@ -49,6 +51,7 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Tab
 import androidx.compose.material3.TabRow
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.derivedStateOf
@@ -176,7 +179,10 @@ fun EventScreen2(
     eventInfo: EventInfo,
     eventCategories: List<String>,
     isFavorite: Boolean,
+    isAthleteRegistered: Boolean,
     onShowMoreTextClick: () -> Unit = {},
+    onLoginDialogGoClick: () -> Unit,
+    onRegisterButtonClick: (category: String) -> Unit,
     onBackClick: () -> Unit,
     onFavoriteClick: () -> Unit,
     onFilterResultsButtonClick: (String) -> Unit
@@ -190,7 +196,11 @@ fun EventScreen2(
 
     var showDetails by remember { mutableStateOf(false) }
     var showResults by remember { mutableStateOf(false) }
+    var showMissingInformationDialog by remember { mutableStateOf(false) }
+    var showUserNotLoggedInDialog by remember { mutableStateOf(false) }
+    var showRegisterSheet by remember { mutableStateOf(false) }
     var genderResultSheet by remember { mutableStateOf("Male") }
+
     val sheetState = rememberModalBottomSheetState(
         skipPartiallyExpanded = true
     )
@@ -201,7 +211,21 @@ fun EventScreen2(
         },
         bottomBar = {
             if(eventInfo.startDate > LocalDate.now()) {
-                EventScreenBottomBar()
+                EventScreenBottomBar(
+                    isAthleteRegistered = isAthleteRegistered,
+                    onClick = {
+                        if(athleteInfo.athleteId == "-1") {
+                            showUserNotLoggedInDialog = true
+                        }
+                        else if (athleteInfo.gender == "-" && athleteInfo.firstName == "-" && athleteInfo.lastName == "-" && athleteInfo.country == "-") {
+                            showMissingInformationDialog = true
+                        }
+                        else {
+                            showRegisterSheet = true
+                            //onRegisterButtonClick()
+                        }
+                    }
+                )
             }
         },
         containerColor = Color.White,
@@ -412,6 +436,83 @@ fun EventScreen2(
 
             }
 
+        if(showUserNotLoggedInDialog) {
+            AlertDialogExample(
+                onDismissRequest = {
+                    showUserNotLoggedInDialog = false
+                },
+                onConfirmation = {
+                    showUserNotLoggedInDialog = false
+
+                    // Navigate
+                    onLoginDialogGoClick()
+                },
+                dialogTitle = "\uD83D\uDE15 No athlete Logged In",
+                dialogText = "Please log in first.\n\nProfile -> Log In",
+                icon = Icons.Default.Warning
+            )
+        }
+
+        if(showMissingInformationDialog) {
+            AlertDialogExample(
+                onDismissRequest = {
+                    showMissingInformationDialog = false
+                },
+                onConfirmation = {
+                    showMissingInformationDialog = false
+
+                    // Navigate
+                },
+                dialogTitle = "\uD83D\uDE15 Information missing",
+                dialogText = "Please fill out all personal details first.\n\nSettings -> Personal -> Details",
+                icon = Icons.Default.Warning
+            )
+        }
+
+
+        if(showRegisterSheet) {
+
+            ModalBottomSheet(
+                onDismissRequest = {
+                    scope.launch {
+                        sheetState.hide()
+                    }.invokeOnCompletion {
+                        showRegisterSheet = false
+                    }
+                },
+                sheetState = sheetState,
+                containerColor = Color.White,
+                contentColor = Color.Black,
+                dragHandle = {
+
+                    DragHandleWithIconOnRight(
+                        iconImageVector = Icons.Filled.Close,
+                        onIconClick = {
+                            scope.launch {
+                                sheetState.hide()
+                            }.invokeOnCompletion {
+                                showRegisterSheet = false
+                            }
+                        }
+                    )
+                },
+                shape = shapes.small,
+                modifier = Modifier
+                    .fillMaxWidth()
+
+            ) {
+
+                RegisterBottomSheet(
+                    athleteInfo = athleteInfo,
+                    isAthleteRegistered = isAthleteRegistered,
+                    onRegisterButtonClick = { category: String ->
+                        onRegisterButtonClick(category)
+                    },
+                    modifier = Modifier
+                )
+            }
+        }
+
         if (showDetails) {
 
             ModalBottomSheet(
@@ -471,6 +572,157 @@ fun EventScreen2(
         }
     }
 }
+
+@Composable
+fun RegisterBottomSheet(
+    athleteInfo: AthleteInfo,
+    isAthleteRegistered: Boolean,
+    onRegisterButtonClick: (category: String) -> Unit,
+    modifier: Modifier = Modifier
+) {
+    LazyColumn(
+        modifier = Modifier
+            .fillMaxWidth()
+            .fillMaxHeight(0.95f)
+            .padding(paddings.spacingMedium)
+    ) {
+        item {
+            Text(
+                text = "\uD83D\uDCDD Register",
+                style = MaterialTheme.typography.headlineMedium,
+                fontWeight = FontWeight.Bold,
+                letterSpacing = 0.2.sp,
+                modifier = Modifier
+                    .padding(start = paddings.spacingSmall, bottom = paddings.spacingSmall)
+//                    .drawBehind {
+//                        val strokeWidth = 1.dp.toPx()
+//                        val y =
+//                            size.height - strokeWidth / 2  // Adjust for stroke centering
+//                        drawLine(
+//                            color = Color(0xFFDDDDDD),
+//                            start = Offset(0f, y),
+//                            end = Offset(size.width, y),
+//                            strokeWidth = strokeWidth
+//                        )
+//                    }
+            )
+        }
+
+        item {
+            AthleteBasicInfoRegisterSheet(
+                athleteInfo = athleteInfo,
+                isAthleteRegistered = isAthleteRegistered,
+                modifier = Modifier
+            )
+        }
+
+        item {
+            Row(
+                horizontalArrangement = Arrangement.Center,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(paddings.spacingSmall)
+            ) {
+                Button(
+                    onClick = {
+                        Log.d("EventScreen", "Category is hardcoded to Junior.")
+                        if (!isAthleteRegistered) {
+                            onRegisterButtonClick(
+                                "Junior"
+                            )
+                        }
+                    },
+                    colors = ButtonDefaults.buttonColors(
+                        containerColor = MaterialTheme.colorScheme.primary,
+                        contentColor = Color.White
+                    ),
+                    elevation = ButtonDefaults.buttonElevation(2.dp),
+                    shape = RoundedCornerShape(shapes.small.topEnd),
+                    contentPadding = PaddingValues(horizontal = 16.dp, vertical = 8.dp),
+                    modifier = Modifier
+                        .height(heights.small)
+                        .width(heights.extraLarge * 2)
+                ) {
+                    Text(
+                        text = if (isAthleteRegistered) "Registered! - Check status" else "Register",
+                    )
+                }
+
+            }
+        }
+
+    }
+}
+
+@Composable
+fun AthleteBasicInfoRegisterSheet(
+    athleteInfo: AthleteInfo,
+    isAthleteRegistered: Boolean,
+    modifier: Modifier = Modifier
+) {
+    Column(
+        verticalArrangement = Arrangement.Center,
+        horizontalAlignment = Alignment.CenterHorizontally,
+        modifier = modifier
+            .fillMaxWidth()
+            .padding(paddings.spacingSmall)
+            .shadow(3.dp, shapes.small) // Shadow with rounded corners
+            .background(Color.White, shapes.small)
+    ) {
+        DetailRow(
+            field = "Full Name",
+            value = "${athleteInfo.firstName} ${athleteInfo.lastName}",
+            modifier = Modifier
+        )
+        DetailRow(
+            field = "Gender",
+            value = "${athleteInfo.gender}",
+            modifier = Modifier
+        )
+        DetailRow(
+            field = "Status",
+            value = if(isAthleteRegistered) "⏳ Pending" else "❌ Not registered",
+            modifier = Modifier
+        )
+    }
+}
+
+@Composable
+fun DetailRow(
+    field: String,
+    value: String,
+    modifier: Modifier = Modifier
+) {
+    Row(
+        horizontalArrangement = Arrangement.SpaceBetween,
+        verticalAlignment = Alignment.CenterVertically,
+        modifier = modifier
+            .fillMaxWidth()
+            .padding(paddings.spacingSmall)
+    ) {
+        Text(
+            text = "$field:",
+            style = MaterialTheme.typography.titleSmall,
+            color = Color.Gray,
+            fontWeight = FontWeight.Bold,
+            maxLines = 1,
+            textAlign = TextAlign.Center,
+            modifier = Modifier
+                .weight(1f)
+        )
+
+        Text(
+            text = value,
+            style = MaterialTheme.typography.titleSmall,
+            maxLines = 1,
+            textAlign = TextAlign.Center,
+            overflow = TextOverflow.Ellipsis,
+            modifier = Modifier
+                .weight(1f)
+        )
+    }
+}
+
 
 @Composable
 fun ParticipantsScreen(
@@ -662,7 +914,10 @@ fun ParticipantRow(
 }
 
 @Composable
-fun EventScreenBottomBar() {
+fun EventScreenBottomBar(
+    isAthleteRegistered: Boolean,
+    onClick: () -> Unit,
+) {
     Box(
         contentAlignment = Alignment.TopCenter,
         modifier = Modifier
@@ -690,7 +945,9 @@ fun EventScreenBottomBar() {
         ) {
             //Text("385.00 RON", fontWeight = FontWeight.Bold, color = Color.White)
             Button(
-                onClick = {},
+                onClick = {
+                    onClick()
+                },
                 colors = ButtonDefaults.buttonColors(
                     containerColor = MaterialTheme.colorScheme.primary,
                     contentColor = Color.White
@@ -703,7 +960,7 @@ fun EventScreenBottomBar() {
                     .width(heights.extraLarge * 2)
             ) {
                 Text(
-                    text = "Register",
+                    text = if(isAthleteRegistered) "Registered! - Check status" else "Register",
                 )
             }
 
@@ -2042,6 +2299,75 @@ fun EventScreenCollapsing(
     }
 }
 
+@Composable
+fun AlertDialogExample(
+    onDismissRequest: () -> Unit,
+    onConfirmation: () -> Unit,
+    dialogTitle: String,
+    dialogText: String,
+    icon: ImageVector,
+    modifier: Modifier = Modifier
+) {
+    AlertDialog(
+        containerColor = Color.White,
+        textContentColor = Color.Black,
+//        icon = {
+//            Icon(icon, contentDescription = "Example Icon")
+//        },
+        title = {
+            Text(
+                text = dialogTitle,
+                textAlign = TextAlign.Center,
+                modifier = Modifier
+                    .fillMaxWidth()
+
+            )
+        },
+        text = {
+            Text(text = dialogText)
+        },
+        onDismissRequest = {
+            onDismissRequest()
+        },
+        confirmButton = {
+            TextButton(
+                onClick = {
+                    onConfirmation()
+                }
+            ) {
+                Text(
+                    text = "Go",
+                    color = MaterialTheme.colorScheme.primary
+                    )
+            }
+        },
+        dismissButton = {
+            TextButton(
+                onClick = {
+                    onDismissRequest()
+                }
+            ) {
+                Text("Dismiss")
+            }
+        },
+        modifier = modifier
+            .padding(paddings.spacingSmall)
+            .shadow(5.dp, shapes.small)
+    )
+}
+
+@Preview
+@Composable
+fun PreviewDialog() {
+    AlertDialogExample(
+        onDismissRequest = {  },
+        onConfirmation = {},
+        dialogTitle = "Information missing",
+        dialogText = "Please fill out all personal details first.\n\nSettings -> Personal -> Details",
+        icon = Icons.Default.Warning
+    )
+}
+
 @Preview
 @Composable
 fun ParticipantRowPreview() {
@@ -2097,10 +2423,13 @@ fun EventScreenPreview() {
         eventInfo = testEvent,
         onBackClick = {},
         onFavoriteClick = {},
+        onRegisterButtonClick = {},
         onShowMoreTextClick = {},
         isFavorite = true,
+        isAthleteRegistered = false,
         eventCategories = listOf("Junior", "Elite"),
         resultAthleteInfoList = emptyList<ResultAthleteInfo>(),
-        onFilterResultsButtonClick = {}
+        onFilterResultsButtonClick = {},
+        onLoginDialogGoClick = {}
     )
 }

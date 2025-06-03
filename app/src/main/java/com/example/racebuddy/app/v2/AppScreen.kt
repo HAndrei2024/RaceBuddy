@@ -376,14 +376,29 @@ fun Appv2(
                     navController.popBackStack()
                 },
                 isFavorite = isFavorite,
+                isAthleteRegistered = eventScreenUiState.resultAthleteInfoList.map { it.athleteUuid }.contains(athleteInfo.athleteId),
                 onFavoriteClick = {
                     mainScreenViewModel.onFavoriteIconClick(
                         eventUuid = eventScreenUiState.eventInfo.evenUuid,
                         delete = isFavorite
                     )
                 },
+                onRegisterButtonClick = { category: String ->
+                    eventScreenViewModel.onRegisterButtonClick(
+                        athleteUuid = athleteInfo.athleteId ?: "-1",
+                        eventUuid = eventScreenUiState.eventInfo.evenUuid,
+                        category = category
+                    )
+                },
                 onFilterResultsButtonClick = { category: String ->
                     eventScreenViewModel.updateFilterResultsOnCategory(category)
+                },
+                onLoginDialogGoClick = {
+                    navController.navigate(AppScreen.Login.name) {
+                        launchSingleTop = true
+
+                        //TODO: Check what happens to this screen
+                    }
                 }
             )
         }
