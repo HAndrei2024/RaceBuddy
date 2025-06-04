@@ -2,6 +2,7 @@ package com.example.racebuddy.ui.v2.signup
 
 import android.util.Log
 import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.core.animateDpAsState
 import androidx.compose.animation.expandVertically
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
@@ -43,6 +44,8 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.BlurredEdgeTreatment
+import androidx.compose.ui.draw.blur
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.ui.graphics.Color
@@ -80,9 +83,15 @@ fun SignUpFirstScreen(
 
     modifier: Modifier = Modifier
 ) {
+    val animatedBlur by animateDpAsState(targetValue = if(isLoading) 1.dp else 0.dp)
+
     Box(
         modifier = Modifier
             .fillMaxSize()
+            .blur(
+                radius = animatedBlur,
+                edgeTreatment = BlurredEdgeTreatment.Unbounded
+            )
     ) {
         if (isLoading) {
             LoadingAnimation()

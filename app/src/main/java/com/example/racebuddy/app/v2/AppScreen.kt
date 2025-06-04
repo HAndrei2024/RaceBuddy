@@ -7,7 +7,9 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
@@ -21,6 +23,7 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import com.example.racebuddy.Application
 import com.example.racebuddy.data.database.AppRepository
+import com.example.racebuddy.data.database.CategoriesData
 import com.example.racebuddy.data.database.EventInfo
 import com.example.racebuddy.data.database.RemoteDataSource
 import com.example.racebuddy.data.database.UserPreferencesRepository
@@ -362,13 +365,15 @@ fun Appv2(
                 }
             )
         }
-        
+        //var isAthleteRegistered by mutableStateOf(false)
+
         composable(route = AppScreen.Event.name) {
             val isFavorite = mainScreenUiState.favoriteEventIds.map { it -> it.eventUuid }.contains(eventScreenUiState.eventInfo.evenUuid)
+            var isAthleteRegistered = eventScreenUiState.resultAthleteInfoListFiltered.map { it.athleteUuid }.contains(athleteInfo.athleteId)
 
             EventScreen2(
                 resultAthleteInfoList = eventScreenUiState.resultAthleteInfoListFiltered,
-                eventCategories = listOf("General") + eventScreenUiState.eventInfo.categories.map { it.category }, //eventScreenUiState.resultAthleteInfoList.map { it.category }.distinct(), //eventScreenViewModel.getListOfCategories(),
+                eventCategories = eventScreenUiState.eventInfo.categories, //eventScreenUiState.resultAthleteInfoList.map { it.category }.distinct(), //eventScreenViewModel.getListOfCategories(),
                 athleteInfo = athleteInfo,
                 eventInfo = eventScreenUiState.eventInfo,
                 onShowMoreTextClick = { },
@@ -376,7 +381,8 @@ fun Appv2(
                     navController.popBackStack()
                 },
                 isFavorite = isFavorite,
-                isAthleteRegistered = eventScreenUiState.resultAthleteInfoList.map { it.athleteUuid }.contains(athleteInfo.athleteId),
+                isAthleteRegistered = eventScreenUiState.resultAthleteInfoListFiltered.map { it.athleteUuid }.contains(athleteInfo.athleteId), //,
+                isLoading = eventScreenUiState.isLoading,
                 onFavoriteClick = {
                     mainScreenViewModel.onFavoriteIconClick(
                         eventUuid = eventScreenUiState.eventInfo.evenUuid,
@@ -389,6 +395,8 @@ fun Appv2(
                         eventUuid = eventScreenUiState.eventInfo.evenUuid,
                         category = category
                     )
+
+                    //isAthleteRegistered = true
                 },
                 onFilterResultsButtonClick = { category: String ->
                     eventScreenViewModel.updateFilterResultsOnCategory(category)

@@ -1,6 +1,7 @@
 package com.example.racebuddy.ui.v2.signup
 
 import android.util.Log
+import androidx.compose.animation.core.animateDpAsState
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -46,6 +47,8 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.BlurredEdgeTreatment
+import androidx.compose.ui.draw.blur
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.graphics.Color
@@ -106,6 +109,9 @@ fun SignupSecondScreen(
         snackbarHostState.showSnackbar("Account created succesfuly!")
     }
 
+    val animatedBlur by animateDpAsState(targetValue = if(isLoading) 1.dp else 0.dp)
+
+
     Scaffold(
         snackbarHost = { SnackbarHost(hostState = snackbarHostState) },
         //topBar = { TopBar(onNavigationClick = {}, showBackNavigation = true)},
@@ -116,6 +122,10 @@ fun SignupSecondScreen(
         Box(
             modifier = Modifier
                 .fillMaxSize()
+                .blur(
+                    radius = animatedBlur,
+                    edgeTreatment = BlurredEdgeTreatment.Unbounded
+                )
         ) {
             if (isLoading) {
                 LoadingAnimation()

@@ -2,6 +2,7 @@ package com.example.racebuddy.ui.v2.event
 
 import android.util.Log
 import androidx.compose.animation.ExperimentalAnimationApi
+import androidx.compose.animation.core.animateDpAsState
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -32,6 +33,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.ClickableText
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
+import androidx.compose.material.icons.filled.ArrowDropDown
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Favorite
 import androidx.compose.material.icons.filled.FavoriteBorder
@@ -42,11 +44,14 @@ import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.DropdownMenu
+import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalBottomSheet
+import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Tab
 import androidx.compose.material3.TabRow
@@ -64,7 +69,9 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.BlurredEdgeTreatment
 import androidx.compose.ui.draw.alpha
+import androidx.compose.ui.draw.blur
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.drawBehind
 import androidx.compose.ui.draw.shadow
@@ -78,6 +85,7 @@ import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.SpanStyle
+import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
@@ -92,6 +100,7 @@ import androidx.compose.ui.zIndex
 import coil.compose.AsyncImage
 import com.example.racebuddy.R
 import com.example.racebuddy.data.database.AthleteInfo
+import com.example.racebuddy.data.database.CategoriesData
 import com.example.racebuddy.data.database.EventInfo
 import com.example.racebuddy.data.database.ResultAthleteInfo
 import com.example.racebuddy.data.database.ResultInfo
@@ -99,10 +108,13 @@ import com.example.racebuddy.data.database.testAthlete
 import com.example.racebuddy.data.database.testEvent
 import com.example.racebuddy.data.database.testResult
 import com.example.racebuddy.data.database.testResultAthleteInfo
+import com.example.racebuddy.ui.theme.AppTypography
 import com.example.racebuddy.ui.theme.heights
 import com.example.racebuddy.ui.theme.paddings
 import com.example.racebuddy.ui.theme.shapes
+import com.example.racebuddy.ui.v2.common.LoadingAnimation
 import com.example.racebuddy.ui.v2.main.countryMap
+import com.example.racebuddy.ui.v2.signup.Country
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
 import kotlinx.datetime.LocalDate
@@ -177,9 +189,10 @@ fun EventScreen2(
     resultAthleteInfoList: List<ResultAthleteInfo>,
     athleteInfo: AthleteInfo,
     eventInfo: EventInfo,
-    eventCategories: List<String>,
+    eventCategories: List<CategoriesData>,
     isFavorite: Boolean,
     isAthleteRegistered: Boolean,
+    isLoading: Boolean,
     onShowMoreTextClick: () -> Unit = {},
     onLoginDialogGoClick: () -> Unit,
     onRegisterButtonClick: (category: String) -> Unit,
@@ -192,6 +205,9 @@ fun EventScreen2(
 
 //    val scope = rememberCoroutineScope()
 //    val pagerState = rememberPagerState(pageCount = { FilterEventTabs.entries.size })
+
+    val animatedBlur by animateDpAsState(targetValue = if(isLoading) 1.dp else 0.dp)
+
     var selectedFilterButton by remember { mutableStateOf("Summary") }
 
     var showDetails by remember { mutableStateOf(false) }
@@ -231,7 +247,6 @@ fun EventScreen2(
         containerColor = Color.White,
         contentColor = Color.Black
     ) { innerPadding ->
-
 
             LazyColumn(
                 modifier = Modifier
@@ -345,7 +360,7 @@ fun EventScreen2(
                             // List of AthleteInfo -> name, uuid, country, profile pic url
 
                             FilterResultsButtons(
-                                items = eventCategories,
+                                items = listOf("General") + eventCategories.map { it.category },
                                 onFilterButtonClick = onFilterResultsButtonClick
                             )
 
@@ -447,7 +462,7 @@ fun EventScreen2(
                     // Navigate
                     onLoginDialogGoClick()
                 },
-                dialogTitle = "\uD83D\uDE15 No athlete Logged In",
+                dialogTitle = "\uD83D\uDE15 No Athlete Logged In",
                 dialogText = "Please log in first.\n\nProfile -> Log In",
                 icon = Icons.Default.Warning
             )
@@ -501,14 +516,28 @@ fun EventScreen2(
                     .fillMaxWidth()
 
             ) {
+                Log.d("Event Screen UI", "Trying to update selectedCategoryIfRegistered")
+                val selectedCategoryIfRegistered: String = if(isAthleteRegistered)
+                    resultAthleteInfoList.filter { it.athleteUuid == athleteInfo.athleteId }.map{ it.category }.get(0) else "Choose"
+                Log.d("Event Screen UI", "updated selectedCategoryIfRegistered! $selectedCategoryIfRegistered")
+
+                if(isLoading) {
+                    LoadingAnimation()
+                }
 
                 RegisterBottomSheet(
                     athleteInfo = athleteInfo,
                     isAthleteRegistered = isAthleteRegistered,
+                    selectedCategoryIfRegistered = selectedCategoryIfRegistered,
+                    categories = eventCategories,
                     onRegisterButtonClick = { category: String ->
                         onRegisterButtonClick(category)
                     },
                     modifier = Modifier
+                        .blur(
+                            radius = animatedBlur,
+                            edgeTreatment = BlurredEdgeTreatment.Unbounded
+                        )
                 )
             }
         }
@@ -577,11 +606,16 @@ fun EventScreen2(
 fun RegisterBottomSheet(
     athleteInfo: AthleteInfo,
     isAthleteRegistered: Boolean,
+    categories: List<CategoriesData>,
+    selectedCategoryIfRegistered: String,
     onRegisterButtonClick: (category: String) -> Unit,
     modifier: Modifier = Modifier
 ) {
+    var selectedCategory by remember { mutableStateOf(selectedCategoryIfRegistered) }
+
+
     LazyColumn(
-        modifier = Modifier
+        modifier = modifier
             .fillMaxWidth()
             .fillMaxHeight(0.95f)
             .padding(paddings.spacingMedium)
@@ -617,6 +651,26 @@ fun RegisterBottomSheet(
         }
 
         item {
+            CategorySelectorRegisterSheet(
+                isAthleteRegistered = isAthleteRegistered,
+                categories = categories,
+                selectedCategory = selectedCategory,
+                onCategoryClick = { category ->
+                    selectedCategory = category
+                },
+                modifier = Modifier
+            )
+        }
+
+        item {
+            AthleteStatusRegisterSheet(
+                isAthleteRegistered = isAthleteRegistered,
+                isAthleteConfirmed = false, //TODO
+                modifier = Modifier
+            )
+        }
+
+        item {
             Row(
                 horizontalArrangement = Arrangement.Center,
                 modifier = Modifier
@@ -628,7 +682,7 @@ fun RegisterBottomSheet(
                         Log.d("EventScreen", "Category is hardcoded to Junior.")
                         if (!isAthleteRegistered) {
                             onRegisterButtonClick(
-                                "Junior"
+                                 selectedCategory
                             )
                         }
                     },
@@ -644,13 +698,178 @@ fun RegisterBottomSheet(
                         .width(heights.extraLarge * 2)
                 ) {
                     Text(
-                        text = if (isAthleteRegistered) "Registered! - Check status" else "Register",
+                        text = if (isAthleteRegistered) "Registered!" else "Register",
+                        textAlign = TextAlign.Center
                     )
                 }
 
             }
         }
 
+    }
+}
+
+@Composable
+fun CategorySelectorRegisterSheet(
+    isAthleteRegistered: Boolean,
+    categories: List<CategoriesData>,
+    selectedCategory: String,
+    onCategoryClick: (String) -> Unit,
+    modifier: Modifier = Modifier
+) {
+    var expanded by remember { mutableStateOf(false) }
+
+    Column(
+        verticalArrangement = Arrangement.Center,
+        horizontalAlignment = Alignment.CenterHorizontally,
+        modifier = modifier
+            .fillMaxWidth()
+            .padding(paddings.spacingSmall)
+            .shadow(3.dp, shapes.small) // Shadow with rounded corners
+            .background(Color.White, shapes.small)
+    ) {
+        Text(
+            text = "Aditional Info",
+            style = MaterialTheme.typography.bodyMedium,
+            color = Color.Gray,
+            fontWeight = FontWeight.Bold,
+            modifier = Modifier
+                //.background(Color(0xFFEEEEEE))
+                .padding(
+                    paddings.spacingSmall
+                    //start = paddings.spacingMedium,
+                    //bottom = paddings.spacingSmall
+                    //top = paddings.spacingXSmall
+                )
+                .fillMaxWidth(1f)
+
+                .drawBehind {
+                    val borderSize = 2.dp.toPx()
+                    drawLine(
+                        color = Color(0xFFEEEEEE),                        start = Offset(0f, size.height),
+                        end = Offset(size.width, size.height),
+                        strokeWidth = borderSize
+                    )
+                }
+            //.offset(y = paddings.spacingXSmall)
+        )
+        Row(
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.CenterVertically,
+            modifier = modifier
+                .fillMaxWidth()
+                .padding(paddings.spacingSmall)
+        ) {
+            Text(
+                text = "Category:",
+                style = MaterialTheme.typography.titleSmall,
+                color = Color.Gray,
+                fontWeight = FontWeight.Bold,
+                maxLines = 1,
+                textAlign = TextAlign.Center,
+                modifier = Modifier
+                    .weight(1f)
+            )
+            if (isAthleteRegistered) {
+                Text(
+                    text = "${selectedCategory}",
+                    style = MaterialTheme.typography.titleSmall,
+                    color = Color.Black,
+                    fontWeight = FontWeight.Normal,
+                    maxLines = 1,
+                    textAlign = TextAlign.Center,
+                    modifier = Modifier
+                        .weight(1f)
+                )
+            } else {
+                OutlinedTextField(
+                    value = selectedCategory,
+                    onValueChange = {},
+                    placeholder = { Text("Select Category") },
+                    shape = shapes.small,
+                    textStyle = AppTypography.bodyLarge.copy(
+                        color = if (selectedCategory == "") {
+                            MaterialTheme.colorScheme.onSurface
+                        } else {
+                            Color.Black
+                        }
+                    ),
+                    //leadingIcon = { Icon(imageVector = Icons.Filled.Flag) },
+                    trailingIcon = {
+                        Icon(
+                            imageVector = Icons.Default.ArrowDropDown,
+                            contentDescription = "Country Selector",
+                            modifier = Modifier.clickable {
+                                expanded = !expanded
+                            }
+                        )
+                    },
+//            colors = OutlinedTextFieldDefaults.colors(
+//                focusedBorderColor = MaterialTheme.colorScheme.primary, // Primary color for focused border
+//                unfocusedBorderColor = MaterialTheme.colorScheme.secondary, // Secondary color for unfocused border
+//                focusedLabelColor = MaterialTheme.colorScheme.primary, // Primary color for focused label
+//                unfocusedLabelColor = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.7f), // Unfocused label color
+//                placeholderColor = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.5f), // Lighter placeholder color
+//                textColor = MaterialTheme.colorScheme.onSurface // Text color
+//            ),
+                    readOnly = true,
+                    modifier = Modifier
+                        //.fillMaxWidth()
+                        .padding(bottom = paddings.spacingXSmall)
+                        .clickable {
+                            expanded = !expanded
+                        }
+                        .weight(1f)
+                )
+
+                DropdownMenu(
+                    expanded = expanded,
+                    onDismissRequest = { expanded = false },
+                    containerColor = Color.White,
+                    modifier = Modifier
+                        .weight(1f)
+                ) {
+                    categories.forEach { category ->
+                        DropdownMenuItem(
+                            {
+                                Text(
+                                    text = "${category.category} (${category.minAge}-${category.maxAge})",
+                                    style = MaterialTheme.typography.bodyLarge
+                                )
+                            },
+                            onClick = {
+                                //selectedCategory = category.category
+                                expanded = false
+                                onCategoryClick(category.category)
+                            }
+                        )
+                    }
+                }
+            }
+        }
+    }
+}
+
+@Composable
+fun AthleteStatusRegisterSheet(
+    isAthleteRegistered: Boolean,
+    isAthleteConfirmed: Boolean,
+    modifier: Modifier = Modifier
+) {
+    Column(
+        verticalArrangement = Arrangement.Center,
+        horizontalAlignment = Alignment.CenterHorizontally,
+        modifier = modifier
+            .fillMaxWidth()
+            .padding(paddings.spacingSmall)
+            .shadow(3.dp, shapes.small) // Shadow with rounded corners
+            .background(Color.White, shapes.small)
+    ) {
+        DetailRow(
+            field = "Status",
+            value = if(isAthleteRegistered) "⏳ Pending" else "❌ Not registered",
+            modifier = Modifier
+        )
     }
 }
 
@@ -669,6 +888,31 @@ fun AthleteBasicInfoRegisterSheet(
             .shadow(3.dp, shapes.small) // Shadow with rounded corners
             .background(Color.White, shapes.small)
     ) {
+        Text(
+            text = "General Info",
+            style = MaterialTheme.typography.bodyMedium,
+            color = Color.Gray,
+            fontWeight = FontWeight.Bold,
+            modifier = Modifier
+                //.background(Color(0xFFEEEEEE))
+                .padding(
+                    paddings.spacingSmall
+                    //start = paddings.spacingMedium,
+                    //bottom = paddings.spacingSmall
+                    //top = paddings.spacingXSmall
+                )
+                .fillMaxWidth(1f)
+
+                .drawBehind {
+                    val borderSize = 2.dp.toPx()
+                    drawLine(
+                        color = Color(0xFFEEEEEE),                        start = Offset(0f, size.height),
+                        end = Offset(size.width, size.height),
+                        strokeWidth = borderSize
+                    )
+                }
+            //.offset(y = paddings.spacingXSmall)
+        )
         DetailRow(
             field = "Full Name",
             value = "${athleteInfo.firstName} ${athleteInfo.lastName}",
@@ -679,11 +923,7 @@ fun AthleteBasicInfoRegisterSheet(
             value = "${athleteInfo.gender}",
             modifier = Modifier
         )
-        DetailRow(
-            field = "Status",
-            value = if(isAthleteRegistered) "⏳ Pending" else "❌ Not registered",
-            modifier = Modifier
-        )
+
     }
 }
 
@@ -745,6 +985,7 @@ fun ParticipantsScreen(
                     profilePicUrl = participant.profilePictureUrl ?: "",
                     country = participant.country,
                     confirmed = participant.confirmed,
+                    category = participant.category,
                     modifier = Modifier
                 )
             }
@@ -764,7 +1005,7 @@ fun ParticipantsScreen(
 }
 
 @Composable
-fun ParticipantsHeader(
+fun SimpleParticipantsHeader(
     modifier: Modifier = Modifier
 ) {
     Row(
@@ -783,36 +1024,83 @@ fun ParticipantsHeader(
             }
 
     ) {
-        Row(
-            horizontalArrangement = Arrangement.spacedBy(paddings.spacingSmall),
-            verticalAlignment = Alignment.CenterVertically,
+        Text(
+            text = "Name",
+            style = MaterialTheme.typography.labelMedium,
+            color = Color.Gray,
             modifier = Modifier
-                .weight(2f)
-        ) {
-            Card(
-                modifier = Modifier
-                    .padding(end = paddings.spacingSmall)
-                    .alpha(0f)
-                    .size(35.dp) // Adjust size as needed
-                    .clip(CircleShape)
-                    .border(0.5.dp, MaterialTheme.colorScheme.primary, CircleShape)
-            ) {}
+                .padding(
+                    start = paddings.spacingSmall,
+                    top = paddings.spacingSmall
+                )
+        )
+
+        Text(
+            text = "Status",
+            style = MaterialTheme.typography.labelMedium,
+            color = Color.Gray,
+            modifier = Modifier
+                .padding(
+                    start = paddings.spacingSmall,
+                    top = paddings.spacingSmall
+                )
+        )
+    }
+}
+
+@Composable
+fun ParticipantsHeader(
+    textStyle: TextStyle = MaterialTheme.typography.bodyMedium, //titleSmall,
+    modifier: Modifier = Modifier
+) {
+    Row(
+        horizontalArrangement = Arrangement.SpaceBetween,
+        verticalAlignment = Alignment.CenterVertically,
+        modifier = modifier
+            .fillMaxWidth()
+            .padding(top = paddings.spacingMedium, bottom = paddings.spacingMedium, start = paddings.spacingSmall, end = paddings.spacingSmall)
+            .drawBehind {
+                val borderSize = 2.dp.toPx()
+                drawLine(
+                    color = Color(0xFFEEEEEE),                        start = Offset(0f, size.height),
+                    end = Offset(size.width, size.height),
+                    strokeWidth = borderSize
+                )
+            }
+
+    ) {
+//        Row(
+//            horizontalArrangement = Arrangement.spacedBy(paddings.spacingSmall),
+//            verticalAlignment = Alignment.CenterVertically,
+//            modifier = Modifier
+//                .weight(2f)
+//        ) {
+//            Card(
+//                modifier = Modifier
+//                    .padding(end = paddings.spacingSmall)
+//                    .alpha(0f)
+//                    .size(35.dp) // Adjust size as needed
+//                    .clip(CircleShape)
+//                    .border(0.5.dp, MaterialTheme.colorScheme.primary, CircleShape)
+//            ) {}
 
             Text(
                 text = "Name",
-                style = MaterialTheme.typography.titleSmall,
+                style = textStyle,
                 color = Color.Gray,
                 fontWeight = FontWeight.Bold,
                 maxLines = 1,
                 textAlign = TextAlign.Center,
-                overflow = TextOverflow.Ellipsis
+                overflow = TextOverflow.Ellipsis,
+                modifier = Modifier
+                    .weight(2f)
             )
 
-        }
+        //}
 
         Text(
             text = "Country",
-            style = MaterialTheme.typography.titleSmall,
+            style = textStyle,
             color = Color.Gray,
             fontWeight = FontWeight.Bold,
             maxLines = 1,
@@ -822,8 +1110,19 @@ fun ParticipantsHeader(
         )
 
         Text(
-            text = "Confirmed",
-            style = MaterialTheme.typography.titleSmall,
+            text = "Category",
+            style = textStyle,
+            color = Color.Gray,
+            fontWeight = FontWeight.Bold,
+            maxLines = 1,
+            textAlign = TextAlign.Center,
+            modifier = Modifier
+                .weight(1f)
+        )
+
+        Text(
+            text = "Status",
+            style = textStyle,
             color = Color.Gray,
             fontWeight = FontWeight.Bold,
             maxLines = 1,
@@ -839,6 +1138,7 @@ fun ParticipantRow(
     fullName: String,
     profilePicUrl: String,
     country: String,
+    category: String,
     confirmed: Boolean,
     modifier: Modifier = Modifier
 ) {
@@ -902,7 +1202,16 @@ fun ParticipantRow(
             )
 
             Text(
-                text = if (confirmed) "✅" else "❌",
+                text = category,
+                style = MaterialTheme.typography.bodyLarge,
+                maxLines = 1,
+                textAlign = TextAlign.Center,
+                modifier = Modifier
+                    .weight(1f)
+            )
+
+            Text(
+                text = if (confirmed) "✅" else "⏳",
                 style = MaterialTheme.typography.bodyLarge,
                 maxLines = 1,
                 textAlign = TextAlign.Center,
@@ -960,7 +1269,7 @@ fun EventScreenBottomBar(
                     .width(heights.extraLarge * 2)
             ) {
                 Text(
-                    text = if(isAthleteRegistered) "Registered! - Check status" else "Register",
+                    text = if(isAthleteRegistered) "Status" else "Register",
                 )
             }
 
@@ -2378,7 +2687,8 @@ fun ParticipantRowPreview() {
             profilePicUrl = "",
             country = "Romania",
             confirmed = true,
-            modifier = Modifier
+            modifier = Modifier,
+            category = "Junior"
         )
     }
 }
@@ -2427,9 +2737,10 @@ fun EventScreenPreview() {
         onShowMoreTextClick = {},
         isFavorite = true,
         isAthleteRegistered = false,
-        eventCategories = listOf("Junior", "Elite"),
+        eventCategories = listOf(CategoriesData("Junior", 14, 18), CategoriesData("Elite", 19, 29)),
         resultAthleteInfoList = emptyList<ResultAthleteInfo>(),
         onFilterResultsButtonClick = {},
-        onLoginDialogGoClick = {}
+        onLoginDialogGoClick = {},
+        isLoading = false
     )
 }

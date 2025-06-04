@@ -15,6 +15,8 @@ import com.example.racebuddy.data.database.UserPreferencesRepository
 import com.example.racebuddy.data.database.testEvent
 import com.example.racebuddy.ui.v2.login.LoginScreenUiState
 import com.example.racebuddy.ui.v2.login.LoginScreenViewModel
+import kotlinx.coroutines.Delay
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
@@ -82,10 +84,39 @@ class EventScreenViewModel(
 
     fun onRegisterButtonClick(athleteUuid: String, eventUuid: String, category: String) {
         viewModelScope.launch {
+            updateIsLoading(true)
+            delay(500)
+            // This updates the database
             appRepository.registerSupabaseAthleteToAnEvent(
                 athleteUuid = athleteUuid,
                 eventUuid = eventUuid,
                 category = category
+            )
+
+//            val list = appRepository.getSupabaseEventResultAthleteInfo(eventUuid)
+//            Log.d("EventScreenVM", " Trying to update resultAthlteInfo List... $list")
+            getEventResultAthleteInfo(eventUuid)
+
+
+            delay(500)
+            updateIsLoading(false)
+        }
+    }
+
+    fun updateIsLoading(value: Boolean) {
+        _uiState.update { currentState ->
+            currentState.copy(
+                isLoading = value
+            )
+        }
+    }
+
+    fun triggerRecomposition() {
+        Log.d("Event Screen VM", "Triggering recomposition...")
+        _uiState.update { currentState ->
+            val newList = _uiState.value.resultAthleteInfoListFiltered.toList()
+            currentState.copy(
+                resultAthleteInfoList = newList
             )
         }
     }
@@ -106,5 +137,6 @@ class EventScreenViewModel(
 data class EventScreenUiState(
     val eventInfo: EventInfo,
     val resultAthleteInfoList: List<ResultAthleteInfo>,
-    val resultAthleteInfoListFiltered: List<ResultAthleteInfo>
+    val resultAthleteInfoListFiltered: List<ResultAthleteInfo>,
+    val isLoading: Boolean = false
 )
