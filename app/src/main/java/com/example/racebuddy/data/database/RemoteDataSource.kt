@@ -299,7 +299,15 @@ data class EventInfo(
     @SerialName("track") val track: String,
     @SerialName("category") val category: String,
     @SerialName("organizer_id") val organizerId: String,
-    @SerialName("background_picture_url") val backgroundPictureUrl: String
+    @SerialName("background_picture_url") val backgroundPictureUrl: String,
+    @SerialName("categories") val categories: List<CategoriesData>
+)
+
+@Serializable
+data class CategoriesData(
+    @SerialName("category") val category: String,
+    @SerialName("min_age") val minAge: Int,
+    @SerialName("max_age") val maxAge: Int
 )
 
 @Serializable
@@ -403,7 +411,8 @@ val testEvent: EventInfo = EventInfo(
     category = "XC",
     createdAt = LocalDate.now().toString(),
     evenUuid = "1",
-    backgroundPictureUrl = ""
+    backgroundPictureUrl = "",
+    categories = listOf(CategoriesData("Junior", 14, 18), CategoriesData("Elite", 19, 29))
 )
 
 val testAthlete: AthleteInfo = AthleteInfo(
@@ -450,7 +459,8 @@ val cyclingEvents = listOf(
         organizerId = "org001",
         createdAt = LocalDate.now().toString(),
         evenUuid = "2",
-        backgroundPictureUrl = ""
+        backgroundPictureUrl = "",
+        categories = listOf(CategoriesData("Junior", 14, 18), CategoriesData("Elite", 19, 29))
     ),
     EventInfo(
         title = "Amgen Tour of California",
@@ -465,7 +475,8 @@ val cyclingEvents = listOf(
         organizerId = "org002",
         createdAt = LocalDate.now().toString(),
         evenUuid = "3",
-        backgroundPictureUrl = ""
+        backgroundPictureUrl = "",
+        categories = listOf(CategoriesData("Junior", 14, 18), CategoriesData("Elite", 19, 29))
     ),
     EventInfo(
         title = "Tour de Pologne",
@@ -480,6 +491,7 @@ val cyclingEvents = listOf(
         organizerId = "org003",
         createdAt = LocalDate.now().toString(),
         evenUuid = "4",
-        backgroundPictureUrl = ""
+        backgroundPictureUrl = "",
+        categories = listOf(CategoriesData("Junior", 14, 18), CategoriesData("Elite", 19, 29))
     )
 )

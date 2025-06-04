@@ -368,7 +368,7 @@ fun Appv2(
 
             EventScreen2(
                 resultAthleteInfoList = eventScreenUiState.resultAthleteInfoListFiltered,
-                eventCategories = listOf("General") + eventScreenUiState.resultAthleteInfoList.map { it.category }.distinct(), //eventScreenViewModel.getListOfCategories(),
+                eventCategories = listOf("General") + eventScreenUiState.eventInfo.categories.map { it.category }, //eventScreenUiState.resultAthleteInfoList.map { it.category }.distinct(), //eventScreenViewModel.getListOfCategories(),
                 athleteInfo = athleteInfo,
                 eventInfo = eventScreenUiState.eventInfo,
                 onShowMoreTextClick = { },
