@@ -16,6 +16,9 @@ import androidx.compose.ui.platform.LocalContext
 import com.example.racebuddy.ui.theme.Typography
 import okhttp3.internal.wait
 
+val LightGray = Color(0xFFDDDDDD)
+val StravaOrange = Color(0xFFFC4C02)
+
 private val baseNavyBlueColorScheme = lightColorScheme(
     primary = Color(0xFF4169E1),     // Navy Blue
    // primary = Color(0x6200EE),    // Purple 500 (Base color)

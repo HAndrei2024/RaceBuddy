@@ -40,6 +40,7 @@ class MainScreenViewModel(
         events = emptyList(),
         filteredEvents = emptyList(),
         favoriteEventIds = emptyList(),
+        selectedFilter = "All"
     ))
     val uiState = _uiState.asStateFlow()
 
@@ -223,6 +224,14 @@ class MainScreenViewModel(
         }
     }
 
+    fun updateSelectedFilter(filter: String) {
+        _uiState.update { currentState ->
+            currentState.copy(
+                selectedFilter = filter
+            )
+        }
+    }
+
     companion object {
         val factory: ViewModelProvider.Factory = viewModelFactory {
             initializer {
@@ -240,5 +249,6 @@ data class MainScreenUiState(
     val athleteInfo: AthleteInfo,
     val events: List<EventInfo>,
     val filteredEvents: List<EventInfo>,
-    val favoriteEventIds: List<EventIdForFavorite>
+    val favoriteEventIds: List<EventIdForFavorite>,
+    val selectedFilter: String
 )

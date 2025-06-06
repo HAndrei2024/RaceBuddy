@@ -133,6 +133,7 @@ fun MainScreen(
     athleteInfo: AthleteInfo,
     events: List<EventInfo>,
     searchEvents: List<EventInfo>,
+    selectedFilter: String,
     onFilterButtonClick: (String) -> Unit,
     onFavoriteIconClick: (String, Boolean) -> Unit,
     favoriteEventsId: List<String> = emptyList(),
@@ -146,6 +147,7 @@ fun MainScreen(
     modifier: Modifier = Modifier
 ) {
     var showSearch by remember { mutableStateOf(false) }
+    //var selectedFilter by remember { mutableStateOf("All") }
     val sheetState = rememberModalBottomSheetState(
         skipPartiallyExpanded = true
     )
@@ -217,6 +219,7 @@ fun MainScreen(
 
 
                 FilterButtons(
+                    selectedItem = selectedFilter,
                     onFilterButtonClick = onFilterButtonClick
                 )
                 Spacer(
@@ -600,9 +603,10 @@ fun HelloText(
 @Composable
 fun FilterButtons(
     items: List<String> = listOf("All", "Road", "XC", "XCO", "Enduro", "Downhill"),
+    selectedItem: String = "All",
     onFilterButtonClick: (String) -> Unit
 ) {
-    var selectedItem by remember { mutableStateOf<String?>("All") }
+    //var selectedItem by remember { mutableStateOf<String?>(selectedItem) }
 
 
     Column(
@@ -652,7 +656,7 @@ fun FilterButtons(
                 val isSelected = item == selectedItem
                 Button(
                     onClick = {
-                        selectedItem = item
+                        //selectedItem = item
                         // TODO: Implement actual action here
                         onFilterButtonClick(item)
                     },
@@ -772,6 +776,7 @@ fun MainScreenPreview() {
         onFavoriteIconBottomBarClick = {},
         onBottomBarIconClicked = {},
         isUserLoggedIn = true,
-        onEventClick = {}
+        onEventClick = {},
+        selectedFilter = "All"
     )
 }

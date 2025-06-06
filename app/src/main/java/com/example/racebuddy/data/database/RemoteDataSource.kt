@@ -221,6 +221,24 @@ class RemoteDataSource {
         return emptyList()
     }
 
+    suspend fun getEventResultProfileInfo(athleteUuid: String): List<EventResultProfileInfo> {
+        try {
+        val param = AthleteParam(athleteUuid)
+        val response = SupabaseClient.client.postgrest
+            .rpc("get_athlete_results", param).decodeList<EventResultProfileInfo>()
+
+        Log.d("SUPABASE", "Fetched EventResultProfileInfo info: ${response.size}")
+
+        return response
+
+    } catch (exception: Exception) {
+        Log.d("SUPABASE", "Tried fetching EventResultProfileInfo join data and failed, exception: $exception")
+    }
+
+    return emptyList()
+    }
+
+
     suspend fun registerAthleteToAnEvent(athleteUuid: String, eventUuid: String, category: String) {
         Log.d("Supabase", "Adding result... athlete: $athleteUuid , event: $eventUuid")
         try {
@@ -248,6 +266,39 @@ class RemoteDataSource {
         }
     }
 
+    suspend fun getAthleteRegisteredEvents(athleteUuid: String): List<EventInfo> {
+        try {
+            val param = AthleteParam(athleteUuid)
+            val response = SupabaseClient.client.postgrest
+                .rpc("get_athlete_registered_events", param).decodeList<EventInfo>()
+
+            Log.d("SUPABASE", "Fetched EventInfo (Registered) info: ${response.size}")
+
+            return response
+
+        } catch (exception: Exception) {
+            Log.d("SUPABASE", "Tried fetching EventInfo (Registered)  data and failed, exception: $exception")
+        }
+
+        return emptyList()
+    }
+
+    suspend fun getAthleteRegisteredEventsUuid(athleteUuid: String): List<String> {
+        try {
+            val param = AthleteParam(athleteUuid)
+            val response = SupabaseClient.client.postgrest
+                .rpc("get_athlete_registered_events_uuid", param).decodeList<EventParamProfile>()
+
+            Log.d("SUPABASE", "Fetched EventInfo - only uuid (Registered) info: ${response.size}")
+
+            return response.map { it.eventUuid }
+
+        } catch (exception: Exception) {
+            Log.d("SUPABASE", "Tried fetching EventInfo - only uuid (Registered)  data and failed, exception: $exception")
+        }
+
+        return emptyList()
+    }
 
 
     object SupabaseClient {
@@ -267,11 +318,21 @@ data class EventParam(
 )
 
 @Serializable
+data class EventParamProfile(
+    @SerialName("event_uuid") val eventUuid: String
+)
+
+@Serializable
+data class AthleteParam(
+    @SerialName("given_athlete_uuid") val athleteUuid: String
+)
+
+@Serializable
 data class AthleteInfo(
     @SerialName("created_at") val createdAt: String?,
     @SerialName("first_name") val firstName: String?,
     @SerialName("last_name") val lastName: String?,
-    @SerialName("birthdate") val birthdate: String?,
+    @SerialName("birthdate") val birthdate: LocalDate,
     @SerialName("gender") val gender: String?,
     @SerialName("nationality") val country: String?,
     @SerialName("phone_number") val phoneNumber: String?,
@@ -364,6 +425,24 @@ val testResultAthleteInfo = ResultAthleteInfo(
     profilePictureUrl = ""
 )
 
+// EventInfo -> Event background, event title, event uuid,
+// ResultInfo -> rank, time, category
+
+@Serializable
+data class EventResultProfileInfo(
+    @SerialName("event_uuid") val evenUuid: String,
+    @SerialName("title") val title: String,
+    @SerialName("event_category") val eventCategory: String, //Event Category
+    @SerialName("background_picture_url") val backgroundPictureUrl: String,
+
+    @SerialName("athlete_time") val time: Long,
+    @SerialName("rank") val rank: Int,
+    @SerialName("athlete_event_number") val athleteEventNumber: String,
+    @SerialName("result_category") val resultCategory: String, //Result Category
+    @SerialName("start_date") val startDate: LocalDate
+
+)
+
 @Serializable
 data class EventIdForFavorite(
     @SerialName("event_uuid") val eventUuid: String
@@ -419,7 +498,7 @@ val testAthlete: AthleteInfo = AthleteInfo(
     createdAt = "Today",
     firstName = "Test",
     lastName = "Last",
-    birthdate = LocalDate.now().toString(),
+    birthdate = LocalDate.now(),
     gender = "Male",
     country = "Romania",
     phoneNumber = "",
@@ -434,7 +513,7 @@ val firstAthlete: AthleteInfo = AthleteInfo(
     createdAt = "Today",
     firstName = "Test",
     lastName = "Last",
-    birthdate = LocalDate.now().toString(),
+    birthdate = LocalDate.now(),
     gender = "Male",
     country = "Romania",
     phoneNumber = "",

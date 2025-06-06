@@ -176,7 +176,7 @@ class SignupScreensViewModel(
                         createdAt = null,
                         firstName = _uiState.value.firstName,
                         lastName = _uiState.value.lastName,
-                        birthdate = formateDate(),
+                        birthdate = LocalDate(1900, 1, 1), //formateDate(),
                         gender = _uiState.value.gender,
                         country = _uiState.value.nationality,
                         phoneNumber = null,

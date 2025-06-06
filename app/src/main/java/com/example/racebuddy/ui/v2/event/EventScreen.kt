@@ -2727,6 +2727,19 @@ fun ResultsByGenderPreview() {
 
 @Preview
 @Composable
+fun RegisterBottomSheetPreview() {
+    RegisterBottomSheet(
+        athleteInfo = testAthlete,
+        isAthleteRegistered = true,
+        categories = listOf(CategoriesData("Cat 1", 12, 13)),
+        selectedCategoryIfRegistered = "Cat 1",
+        onRegisterButtonClick = {},
+        modifier = Modifier
+    )
+}
+
+@Preview
+@Composable
 fun EventScreenPreview() {
     EventScreen2(
         athleteInfo = testAthlete.copy(athleteId = "not 1"),

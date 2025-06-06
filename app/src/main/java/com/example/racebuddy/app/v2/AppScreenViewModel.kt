@@ -10,6 +10,7 @@ import androidx.lifecycle.viewmodel.viewModelFactory
 import com.example.racebuddy.Application
 import com.example.racebuddy.data.database.AppRepository
 import com.example.racebuddy.data.database.AthleteInfo
+import com.example.racebuddy.data.database.EventInfo
 import com.example.racebuddy.data.database.UserPreferencesRepository
 import com.example.racebuddy.data.database.testAthlete
 import com.example.racebuddy.ui.v2.login.LoginScreenUiState
@@ -37,6 +38,24 @@ class AppScreenViewModel(
             SharingStarted.WhileSubscribed(5000),
             testAthlete // or some default UserInfo
         )
+
+    init {
+        viewModelScope.launch {
+            Log.d("App View Model", "Getting list of events...")
+
+            val list = appRepository.getSupabaseEvents()
+            Log.d("App View Model", "Recieved list of events: $list")
+            updateListOfEvents(events = list)
+        }
+    }
+
+    fun updateListOfEvents(events: List<EventInfo>) {
+        _uiState.update { currentValue ->
+            currentValue.copy(
+                events = events
+            )
+        }
+    }
 
     fun updateUserPreferencesRepository() {
         Log.d("App", "Updating User Preferences...")
@@ -73,5 +92,6 @@ class AppScreenViewModel(
 }
 
 data class AppScreenUiState(
-    val athleteInfo: AthleteInfo
+    val athleteInfo: AthleteInfo,
+    val events: List<EventInfo> = emptyList()
 )

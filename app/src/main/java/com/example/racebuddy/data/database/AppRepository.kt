@@ -133,7 +133,24 @@ class AppRepository(
         return remoteDataSource.getEventResultAthleteInfo(eventUuid)
     }
 
-    suspend fun registerSupabaseAthleteToAnEvent(athleteUuid: String, eventUuid: String, category: String) {
+    suspend fun registerSupabaseAthleteToAnEvent(
+        athleteUuid: String,
+        eventUuid: String,
+        category: String
+    ) {
         remoteDataSource.registerAthleteToAnEvent(athleteUuid, eventUuid, category)
     }
+
+    suspend fun getSupabaseEventResultProfileInfo(athleteUuid: String): List<EventResultProfileInfo> {
+        return remoteDataSource.getEventResultProfileInfo(athleteUuid)
+    }
+
+    suspend fun getSupabaseAthleteRegisteredEvents(athleteUuid: String): List<EventInfo> {
+        return remoteDataSource.getAthleteRegisteredEvents(athleteUuid)
+    }
+
+    suspend fun getSupabaseAthleteRegisteredEventsUuid(athleteUuid: String): List<String> {
+        return remoteDataSource.getAthleteRegisteredEventsUuid(athleteUuid)
+    }
+
 }

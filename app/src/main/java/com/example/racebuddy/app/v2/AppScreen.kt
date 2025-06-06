@@ -25,6 +25,7 @@ import com.example.racebuddy.Application
 import com.example.racebuddy.data.database.AppRepository
 import com.example.racebuddy.data.database.CategoriesData
 import com.example.racebuddy.data.database.EventInfo
+import com.example.racebuddy.data.database.EventResultProfileInfo
 import com.example.racebuddy.data.database.RemoteDataSource
 import com.example.racebuddy.data.database.UserPreferencesRepository
 import com.example.racebuddy.ui.v2.event.EventScreen2
@@ -46,6 +47,7 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import kotlinx.datetime.LocalDate
+import network.chaintech.kmp_date_time_picker.utils.now
 
 enum class AppScreen {
     Login,
@@ -84,8 +86,14 @@ fun Appv2(
     val signupScreensUiState by signupScreensViewModel.uiState.collectAsState()
     val mainScreenUiState by mainScreenViewModel.uiState.collectAsState()
     val eventScreenUiState by eventScreenViewModel.uiState.collectAsState()
+    val profileScreenUiState by profileScreenViewModel.uiState.collectAsState()
+    val appScreenUiState by appScreenViewModel.uiState.collectAsState()
+
 
     val athleteInfo by appScreenViewModel.athleteInfo.collectAsState()
+
+    profileScreenViewModel.getEventResultProfileInfoList(athleteInfo.athleteId ?: "")
+    profileScreenViewModel.getRegisteredEventsUuids(athleteInfo.athleteId ?: "")
 
 
     val startDestination = AppScreen.Login.name //if (athleteInfo.athleteId == "-1") AppScreen.Login.name else AppScreen.Main.name
@@ -137,6 +145,7 @@ fun Appv2(
                 athleteInfo = athleteInfo,
                 events = mainScreenUiState.filteredEvents, //cyclingEvents,
                 searchEvents = mainScreenUiState.events,
+                selectedFilter = mainScreenUiState.selectedFilter,
                 onFavoriteIconClick = { eventUuid: String, delete: Boolean ->
                     mainScreenViewModel.onFavoriteIconClick(eventUuid, delete)
                 },
@@ -144,6 +153,7 @@ fun Appv2(
                     mainScreenViewModel.updateFilteredEventsByCategory(
                         category
                     )
+                    mainScreenViewModel.updateSelectedFilter(filter = category)
                 },
                 favoriteEventsId = mainScreenUiState.favoriteEventIds.map { it.eventUuid },
                 onSearchIconClick = {
@@ -411,10 +421,28 @@ fun Appv2(
             )
         }
         
-        composable(route = AppScreen.Profile.name) { 
+        composable(route = AppScreen.Profile.name) {
+
+
+            //TODO: Why is it fetching when moving to main screen? because of athleteinfo?
+            //TODO: Problem: when first opening the screen, the results is empty + after recomposition
+            // it shows registered events too
+
             ProfileScreen(
                 athleteInfo = athleteInfo,
                 isUserLoggedIn = athleteInfo.athleteId != "-1", //TODO: is it possible to be ""?
+                registeredEvents = appScreenUiState.events.filter { it -> profileScreenUiState.registeredEventsUuid.contains(it.evenUuid) },
+                onEventClick = { eventInfo: EventInfo ->
+                    eventScreenViewModel.updateEvent(eventInfo)
+                    eventScreenViewModel.getEventResultAthleteInfo(eventInfo.evenUuid)
+                    navController.navigate(AppScreen.Event.name)
+               },
+                selectedFilterButton = profileScreenUiState.selectedFilterButton,
+                selectedFilterResultButton = profileScreenUiState.selectedFilterResultButton,
+                yearsOfResults =  (2020..LocalDate.now().year).map { it.toString() }, //profileScreenUiState.eventResultProfileInfoList.map { it.startDate.year } .distinct().sortedBy { it }.map { it.toString() },
+                eventCategories = profileScreenUiState.eventResultProfileInfoList.map { it.eventCategory }
+                    .distinct(),
+                results = profileScreenUiState.filteredEventResultProfileInfoList.filter { it.time > 0 },
                 onLogoutButtonClick = {
                     loginScreenViewModel.loginSuccesUpdate(false)
                     profileScreenViewModel.onLogoutClick()
@@ -424,19 +452,33 @@ fun Appv2(
                         launchSingleTop = true
                     }
                 },
-                onBottomBarIconClick = {int: Int ->
-                    when(int) {
+                onFilterResultsButtonClick = {filter ->
+                    profileScreenViewModel.updateSelectedFilterResultButton(filter)
+                    if(filter != "All") {
+                        profileScreenViewModel.updateFilteredEventResultProfileList(profileScreenUiState.eventResultProfileInfoList.filter { it.eventCategory == filter})
+                    }
+                    else {
+                        profileScreenViewModel.updateFilteredEventResultProfileList(profileScreenUiState.eventResultProfileInfoList)
+                    }
+                },
+                onFilterButtonClick = { fitler ->
+                    profileScreenViewModel.updateSelectedFilterButton(fitler)
+                },
+                onBottomBarIconClick = { int: Int ->
+                    when (int) {
                         0 -> navController.navigate(AppScreen.Main.name) {
                             launchSingleTop = true
                         }
+
                         1 -> navController.navigate(AppScreen.Favorite.name) {
                             launchSingleTop = true
                         }
+
                         else -> {
 
                         }
                     }
-                }
+                },
             )
         }
         
