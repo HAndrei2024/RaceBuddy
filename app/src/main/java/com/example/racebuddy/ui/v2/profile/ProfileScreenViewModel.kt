@@ -23,6 +23,7 @@ import com.example.racebuddy.data.database.testAthlete
 import com.example.racebuddy.data.network.StravaApi
 import com.example.racebuddy.ui.v2.main.MainScreenUiState
 import com.example.racebuddy.ui.v2.main.MainScreenViewModel
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.asStateFlow
@@ -47,7 +48,8 @@ class ProfileScreenViewModel(
             filteredEventResultProfileInfoList = emptyList(),
             selectedFilterButton = "Results",
             selectedFilterResultButton = "All",
-            stravaResponseCode = "null"
+            stravaResponseCode = "null",
+            isRefreshing = false
         )
     )
     val uiState = _uiState.asStateFlow()
@@ -66,6 +68,17 @@ class ProfileScreenViewModel(
             val list = appRepository.getSupabaseAthleteRegisteredEventsUuid(athleteUuid)
 
             updateRegisteredEventsUuidsList(list)
+        }
+    }
+
+    fun updateState(athleteUuid: String) {
+        viewModelScope.launch {
+            updateIsRefreshing(true)
+            delay(1000)
+            getRegisteredEventsUuids(athleteUuid)
+            getEventResultProfileInfoList(athleteUuid)
+
+            updateIsRefreshing(false)
         }
     }
 
@@ -108,6 +121,14 @@ class ProfileScreenViewModel(
         _uiState.update { currentValue ->
             currentValue.copy(
                 selectedFilterButton = filter
+            )
+        }
+    }
+
+    fun updateIsRefreshing(value: Boolean) {
+        _uiState.update { currentValue ->
+            currentValue.copy(
+                isRefreshing = value
             )
         }
     }
@@ -195,5 +216,6 @@ data class ProfileScreenUiState(
     val registeredEventsUuid: List<String>,
     val selectedFilterButton: String,
     val selectedFilterResultButton: String,
-    val stravaResponseCode: String
+    val stravaResponseCode: String,
+    val isRefreshing: Boolean
 )

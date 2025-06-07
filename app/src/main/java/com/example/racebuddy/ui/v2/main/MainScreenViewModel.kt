@@ -18,6 +18,7 @@ import com.example.racebuddy.data.database.UserPreferencesRepository
 import com.example.racebuddy.data.database.testAthlete
 import com.example.racebuddy.ui.v2.login.LoginScreenUiState
 import com.example.racebuddy.ui.v2.login.LoginScreenViewModel
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.asStateFlow
@@ -40,7 +41,8 @@ class MainScreenViewModel(
         events = emptyList(),
         filteredEvents = emptyList(),
         favoriteEventIds = emptyList(),
-        selectedFilter = "All"
+        selectedFilter = "All",
+        isRefreshing = false
     ))
     val uiState = _uiState.asStateFlow()
 
@@ -232,6 +234,35 @@ class MainScreenViewModel(
         }
     }
 
+    fun updateEvents(events: List<EventInfo>) {
+        _uiState.update { currentState ->
+            currentState.copy(
+                events = events
+            )
+        }
+    }
+
+    fun updateIsRefreshing(value: Boolean) {
+        _uiState.update { currentState ->
+            currentState.copy(
+                isRefreshing = value
+            )
+        }
+    }
+
+    fun refreshUi() {
+        viewModelScope.launch {
+            Log.d("Main Screen", "Is refreshing...")
+            updateIsRefreshing(true)
+            delay(500)
+            val events = appRepository.getSupabaseEvents()
+
+            updateEvents(events)
+            delay(500)
+            updateIsRefreshing(false)
+        }
+    }
+
     companion object {
         val factory: ViewModelProvider.Factory = viewModelFactory {
             initializer {
@@ -250,5 +281,6 @@ data class MainScreenUiState(
     val events: List<EventInfo>,
     val filteredEvents: List<EventInfo>,
     val favoriteEventIds: List<EventIdForFavorite>,
-    val selectedFilter: String
+    val selectedFilter: String,
+    val isRefreshing: Boolean,
 )

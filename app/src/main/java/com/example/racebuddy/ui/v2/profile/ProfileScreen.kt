@@ -1,6 +1,7 @@
 package com.example.racebuddy.ui.v2.profile
 
 import android.content.Context
+import androidx.compose.animation.core.animateDpAsState
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.MarqueeSpacing
 import androidx.compose.foundation.background
@@ -30,9 +31,11 @@ import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
+import androidx.compose.material3.pulltorefresh.PullToRefreshBox
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -40,6 +43,8 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.BlurredEdgeTreatment
+import androidx.compose.ui.draw.blur
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.drawBehind
 import androidx.compose.ui.draw.scale
@@ -57,6 +62,7 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.max
 import androidx.compose.ui.zIndex
 import coil.compose.AsyncImage
 import com.example.racebuddy.R
@@ -77,15 +83,19 @@ import com.example.racebuddy.ui.theme.shapes
 import com.example.racebuddy.ui.theme.sizes
 import com.example.racebuddy.ui.v2.common.BottomNavigationBarChat
 import com.example.racebuddy.ui.v2.common.EventCardUpdated
+import com.example.racebuddy.ui.v2.common.LoadingAnimation
 import com.example.racebuddy.ui.v2.common.MainScreenTopAppBar
 import com.example.racebuddy.ui.v2.event.DetailRow
 import com.example.racebuddy.ui.v2.event.formatMillisToTimeString
 import com.example.racebuddy.ui.v2.main.countryMap
+import kotlinx.coroutines.delay
 import kotlinx.datetime.LocalDate
+import network.chaintech.kmp_date_time_picker.utils.amPmHourToHour24
 import network.chaintech.kmp_date_time_picker.utils.now
 
 
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ProfileScreen(
     athleteInfo: AthleteInfo,
@@ -102,9 +112,16 @@ fun ProfileScreen(
     eventCategories: List<String>,
     onLogoutButtonClick: () -> Unit,
     onLoginButtonClick: () -> Unit,
-    onBottomBarIconClick: (Int) -> Unit
+    onBottomBarIconClick: (Int) -> Unit,
+    isRefreshing: Boolean,
+    onRefresh: () -> Unit,
+    onSettingsIconClick: () -> Unit,
 ) {
     //var selectedFilterButton by remember { mutableStateOf("Results") }
+
+    //var isRefreshing by remember { mutableStateOf(false) }
+
+
     yearsOfResults.filter { yearStr ->
         val yearInt = yearStr.toIntOrNull()
         yearInt != null && yearInt <= LocalDate.now().year
@@ -113,7 +130,7 @@ fun ProfileScreen(
     Scaffold(
         topBar = {
             MainScreenTopAppBar(
-                onSettingsIconClick = {},
+                onSettingsIconClick = onSettingsIconClick,
                 onSearchIconClick = {},
                 showSearchIcon = false
             )
@@ -129,140 +146,103 @@ fun ProfileScreen(
         containerColor = Color.White,
         contentColor = Color.Black
     ) { innerPadding ->
-        LazyColumn(
-            horizontalAlignment = Alignment.CenterHorizontally,
-            verticalArrangement = Arrangement.Center,
-            modifier = Modifier
-                .padding(innerPadding)
+
+        val animatedBlur by animateDpAsState(targetValue = if(isRefreshing) 1.dp else 0.dp)
+
+
+        PullToRefreshBox(
+            isRefreshing = isRefreshing,
+            onRefresh = {
+                onRefresh()
+            },
+//            contentAlignment = Alignment.Center,
+//            modifier = Modifier
+//                .fillMaxSize(),
+
         ) {
-            if(isUserLoggedIn) {
-                item {
-                    AthleteDetails(
-                        athleteInfo = athleteInfo,
-                        onStravaButtonClick = onStravaButtonClick,
-                        modifier = Modifier
+            if(isRefreshing) {
+               LoadingAnimation()
+            }
+
+            LazyColumn(
+                horizontalAlignment = Alignment.CenterHorizontally,
+                verticalArrangement = Arrangement.Center,
+                modifier = Modifier
+                    .padding(innerPadding)
+                    .fillMaxWidth()
+                    .blur(
+                        radius = animatedBlur,
+                        edgeTreatment = BlurredEdgeTreatment.Unbounded
                     )
-                }
+            ) {
+                if (isUserLoggedIn) {
+                    item {
+                        AthleteDetails(
+                            athleteInfo = athleteInfo,
+                            onStravaButtonClick = onStravaButtonClick,
+                            modifier = Modifier
+                        )
+                    }
 
-                item {
-                   FilterButtons(
-                       selectedItem = selectedFilterButton,
-                       onFilterButtonClick = onFilterButtonClick
-                   )
-                }
+                    item {
+                        FilterButtons(
+                            selectedItem = selectedFilterButton,
+                            onFilterButtonClick = onFilterButtonClick
+                        )
+                    }
 
-                item {
-                    if(selectedFilterButton == "Results")
-                    FilterResultsButtons(
-                        selectedItem = selectedFilterResultButton,
-                        items = listOf("All") + eventCategories,
-                        onFilterButtonClick = onFilterResultsButtonClick
-                    )
-                }
+                    item {
+                        if (selectedFilterButton == "Results")
+                            FilterResultsButtons(
+                                selectedItem = selectedFilterResultButton,
+                                items = listOf("All") + eventCategories,
+                                onFilterButtonClick = onFilterResultsButtonClick
+                            )
+                    }
 
-                item {
-                    when(selectedFilterButton) {
-                        "Results" -> {
+                    item {
+                        when (selectedFilterButton) {
+                            "Results" -> {
 
-                            if(yearsOfResults.isEmpty()) {
-                                Column(
-                                    modifier = Modifier
-                                        .padding(paddings.spacingSmall)
-                                        .shadow(3.dp, shapes.small) // Shadow with rounded corners
-                                        .background(Color.White, shapes.small) // Background is required//
-                                ) {
-                                    Text(
-                                        text = "Year",
-                                        style = MaterialTheme.typography.bodyMedium,
-                                        color = Color.Gray,
-                                        fontWeight = FontWeight.Bold,
-                                        modifier = Modifier
-                                            //.background(Color(0xFFEEEEEE))
-                                            .padding(
-                                                paddings.spacingSmall
-                                                //start = paddings.spacingMedium,
-                                                //bottom = paddings.spacingSmall
-                                                //top = paddings.spacingXSmall
-                                            )
-                                            .fillMaxWidth(1f)
-
-                                            .drawBehind {
-                                                val borderSize = 2.dp.toPx()
-                                                drawLine(
-                                                    color = Color(0xFFEEEEEE),
-                                                    start = Offset(0f, size.height),
-                                                    end = Offset(size.width, size.height),
-                                                    strokeWidth = borderSize
-                                                )
-                                            }
-                                    )
-
+                                if (yearsOfResults.isEmpty()) {
                                     Column(
-                                        verticalArrangement = Arrangement.Center,
-                                        horizontalAlignment = Alignment.CenterHorizontally,
                                         modifier = Modifier
-                                            .fillMaxWidth()
-                                            .height(75.dp)
+                                            .padding(paddings.spacingSmall)
+                                            .shadow(
+                                                3.dp,
+                                                shapes.small
+                                            ) // Shadow with rounded corners
+                                            .background(
+                                                Color.White,
+                                                shapes.small
+                                            ) // Background is required//
                                     ) {
                                         Text(
-                                            text = "You have no results...",
-                                            maxLines = 2,
-                                            textAlign = TextAlign.Center
-                                        )
-                                    }
-                                }
-                            }
-                            yearsOfResults.sortedDescending().forEach{ year ->
-                                Column(
-                                    modifier = Modifier
-                                        .padding(paddings.spacingSmall)
-                                        .shadow(3.dp, shapes.small) // Shadow with rounded corners
-                                        .background(Color.White, shapes.small) // Background is required//
-                                ) {
-                                    Text(
-                                        text = year,
-                                        style = MaterialTheme.typography.bodyMedium,
-                                        color = Color.Gray,
-                                        fontWeight = FontWeight.Bold,
-                                        modifier = Modifier
-                                            //.background(Color(0xFFEEEEEE))
-                                            .padding(
-                                                paddings.spacingSmall
-                                                //start = paddings.spacingMedium,
-                                                //bottom = paddings.spacingSmall
-                                                //top = paddings.spacingXSmall
-                                            )
-                                            .fillMaxWidth(1f)
-
-                                            .drawBehind {
-                                                val borderSize = 2.dp.toPx()
-                                                drawLine(
-                                                    color = Color(0xFFEEEEEE),                        start = Offset(0f, size.height),
-                                                    end = Offset(size.width, size.height),
-                                                    strokeWidth = borderSize
+                                            text = "Year",
+                                            style = MaterialTheme.typography.bodyMedium,
+                                            color = Color.Gray,
+                                            fontWeight = FontWeight.Bold,
+                                            modifier = Modifier
+                                                //.background(Color(0xFFEEEEEE))
+                                                .padding(
+                                                    paddings.spacingSmall
+                                                    //start = paddings.spacingMedium,
+                                                    //bottom = paddings.spacingSmall
+                                                    //top = paddings.spacingXSmall
                                                 )
-                                            }
-                                        //.offset(y = paddings.spacingXSmall)
-                                    )
-                                    val filteredResults = results.filter { it.startDate.year == year.toInt() }
+                                                .fillMaxWidth(1f)
 
-                                    if(filteredResults.isNotEmpty()) {
-                                        filteredResults.forEach { result ->
-                                            EventResultCard(
-                                                year = result.startDate.year,
-                                                eventTitle = result.title,
-                                                eventBackgroundImageUrl = result.backgroundPictureUrl,
-                                                rank = result.rank,
-                                                time = result.time,
-                                                onEventClick = {
-                                                },
-                                                resultCategory = result.resultCategory,
-                                                eventCategory = result.eventCategory
-                                            )
+                                                .drawBehind {
+                                                    val borderSize = 2.dp.toPx()
+                                                    drawLine(
+                                                        color = Color(0xFFEEEEEE),
+                                                        start = Offset(0f, size.height),
+                                                        end = Offset(size.width, size.height),
+                                                        strokeWidth = borderSize
+                                                    )
+                                                }
+                                        )
 
-                                        }
-                                    }
-                                    else {
                                         Column(
                                             verticalArrangement = Arrangement.Center,
                                             horizontalAlignment = Alignment.CenterHorizontally,
@@ -271,40 +251,120 @@ fun ProfileScreen(
                                                 .height(75.dp)
                                         ) {
                                             Text(
-                                                text = "You have no results for the selected year...",
+                                                text = "You have no results...",
                                                 maxLines = 2,
                                                 textAlign = TextAlign.Center
                                             )
                                         }
                                     }
                                 }
+                                yearsOfResults.sortedDescending().forEach { year ->
+                                    Column(
+                                        modifier = Modifier
+                                            .padding(paddings.spacingSmall)
+                                            .shadow(
+                                                3.dp,
+                                                shapes.small
+                                            ) // Shadow with rounded corners
+                                            .background(
+                                                Color.White,
+                                                shapes.small
+                                            ) // Background is required//
+                                    ) {
+                                        Text(
+                                            text = year,
+                                            style = MaterialTheme.typography.bodyMedium,
+                                            color = Color.Gray,
+                                            fontWeight = FontWeight.Bold,
+                                            modifier = Modifier
+                                                //.background(Color(0xFFEEEEEE))
+                                                .padding(
+                                                    paddings.spacingSmall
+                                                    //start = paddings.spacingMedium,
+                                                    //bottom = paddings.spacingSmall
+                                                    //top = paddings.spacingXSmall
+                                                )
+                                                .fillMaxWidth(1f)
+
+                                                .drawBehind {
+                                                    val borderSize = 2.dp.toPx()
+                                                    drawLine(
+                                                        color = Color(0xFFEEEEEE),
+                                                        start = Offset(0f, size.height),
+                                                        end = Offset(size.width, size.height),
+                                                        strokeWidth = borderSize
+                                                    )
+                                                }
+                                            //.offset(y = paddings.spacingXSmall)
+                                        )
+                                        val filteredResults =
+                                            results.filter { it.startDate.year == year.toInt() }
+
+                                        if (filteredResults.isNotEmpty()) {
+                                            filteredResults.forEach { result ->
+                                                EventResultCard(
+                                                    year = result.startDate.year,
+                                                    eventTitle = result.title,
+                                                    eventBackgroundImageUrl = result.backgroundPictureUrl,
+                                                    rank = result.rank,
+                                                    time = result.time,
+                                                    onEventClick = {
+                                                    },
+                                                    resultCategory = result.resultCategory,
+                                                    eventCategory = result.eventCategory
+                                                )
+
+                                            }
+                                        } else {
+                                            Column(
+                                                verticalArrangement = Arrangement.Center,
+                                                horizontalAlignment = Alignment.CenterHorizontally,
+                                                modifier = Modifier
+                                                    .fillMaxWidth()
+                                                    .height(75.dp)
+                                            ) {
+                                                Text(
+                                                    text = "You have no results for the selected year...",
+                                                    maxLines = 2,
+                                                    textAlign = TextAlign.Center
+                                                )
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+
+                            "Registered" -> {
+
+
+                                RegisteredTab(
+                                    registeredEvents = registeredEvents,
+                                    onEventClick = onEventClick,
+                                    modifier = Modifier
+                                )
+
                             }
                         }
 
-                        "Registered" -> {
-                            RegisteredTab(
-                                registeredEvents = registeredEvents,
-                                onEventClick = onEventClick,
-                                modifier = Modifier
-                            )
-                        }
                     }
 
-                }
+                    item {
+                        LogoutButton(
+                            onLogoutButtonClick
+                        )
+                    }
 
-                item {
-                    LogoutButton(
-                        onLogoutButtonClick
-                    )
+
+                } else {
+                    item {
+                        NoUserLoggedInScreen(
+                            onLoginButtonClick = onLoginButtonClick
+                        )
+                    }
                 }
             }
-            else {
-                item {
-                    NoUserLoggedInScreen(
-                        onLoginButtonClick = onLoginButtonClick
-                    )
-                }
-            }
+
+
         }
     }
 }
@@ -460,6 +520,7 @@ fun AthleteDetails(
 
             AthleteDetailsColumn(
                 athleteInfo = athleteInfo,
+                areDetailsFilled = athleteInfo.gender != "-",
                 modifier = Modifier
                     .weight(1f)
                     .fillMaxHeight()
@@ -471,6 +532,7 @@ fun AthleteDetails(
 @Composable
 fun AthleteDetailsColumn(
     athleteInfo: AthleteInfo,
+    areDetailsFilled: Boolean,
     modifier: Modifier = Modifier
 ) {
     val today = LocalDate.now()
@@ -494,26 +556,27 @@ fun AthleteDetailsColumn(
 
         DetailRow(
             field = "Full Name",
-            value = "${athleteInfo.firstName} ${athleteInfo.lastName}",
+            value = if(!areDetailsFilled) "-" else "${athleteInfo.firstName} ${athleteInfo.lastName}",
             maxLines = 2,
             modifier = Modifier
         )
 
         DetailRow(
             field = "Gender",
-            value = "${athleteInfo.gender}",
+            value = if(!areDetailsFilled) "-" else "${athleteInfo.gender}",
             modifier = Modifier
         )
 
         DetailRow(
             field = "Age",
-            value = "$age",
+            value = if(!areDetailsFilled) "-" else "$age",
             modifier = Modifier
         )
 
         DetailRow(
             field = "Country",
-            value = "${athleteInfo.country} ${countryMap.get(athleteInfo.country)}",
+            value = if(!areDetailsFilled) "-" else "${athleteInfo.country} ${countryMap.get(athleteInfo.country)}",
+            maxLines = 2,
             modifier = Modifier
         )
 
@@ -550,7 +613,7 @@ fun DetailRow(
         Text(
             text = value,
             style = MaterialTheme.typography.titleSmall,
-            maxLines = 1,
+            maxLines = maxLines,
             textAlign = TextAlign.Center,
             overflow = TextOverflow.Ellipsis,
             modifier = Modifier
@@ -1094,6 +1157,9 @@ fun ProfileScreenPreview() {
         selectedFilterButton = "Results",
         selectedFilterResultButton = "All",
         onFilterButtonClick = {},
-        onStravaButtonClick = {}
+        onStravaButtonClick = {},
+        onRefresh = {},
+        isRefreshing = false,
+        onSettingsIconClick = {}
     )
 }

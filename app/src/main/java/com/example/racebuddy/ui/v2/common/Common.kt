@@ -1,5 +1,6 @@
 package com.example.racebuddy.ui.v2.common
 
+import android.media.Image
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.Crossfade
 import androidx.compose.foundation.BorderStroke
@@ -12,15 +13,18 @@ import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
@@ -32,12 +36,15 @@ import androidx.compose.material.icons.filled.Email
 import androidx.compose.material.icons.filled.Favorite
 import androidx.compose.material.icons.filled.FavoriteBorder
 import androidx.compose.material.icons.filled.Home
+import androidx.compose.material.icons.filled.Info
 import androidx.compose.material.icons.filled.KeyboardArrowRight
 import androidx.compose.material.icons.filled.Person
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material3.BottomAppBar
 import androidx.compose.material3.BottomAppBarDefaults
+import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
@@ -48,21 +55,26 @@ import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.NavigationBar
 import androidx.compose.material3.NavigationBarItem
 import androidx.compose.material3.NavigationBarItemDefaults
 import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.Scaffold
+import androidx.compose.material3.SheetState
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
 import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarColors
 import androidx.compose.material3.TopAppBarDefaults
+import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -81,12 +93,14 @@ import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.input.key.onKeyEvent
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.compose.ui.zIndex
 import coil.compose.AsyncImage
 import com.example.racebuddy.R
@@ -99,7 +113,9 @@ import com.example.racebuddy.ui.theme.paddings
 import com.example.racebuddy.ui.theme.shapes
 import com.example.racebuddy.ui.theme.sizes
 import com.example.racebuddy.ui.v2.signup.Country
+import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
 import kotlin.math.exp
 
 @Composable
@@ -175,14 +191,38 @@ fun ErrorText(
 }
 
 @Composable
-fun LoadingAnimation() {
+fun LoadingAnimation(
+    onFinishLoadingAnimation: () -> Unit = {},
+    modifier: Modifier = Modifier
+) {
     Column(
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.Center,
-        modifier = Modifier
+        modifier = modifier
             .fillMaxSize()
     ) {
-        CircularProgressIndicator(modifier = Modifier.align(Alignment.CenterHorizontally))
+        Card(
+            shape = CircleShape,
+            colors = CardDefaults.cardColors(containerColor = Color.White),
+            modifier = Modifier.size(80.dp)
+
+        ) {
+            Column(
+                horizontalAlignment = Alignment.CenterHorizontally,
+                verticalArrangement = Arrangement.Center,
+                modifier = Modifier
+                    .fillMaxSize()
+            ) {
+                CircularProgressIndicator(modifier = Modifier.align(Alignment.CenterHorizontally))
+
+                Text(
+                    text = "Loading...",
+                    style = MaterialTheme.typography.labelMedium,
+                    color = Color.Gray,
+                    fontWeight = FontWeight.Bold
+                )
+            }
+        }
     }
 }
 
@@ -880,6 +920,229 @@ fun LoadingWithCheckAnimation(
             )
         }
     }
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun SettingsScreen(
+    isAthleteLoggedIn: Boolean,
+    areAthleteDetailsFilled: Boolean,
+    athleteName: String,
+    onBackIconClick: () -> Unit,
+    onLogInOutButtonClick: () -> Unit,
+    onDetailsButtonClick: () -> Unit,
+    ) {
+
+    Scaffold(
+        topBar = {
+            Row(
+                horizontalArrangement = Arrangement.Start,
+                verticalAlignment = Alignment.CenterVertically,
+                modifier = Modifier
+                    .padding(paddings.spacingXSmall)
+                    .fillMaxWidth()
+            ) {
+                IconButton(
+                    onClick = onBackIconClick
+                ) {
+                    Icon(
+                        imageVector = Icons.Default.ArrowBack,
+                        contentDescription = ""
+                    )
+                }
+            }
+        },
+        bottomBar = {
+
+        },
+        containerColor = Color.White,
+        contentColor = Color.Black
+    ) { innerPadding ->
+        LazyColumn(
+            modifier = Modifier
+                .fillMaxWidth()
+                //.fillMaxHeight(1f)
+                .padding(innerPadding)
+        ) {
+            item {
+                Text(
+                    text = "⚙\uFE0F Settings",
+                    style = MaterialTheme.typography.headlineMedium,
+                    fontWeight = FontWeight.Normal,
+                    letterSpacing = 0.2.sp,
+                    modifier = Modifier
+                        .padding(paddings.spacingMedium)
+                        .drawBehind {
+                            val strokeWidth = 1.dp.toPx()
+                            val y =
+                                size.height - strokeWidth / 2  // Adjust for stroke centering
+//                            drawLine(
+//                                color = Color(0xFFDDDDDD),
+//                                start = Offset(0f, y),
+//                                end = Offset(size.width, y),
+//                                strokeWidth = strokeWidth
+//                            )
+                        }
+                )
+            }
+
+            item {
+                UserSettingsRows(
+                    isAthleteLoggedIn = isAthleteLoggedIn,
+                    areAthleteDetailsFilled = areAthleteDetailsFilled,
+                    name = athleteName,
+                    onLogInOutButtonClick = onLogInOutButtonClick,
+                    onDetailsButtonClick = onDetailsButtonClick,
+                    modifier = Modifier
+                )
+            }
+        }
+    }
+}
+
+@Composable
+fun UserSettingsRows(
+    isAthleteLoggedIn: Boolean,
+    areAthleteDetailsFilled: Boolean,
+    name: String,
+    onLogInOutButtonClick: () -> Unit,
+    onDetailsButtonClick: () -> Unit,
+    modifier: Modifier = Modifier
+) {
+    Column(
+        modifier = modifier
+            .padding(top = paddings.spacingMedium, start = paddings.spacingSmall, end = paddings.spacingSmall)
+            .fillMaxWidth()
+    ) {
+        Text(
+            text = "Athlete",
+            style = MaterialTheme.typography.titleMedium,
+            color = Color.Black,
+            fontWeight = FontWeight.Normal,
+            modifier = Modifier
+                .padding(start = paddings.spacingXSmall, end = paddings.spacingXSmall, bottom = paddings.spacingXSmall)
+        )
+
+       UserSettingsRow(
+           icon = Icons.Default.Person,
+           detailsText = if(isAthleteLoggedIn) name else "Not logged in",
+           buttonText = if(isAthleteLoggedIn) "Log Out" else "Log In",
+           onButtonClick = onLogInOutButtonClick,
+           isButtonEnabled = true,
+           modifier = Modifier,
+       )
+
+        UserSettingsRow(
+            icon = Icons.Default.Info,
+            detailsText = "Personal Info",
+            buttonText = "Details",
+            onButtonClick = onDetailsButtonClick,
+            isButtonEnabled = isAthleteLoggedIn && !areAthleteDetailsFilled,
+            modifier = Modifier
+        )
+    }
+}
+
+@Composable
+fun UserSettingsRow(
+    icon: ImageVector,
+    detailsText: String,
+    buttonText: String,
+    onButtonClick: () -> Unit,
+    isButtonEnabled: Boolean,
+    modifier: Modifier = Modifier
+) {
+    Column(
+        modifier = modifier
+            //.padding(top = paddings.spacingMedium, start = paddings.spacingSmall, end = paddings.spacingSmall)
+            .fillMaxWidth()
+    ) {
+        Row(
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.CenterVertically,
+            modifier = Modifier
+                .fillMaxWidth()
+                .drawBehind {
+                    val strokeWidth = 1.dp.toPx()
+                    drawLine(
+                        color = Color(0xFFDDDDDD),
+                        start = Offset(0f, 0f),
+                        end = Offset(size.width, 0f),
+                        strokeWidth = strokeWidth
+                    )
+                }
+                .drawBehind {
+                    val strokeWidth = 1.dp.toPx()
+                    val y =
+                        size.height - strokeWidth / 2  // Adjust for stroke centering
+                    drawLine(
+                        color = Color(0xFFDDDDDD),
+                        start = Offset(0f, y),
+                        end = Offset(size.width, y),
+                        strokeWidth = strokeWidth
+                    )
+                }
+                .padding(paddings.spacingXSmall)
+        ) {
+            Row(
+                horizontalArrangement = Arrangement.spacedBy(7.dp),
+                modifier = Modifier
+                    .weight(5f)
+            ) {
+                Icon(
+                    imageVector = icon,
+                    contentDescription = "",
+                    tint = MaterialTheme.colorScheme.primary,
+                    modifier = Modifier
+                        .offset(y = (-2).dp)
+                    //.weight(1f)
+                )
+
+                Text(
+                    text = detailsText,
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = Color.Gray,
+                    fontWeight = FontWeight.Bold,
+                    modifier = Modifier
+                    //.weight(1f)
+                )
+            }
+
+            Button(
+                colors = ButtonDefaults.buttonColors(
+                    containerColor = MaterialTheme.colorScheme.primary,
+                    contentColor = Color.White
+                ),
+                enabled = isButtonEnabled,
+                elevation = ButtonDefaults.buttonElevation(2.dp),
+                shape = RoundedCornerShape(shapes.small.topEnd),
+                contentPadding = PaddingValues(horizontal = 16.dp, vertical = 8.dp),
+                onClick = onButtonClick,
+                modifier = Modifier
+                .weight(1.5f)
+            ) {
+                Text(
+                    text = buttonText,
+                    style = MaterialTheme.typography.bodyMedium,
+                    fontWeight = FontWeight.Bold
+                )
+            }
+        }
+    }
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Preview
+@Composable
+fun SettingsBottomSheetPreview() {
+    SettingsScreen(
+        athleteName = "Not logged in",
+        isAthleteLoggedIn = false,
+        onLogInOutButtonClick = {},
+        onDetailsButtonClick = {},
+        onBackIconClick = {},
+        areAthleteDetailsFilled = false
+    )
 }
 
 

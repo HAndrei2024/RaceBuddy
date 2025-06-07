@@ -405,7 +405,16 @@ class SignupScreensViewModel(
                 localRegistrationNumber = "",
                 signupSucces = false,
                 isLoading = false,
-                updatedDatabase = false
+                updatedDatabase = false,
+                isUpdatingDetails = false
+            )
+        }
+    }
+
+    fun updateIsUpdatingDetails(value: Boolean) {
+        _uiState.update { currentState ->
+            currentState.copy(
+                isUpdatingDetails = value
             )
         }
     }
@@ -448,5 +457,6 @@ data class SignupScreensUiState(
     val updatedDatabase: Boolean = false,
     // Remove or not?
     val currentSignUpScreen: CurrentSignUpScreen = CurrentSignUpScreen.SignupScreenFirst,
-    val snackbarHostState: SnackbarHostState = SnackbarHostState()
+    val snackbarHostState: SnackbarHostState = SnackbarHostState(),
+    val isUpdatingDetails: Boolean = false
 )

@@ -67,6 +67,7 @@ import com.example.racebuddy.ui.theme.shapes
 import com.example.racebuddy.ui.v2.common.CustomTextField
 import com.example.racebuddy.ui.v2.common.ErrorText
 import com.example.racebuddy.ui.v2.common.LoadingAnimation
+import com.example.racebuddy.ui.v2.common.LoadingWithCheckAnimation
 import kotlinx.datetime.LocalDate
 import network.chaintech.kmp_date_time_picker.ui.datepicker.WheelDatePickerView
 import network.chaintech.kmp_date_time_picker.utils.DateTimePickerView
@@ -100,13 +101,16 @@ fun SignupSecondScreen(
     showDatePicker: Boolean,
     onDatePickerDoneClick: () -> Unit,
     onDatePickerDissmisClick: () -> Unit,
+    isUpdatingDetails: Boolean,
     modifier: Modifier = Modifier
 ) {
     val snackbarHostState = remember { SnackbarHostState() }
 
     // Triggered when the composable enters the composition
     LaunchedEffect(Unit) {
-        snackbarHostState.showSnackbar("Account created succesfuly!")
+        if(!isUpdatingDetails) {
+            snackbarHostState.showSnackbar("Account created succesfuly!")
+        }
     }
 
     val animatedBlur by animateDpAsState(targetValue = if(isLoading) 1.dp else 0.dp)
@@ -128,7 +132,10 @@ fun SignupSecondScreen(
                 )
         ) {
             if (isLoading) {
-                LoadingAnimation()
+                //LoadingAnimation()
+                LoadingWithCheckAnimation(
+                    onFinishLoadingAnimation = {}
+                )
             }
 
             Column(
@@ -982,6 +989,7 @@ fun SignupSecondScreenPreview() {
         lastNameValue = "",
         onLastNameChange = {},
         showError = true,
-        isLoading = false
+        isLoading = false,
+        isUpdatingDetails = false
     )
 }

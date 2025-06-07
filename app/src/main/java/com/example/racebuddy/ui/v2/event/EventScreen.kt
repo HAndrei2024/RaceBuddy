@@ -195,6 +195,7 @@ fun EventScreen2(
     isLoading: Boolean,
     onShowMoreTextClick: () -> Unit = {},
     onLoginDialogGoClick: () -> Unit,
+    onPersonalInformationDialogGoClick: () -> Unit,
     onRegisterButtonClick: (category: String) -> Unit,
     onBackClick: () -> Unit,
     onFavoriteClick: () -> Unit,
@@ -477,6 +478,7 @@ fun EventScreen2(
                     showMissingInformationDialog = false
 
                     // Navigate
+                    onPersonalInformationDialogGoClick()
                 },
                 dialogTitle = "\uD83D\uDE15 Information missing",
                 dialogText = "Please fill out all personal details first.\n\nSettings -> Personal -> Details",
@@ -2672,7 +2674,7 @@ fun PreviewDialog() {
         onDismissRequest = {  },
         onConfirmation = {},
         dialogTitle = "Information missing",
-        dialogText = "Please fill out all personal details first.\n\nSettings -> Personal -> Details",
+        dialogText = "Please fill out all personal details first.\n\nSettings -> Athlete -> Details",
         icon = Icons.Default.Warning
     )
 }
@@ -2754,6 +2756,7 @@ fun EventScreenPreview() {
         resultAthleteInfoList = emptyList<ResultAthleteInfo>(),
         onFilterResultsButtonClick = {},
         onLoginDialogGoClick = {},
+        onPersonalInformationDialogGoClick = {},
         isLoading = false
     )
 }

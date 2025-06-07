@@ -33,12 +33,13 @@ fun FavoriteScreen(
     onHomeIconClick: () -> Unit,
     onProfileIconClick: () -> Unit,
     onBottomBarIconClick: (Int) -> Unit,
-) {
+    onSettingsIconClick: () -> Unit,
+    ) {
 
     Scaffold(
         topBar = {
             MainScreenTopAppBar(
-                onSettingsIconClick = {},
+                onSettingsIconClick = onSettingsIconClick,
                 onSearchIconClick = {},
                 showSearchIcon = false
             )

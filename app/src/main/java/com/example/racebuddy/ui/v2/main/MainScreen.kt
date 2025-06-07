@@ -1,6 +1,7 @@
 package com.example.racebuddy.ui.v2.main
 
 import android.util.Log
+import androidx.compose.animation.core.animateDpAsState
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -41,6 +42,7 @@ import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
 import androidx.compose.material3.TextFieldDefaults
+import androidx.compose.material3.pulltorefresh.PullToRefreshBox
 import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -50,6 +52,8 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.BlurredEdgeTreatment
+import androidx.compose.ui.draw.blur
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.drawBehind
 import androidx.compose.ui.draw.drawWithContent
@@ -63,6 +67,7 @@ import androidx.compose.ui.text.font.Font
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.zIndex
 import coil.compose.AsyncImage
 import com.example.racebuddy.R
 import com.example.racebuddy.data.database.AthleteInfo
@@ -74,6 +79,7 @@ import com.example.racebuddy.ui.theme.paddings
 import com.example.racebuddy.ui.theme.shapes
 import com.example.racebuddy.ui.v2.common.BottomNavigationBarChat
 import com.example.racebuddy.ui.v2.common.EventCardUpdated
+import com.example.racebuddy.ui.v2.common.LoadingAnimation
 import com.example.racebuddy.ui.v2.common.MainScreenTopAppBar
 import com.example.racebuddy.ui.v2.search.SearchEventCard
 import com.example.racebuddy.ui.v2.search.SearchScreen
@@ -141,10 +147,13 @@ fun MainScreen(
     searchFilters: List<String> = listOf("All", "Past", "Upcoming"),
     onSearchIconClick: () -> Unit,
     onProfilePicClick: () -> Unit,
+    onSettingsIconClick: () -> Unit,
     onEventClick: (eventInfo: EventInfo) -> Unit,
     onFavoriteIconBottomBarClick: () -> Unit,
     onProfileIconBottomBarClick: () -> Unit,
     onBottomBarIconClicked: (Int) -> Unit,
+    onRefresh: () -> Unit,
+    isRefreshing: Boolean,
     isUserLoggedIn: Boolean,
     modifier: Modifier = Modifier
 ) {
@@ -155,7 +164,7 @@ fun MainScreen(
     )
     val scope = rememberCoroutineScope()
 
-    Box(modifier = Modifier.fillMaxSize()) {
+    val animatedBlur by animateDpAsState(targetValue = if(isRefreshing) 1.dp else 0.dp)
 
         Scaffold(
             topBar = {
@@ -166,7 +175,7 @@ fun MainScreen(
 //                onSearchQueryChanged = {}
 //            )
                 MainScreenTopAppBar(
-                    onSettingsIconClick = {},
+                    onSettingsIconClick = onSettingsIconClick,
                     onSearchIconClick = {
                         onSearchIconClick()
                         showSearch = true
@@ -204,160 +213,224 @@ fun MainScreen(
             containerColor = Color.White,
             contentColor = Color.Black
         ) { innerPadding ->
-            Column(
-                modifier = modifier
-                    .padding(innerPadding)
-                    .verticalScroll(rememberScrollState())
-            ) {
-                HelloText(
-                    athleteFirstName = athleteInfo.firstName ?: "",
-                    imageUrl = athleteInfo.profilePictureUrl ?: "",
-                    onProfilePicClick = onProfilePicClick
-                )
 
-                Spacer(
-                    modifier = Modifier
-                        .padding(paddings.spacingSmall)
-                )
-
-
-                FilterButtons(
-                    selectedItem = selectedFilter,
-                    onFilterButtonClick = onFilterButtonClick
-                )
-                Spacer(
-                    modifier = Modifier
-                        .padding(top = paddings.spacingSmall)
-                )
-
-                Events(
-                    events = events,
-                    favoriteEventsId = favoriteEventsId,
-                    onFavoriteIconClick = onFavoriteIconClick,
-                    isUserLoggedIn = isUserLoggedIn,
-                    onEventClick = onEventClick
-                )
-            }
-        }
-
-        if (showSearch) {
-            var searchQuery by remember { mutableStateOf("") }
-            var searchFilteredEvents by remember { mutableStateOf(searchEvents) }
-            var filter by remember { mutableStateOf("All") }
-
-
-            ModalBottomSheet(
-                onDismissRequest = {
-                    scope.launch {
-                        sheetState.hide()
-                    }.invokeOnCompletion {
-                        showSearch = false
-                    }
+            PullToRefreshBox(
+                isRefreshing = isRefreshing,
+                onRefresh = {
+                    onRefresh()
                 },
-                sheetState = sheetState,
-                containerColor = Color.White,
-                contentColor = Color.Black,
-                dragHandle = {},
-                shape = shapes.small,
-                modifier = Modifier
-                    .fillMaxWidth()
+//            contentAlignment = Alignment.Center,
+//            modifier = Modifier
+//                .fillMaxSize(),
 
             ) {
+                if (isRefreshing) {
+                    LoadingAnimation(
+                        modifier = Modifier
+                            .zIndex(2f)
+                    )
+                }
                 Column(
-                    //verticalArrangement = Arrangement.Center,
-                    horizontalAlignment = Alignment.CenterHorizontally,
-                    modifier = Modifier
-                        .fillMaxHeight(0.95f)
-                        //.height((LocalConfiguration.current.screenHeightDp.dp) * 0.95f) // 95% height
+                    modifier = modifier
+                        .padding(innerPadding)
+                        .verticalScroll(rememberScrollState())
+                        .blur(
+                            radius = animatedBlur,
+                            edgeTreatment = BlurredEdgeTreatment.Unbounded
+                        )
+                        .zIndex(1f)
                 ) {
-
-                    SearchTextField(
-                        searchQuery = searchQuery,
-                        onValueChange = {
-                            searchQuery = it
-                            when (filter) {
-                                "All" -> {
-                                    searchFilteredEvents = searchEvents.filter { eventInfo ->
-                                        eventInfo.title.contains(searchQuery, ignoreCase = true) ||
-                                        eventInfo.category.contains(searchQuery, ignoreCase = true)
-                                    }.sortedBy { event -> event.startDate }
-                                }
-                                "Past" -> {
-                                    searchFilteredEvents = searchEvents.filter { eventInfo ->
-                                        (eventInfo.title.contains(searchQuery, ignoreCase = true)
-                                                || eventInfo.category.contains(searchQuery, ignoreCase = true)) &&
-                                        eventInfo.startDate <= LocalDate.now()
-
-                                    }.sortedByDescending { event -> event.startDate }
-                                }
-                                "Upcoming" -> {
-                                    searchFilteredEvents = searchEvents.filter { eventInfo ->
-                                        (eventInfo.title.contains(searchQuery, ignoreCase = true)
-                                                || eventInfo.category.contains(searchQuery, ignoreCase = true)) &&
-                                        eventInfo.startDate > LocalDate.now()
-                                    }.sortedBy { event -> event.startDate }
-                                }
-                                else -> {
-
-                                }
-                            }
-                        },
-                        onCloseClick = {
-                            scope.launch {
-                                sheetState.hide()
-                            }.invokeOnCompletion {
-                                showSearch = false
-                            }
-                        }
+                    HelloText(
+                        athleteFirstName = athleteInfo.firstName ?: "",
+                        imageUrl = athleteInfo.profilePictureUrl ?: "",
+                        onProfilePicClick = onProfilePicClick
                     )
 
-                    SearchFilterButtons(
-                        items = searchFilters,
-                        onFilterButtonClick = { item: String ->
-                            filter = item
+                    Spacer(
+                        modifier = Modifier
+                            .padding(paddings.spacingSmall)
+                    )
+
+
+                    FilterButtons(
+                        selectedItem = selectedFilter,
+                        onFilterButtonClick = onFilterButtonClick
+                    )
+                    Spacer(
+                        modifier = Modifier
+                            .padding(top = paddings.spacingSmall)
+                    )
+
+                    Events(
+                        events = events,
+                        favoriteEventsId = favoriteEventsId,
+                        onFavoriteIconClick = onFavoriteIconClick,
+                        isUserLoggedIn = isUserLoggedIn,
+                        onEventClick = onEventClick
+                    )
+                }
+            }
+
+            if (showSearch) {
+                var searchQuery by remember { mutableStateOf("") }
+                var searchFilteredEvents by remember { mutableStateOf(searchEvents) }
+                var filter by remember { mutableStateOf("All") }
+
+
+                ModalBottomSheet(
+                    onDismissRequest = {
+                        scope.launch {
+                            sheetState.hide()
+                        }.invokeOnCompletion {
+                            showSearch = false
+                        }
+                    },
+                    sheetState = sheetState,
+                    containerColor = Color.White,
+                    contentColor = Color.Black,
+                    dragHandle = {},
+                    shape = shapes.small,
+                    modifier = Modifier
+                        .fillMaxWidth()
+
+                ) {
+                    Column(
+                        //verticalArrangement = Arrangement.Center,
+                        horizontalAlignment = Alignment.CenterHorizontally,
+                        modifier = Modifier
+                            .fillMaxHeight(0.95f)
+                        //.height((LocalConfiguration.current.screenHeightDp.dp) * 0.95f) // 95% height
+                    ) {
+
+                        SearchTextField(
+                            searchQuery = searchQuery,
+                            onValueChange = {
+                                searchQuery = it
+                                when (filter) {
+                                    "All" -> {
+                                        searchFilteredEvents = searchEvents.filter { eventInfo ->
+                                            eventInfo.title.contains(
+                                                searchQuery,
+                                                ignoreCase = true
+                                            ) ||
+                                                    eventInfo.category.contains(
+                                                        searchQuery,
+                                                        ignoreCase = true
+                                                    )
+                                        }.sortedBy { event -> event.startDate }
+                                    }
+
+                                    "Past" -> {
+                                        searchFilteredEvents = searchEvents.filter { eventInfo ->
+                                            (eventInfo.title.contains(
+                                                searchQuery,
+                                                ignoreCase = true
+                                            )
+                                                    || eventInfo.category.contains(
+                                                searchQuery,
+                                                ignoreCase = true
+                                            )) &&
+                                                    eventInfo.startDate <= LocalDate.now()
+
+                                        }.sortedByDescending { event -> event.startDate }
+                                    }
+
+                                    "Upcoming" -> {
+                                        searchFilteredEvents = searchEvents.filter { eventInfo ->
+                                            (eventInfo.title.contains(
+                                                searchQuery,
+                                                ignoreCase = true
+                                            )
+                                                    || eventInfo.category.contains(
+                                                searchQuery,
+                                                ignoreCase = true
+                                            )) &&
+                                                    eventInfo.startDate > LocalDate.now()
+                                        }.sortedBy { event -> event.startDate }
+                                    }
+
+                                    else -> {
+
+                                    }
+                                }
+                            },
+                            onCloseClick = {
+                                scope.launch {
+                                    sheetState.hide()
+                                }.invokeOnCompletion {
+                                    showSearch = false
+                                }
+                            }
+                        )
+
+                        SearchFilterButtons(
+                            items = searchFilters,
+                            onFilterButtonClick = { item: String ->
+                                filter = item
                                 when (item) {
                                     "All" -> {
                                         searchFilteredEvents = searchEvents.filter { eventInfo ->
-                                            eventInfo.title.contains(searchQuery, ignoreCase = true) ||
-                                            eventInfo.category.contains(searchQuery, ignoreCase = true)
+                                            eventInfo.title.contains(
+                                                searchQuery,
+                                                ignoreCase = true
+                                            ) ||
+                                                    eventInfo.category.contains(
+                                                        searchQuery,
+                                                        ignoreCase = true
+                                                    )
                                         }
                                     }
+
                                     "Past" -> {
                                         searchFilteredEvents = searchEvents.filter { eventInfo ->
-                                            (eventInfo.title.contains(searchQuery, ignoreCase = true)
-                                                    || eventInfo.category.contains(searchQuery, ignoreCase = true)) &&
-                                            eventInfo.startDate <= LocalDate.now()
+                                            (eventInfo.title.contains(
+                                                searchQuery,
+                                                ignoreCase = true
+                                            )
+                                                    || eventInfo.category.contains(
+                                                searchQuery,
+                                                ignoreCase = true
+                                            )) &&
+                                                    eventInfo.startDate <= LocalDate.now()
                                         }
                                     }
+
                                     "Upcoming" -> {
                                         searchFilteredEvents = searchEvents.filter { eventInfo ->
-                                            (eventInfo.title.contains(searchQuery, ignoreCase = true)
-                                                    || eventInfo.category.contains(searchQuery, ignoreCase = true)) &&
-                                            eventInfo.startDate > LocalDate.now()
+                                            (eventInfo.title.contains(
+                                                searchQuery,
+                                                ignoreCase = true
+                                            )
+                                                    || eventInfo.category.contains(
+                                                searchQuery,
+                                                ignoreCase = true
+                                            )) &&
+                                                    eventInfo.startDate > LocalDate.now()
                                         }
                                     }
+
                                     else -> {
 
                                     }
                                 }
 
-                        }
-                    )
+                            }
+                        )
 
-                    //DelimitatorText()
+                        //DelimitatorText()
 
-                    SearchEventList(
-                        events = searchFilteredEvents,
-                        isUserLoggedIn = isUserLoggedIn,
-                        favoriteEventsId = favoriteEventsId,
-                        onFavoriteIconClick = onFavoriteIconClick,
-                        onEventClick = onEventClick
-                    )
+                        SearchEventList(
+                            events = searchFilteredEvents,
+                            isUserLoggedIn = isUserLoggedIn,
+                            favoriteEventsId = favoriteEventsId,
+                            onFavoriteIconClick = onFavoriteIconClick,
+                            onEventClick = onEventClick
+                        )
+                    }
+
                 }
-
             }
         }
-    }
 
 }
 
@@ -785,6 +858,9 @@ fun MainScreenPreview() {
         isUserLoggedIn = true,
         onEventClick = {},
         selectedFilter = "All",
-        onProfilePicClick = {}
+        onProfilePicClick = {},
+        onSettingsIconClick = {},
+        onRefresh = {},
+        isRefreshing = false
     )
 }

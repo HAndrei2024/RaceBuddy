@@ -101,10 +101,10 @@ class RemoteDataSource {
         val response = SupabaseClient.client.from("Athlete").update(
             {
                 //or
+                Log.d("Test", "${athleteInfo.birthdate}")
                 set("first_name", athleteInfo.firstName)
                 set("last_name", athleteInfo.lastName)
                 set("gender", athleteInfo.gender)
-                set("birthdate", athleteInfo.birthdate)
                 set("nationality", athleteInfo.country)
                 set("local_registration_number", athleteInfo.licenseNumber)
             }
@@ -114,6 +114,16 @@ class RemoteDataSource {
                 athleteInfo.athleteId?.let { eq("athlete_uuid", it) }
             }
         }.decodeSingle<AthleteInfo>()
+
+        val response2 = SupabaseClient.client.from("Athlete").update(
+            {
+                set("birthdate", athleteInfo.birthdate)
+            }
+        ) {
+            filter {
+                athleteInfo.athleteId?.let { eq("athlete_uuid", it) }
+            }
+        }
 
         if (response != null) {
             Log.d("SIGNUP2", "Updated database succesfuly.")

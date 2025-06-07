@@ -10,6 +10,7 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
@@ -32,7 +33,9 @@ import com.example.racebuddy.data.database.EventInfo
 import com.example.racebuddy.data.database.EventResultProfileInfo
 import com.example.racebuddy.data.database.RemoteDataSource
 import com.example.racebuddy.data.database.UserPreferencesRepository
+import com.example.racebuddy.ui.v2.common.LoadingAnimation
 import com.example.racebuddy.ui.v2.common.LoadingWithCheckAnimation
+import com.example.racebuddy.ui.v2.common.SettingsScreen
 import com.example.racebuddy.ui.v2.event.EventScreen2
 import com.example.racebuddy.ui.v2.event.EventScreenViewModel
 import com.example.racebuddy.ui.v2.favorite.FavoriteScreen
@@ -64,7 +67,9 @@ enum class AppScreen {
     Profile,
     Event,
     Search,
-    Loading
+    Loading,
+    LoadingWithCheck,
+    Settings
 }
 
 @Composable
@@ -96,6 +101,7 @@ fun Appv2(
     val profileScreenUiState by profileScreenViewModel.uiState.collectAsState()
     val appScreenUiState by appScreenViewModel.uiState.collectAsState()
 
+    var isFirstStartUp by remember { mutableStateOf(true) }
 
     val athleteInfo by appScreenViewModel.athleteInfo.collectAsState()
 
@@ -148,6 +154,18 @@ fun Appv2(
         }
 
         composable(route = AppScreen.Main.name) {
+            LaunchedEffect(isFirstStartUp) {
+                if(isFirstStartUp) {
+                    mainScreenViewModel.updateIsRefreshing(true)
+
+                    delay(1500)
+
+                    mainScreenViewModel.updateIsRefreshing(false)
+
+                    isFirstStartUp = false
+                }
+            }
+
             MainScreen(
                 athleteInfo = athleteInfo,
                 events = mainScreenUiState.filteredEvents, //cyclingEvents,
@@ -194,7 +212,17 @@ fun Appv2(
 
                 },
                 onProfileIconBottomBarClick = {},
+                onSettingsIconClick = {
+                    navController.navigate(AppScreen.Settings.name){
+                        launchSingleTop = true
+                    }
+                },
                 isUserLoggedIn = RemoteDataSource.SupabaseClient.client.auth.currentUserOrNull() != null,
+                isRefreshing = mainScreenUiState.isRefreshing,
+                onRefresh = {
+                    // reload ui
+                    mainScreenViewModel.refreshUi()
+                },
                 modifier = Modifier,
             )
             BackHandler {  }
@@ -344,6 +372,7 @@ fun Appv2(
                     //appScreenViewModel.updateUserPreferencesRepository()
                     //navController.navigate(AppScreen.Main.name)
                 },
+                isUpdatingDetails = signupScreensUiState.isUpdatingDetails,
                 modifier = Modifier,
             )
             BackHandler {  }
@@ -384,6 +413,11 @@ fun Appv2(
 
                         }
                     }
+                },
+                onSettingsIconClick = {
+                    navController.navigate(AppScreen.Settings.name) {
+                        launchSingleTop = true
+                    }
                 }
             )
         }
@@ -422,6 +456,12 @@ fun Appv2(
                 },
                 onFilterResultsButtonClick = { category: String ->
                     eventScreenViewModel.updateFilterResultsOnCategory(category)
+                },
+                onPersonalInformationDialogGoClick = {
+                    navController.navigate(AppScreen.Settings.name) {
+                        launchSingleTop = true
+
+                    }
                 },
                 onLoginDialogGoClick = {
                     navController.navigate(AppScreen.Login.name) {
@@ -519,11 +559,20 @@ fun Appv2(
                         }
                     }
                 },
+                onRefresh = {
+                    profileScreenViewModel.updateState(athleteUuid = athleteInfo.athleteId ?: "")
+                },
+                isRefreshing = profileScreenUiState.isRefreshing,
+                onSettingsIconClick = {
+                    navController.navigate(AppScreen.Settings.name) {
+                        launchSingleTop = true
+                    }
+                }
             )
         }
 
         composable(
-            route = AppScreen.Loading.name,
+            route = AppScreen.LoadingWithCheck.name,
             deepLinks = listOf(navDeepLink { uriPattern = "myapp://localhost" })
         ) {
             LoadingWithCheckAnimation(
@@ -531,6 +580,34 @@ fun Appv2(
                     navController.navigate(AppScreen.Profile.name) {
                         launchSingleTop = true
                     }
+                }
+            )
+        }
+
+
+        composable(
+            route = AppScreen.Settings.name,
+        ) {
+            SettingsScreen(
+                isAthleteLoggedIn = athleteInfo.athleteId != "-1",
+                areAthleteDetailsFilled = athleteInfo.gender != "-",
+                athleteName = "${athleteInfo.firstName} ${athleteInfo.lastName}",
+                onBackIconClick = {
+                    navController.popBackStack()
+                },
+                onLogInOutButtonClick = {
+                    if(athleteInfo.athleteId != "-1") {
+                        loginScreenViewModel.loginSuccesUpdate(false)
+                        profileScreenViewModel.onLogoutClick()
+                    } else {
+                        navController.navigate(AppScreen.Login.name) {
+                            launchSingleTop = true
+                        }
+                    }
+                },
+                onDetailsButtonClick = {
+                    signupScreensViewModel.updateIsUpdatingDetails(true)
+                    navController.navigate(AppScreen.SignUpSecond.name)
                 }
             )
         }
