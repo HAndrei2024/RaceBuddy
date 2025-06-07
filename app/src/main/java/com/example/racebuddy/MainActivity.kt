@@ -21,6 +21,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
 import com.example.racebuddy.app.v1.App
 import com.example.racebuddy.app.v2.Appv2
 import com.example.racebuddy.data.database.AppRepository

@@ -245,6 +245,10 @@ dependencies {
     // Calendar - Date picker
     implementation("network.chaintech:kmp-date-time-picker:1.0.7")
 
+    // Splash Screen
+    implementation("androidx.core:core-splashscreen:1.0.0")
+
+
 
 //    // Add the core Ktor client
 //    implementation("io.ktor:ktor-client-core:2.3.5")
