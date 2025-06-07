@@ -1,5 +1,7 @@
 package com.example.racebuddy.app.v2
 
+import android.app.Activity
+import android.util.Log
 import androidx.activity.compose.BackHandler
 import androidx.compose.animation.AnimatedContentTransitionScope
 import androidx.compose.animation.core.tween
@@ -11,6 +13,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.ViewModelProvider.AndroidViewModelFactory.Companion.APPLICATION_KEY
@@ -21,6 +24,7 @@ import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
+import androidx.navigation.navDeepLink
 import com.example.racebuddy.Application
 import com.example.racebuddy.data.database.AppRepository
 import com.example.racebuddy.data.database.CategoriesData
@@ -28,6 +32,7 @@ import com.example.racebuddy.data.database.EventInfo
 import com.example.racebuddy.data.database.EventResultProfileInfo
 import com.example.racebuddy.data.database.RemoteDataSource
 import com.example.racebuddy.data.database.UserPreferencesRepository
+import com.example.racebuddy.ui.v2.common.LoadingWithCheckAnimation
 import com.example.racebuddy.ui.v2.event.EventScreen2
 import com.example.racebuddy.ui.v2.event.EventScreenViewModel
 import com.example.racebuddy.ui.v2.favorite.FavoriteScreen
@@ -48,6 +53,7 @@ import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import kotlinx.datetime.LocalDate
 import network.chaintech.kmp_date_time_picker.utils.now
+import kotlin.reflect.jvm.internal.impl.descriptors.Visibilities.Local
 
 enum class AppScreen {
     Login,
@@ -57,7 +63,8 @@ enum class AppScreen {
     Favorite,
     Profile,
     Event,
-    Search
+    Search,
+    Loading
 }
 
 @Composable
@@ -96,7 +103,7 @@ fun Appv2(
     profileScreenViewModel.getRegisteredEventsUuids(athleteInfo.athleteId ?: "")
 
 
-    val startDestination = AppScreen.Login.name //if (athleteInfo.athleteId == "-1") AppScreen.Login.name else AppScreen.Main.name
+    val startDestination = AppScreen.Main.name //if (athleteInfo.athleteId == "-1") AppScreen.Login.name else AppScreen.Main.name
 
 
     //appViewModel.updateScreenSelected(AppScreen.valueOf(startDestination))
@@ -159,9 +166,14 @@ fun Appv2(
                 onSearchIconClick = {
                     //navController.navigate(AppScreen.Search.name)
                 },
+                onProfilePicClick = {
+                    navController.navigate(AppScreen.Profile.name) {
+                        launchSingleTop = true
+                    }
+                },
                 onEventClick = { eventInfo ->
                     eventScreenViewModel.updateEvent(eventInfo)
-                    eventScreenViewModel.getEventResultAthleteInfo(eventInfo.evenUuid)
+                    eventScreenViewModel.getEventResultAthleteInfo(eventInfo.eventUuid)
                     navController.navigate(AppScreen.Event.name)
                 },
                 onBottomBarIconClicked = { int: Int ->
@@ -343,13 +355,13 @@ fun Appv2(
 
             val favoriteEventIds: List<String> = mainScreenUiState.favoriteEventIds.map { it -> it.eventUuid }
             val favoriteEventsInfo: List<EventInfo> = mainScreenUiState.events.filter { eventInfo ->
-                favoriteEventIds.contains(eventInfo.evenUuid)
+                favoriteEventIds.contains(eventInfo.eventUuid)
             }
             FavoriteScreen(
                 favoriteEvents = favoriteEventsInfo,
                 onEventClick = { eventInfo ->
                     eventScreenViewModel.updateEvent(eventInfo)
-                    eventScreenViewModel.getEventResultAthleteInfo(eventInfo.evenUuid)
+                    eventScreenViewModel.getEventResultAthleteInfo(eventInfo.eventUuid)
                     navController.navigate(AppScreen.Event.name)
                 },
                 onFavoriteIconClick = {id: String, value: Boolean -> mainScreenViewModel.onFavoriteIconClick(id, value) },
@@ -378,7 +390,7 @@ fun Appv2(
         //var isAthleteRegistered by mutableStateOf(false)
 
         composable(route = AppScreen.Event.name) {
-            val isFavorite = mainScreenUiState.favoriteEventIds.map { it -> it.eventUuid }.contains(eventScreenUiState.eventInfo.evenUuid)
+            val isFavorite = mainScreenUiState.favoriteEventIds.map { it -> it.eventUuid }.contains(eventScreenUiState.eventInfo.eventUuid)
             var isAthleteRegistered = eventScreenUiState.resultAthleteInfoListFiltered.map { it.athleteUuid }.contains(athleteInfo.athleteId)
 
             EventScreen2(
@@ -395,14 +407,14 @@ fun Appv2(
                 isLoading = eventScreenUiState.isLoading,
                 onFavoriteClick = {
                     mainScreenViewModel.onFavoriteIconClick(
-                        eventUuid = eventScreenUiState.eventInfo.evenUuid,
+                        eventUuid = eventScreenUiState.eventInfo.eventUuid,
                         delete = isFavorite
                     )
                 },
                 onRegisterButtonClick = { category: String ->
                     eventScreenViewModel.onRegisterButtonClick(
                         athleteUuid = athleteInfo.athleteId ?: "-1",
-                        eventUuid = eventScreenUiState.eventInfo.evenUuid,
+                        eventUuid = eventScreenUiState.eventInfo.eventUuid,
                         category = category
                     )
 
@@ -421,8 +433,31 @@ fun Appv2(
             )
         }
         
-        composable(route = AppScreen.Profile.name) {
+        composable(
+            route = AppScreen.Profile.name,
+            //deepLinks = listOf(navDeepLink { uriPattern = "myapp://localhost" })
+        ) {
 
+            val currentContext = LocalContext.current
+
+            if(athleteInfo.athleteId != "-1") {
+                val activity = LocalContext.current as Activity
+                val intent = activity.intent
+                val responseCode = intent.data?.getQueryParameter("code").toString()
+
+                Log.d("Profile Screen UI", "updating response code $responseCode")
+
+                profileScreenViewModel.updateResponseCode(
+                    response = responseCode,
+                    athleteUuid = athleteInfo.athleteId ?: "",
+                    updateLocalAthleteInfo = { profilePicUrl ->
+                        appScreenViewModel.updateAthleteInfoProfilePicUrl(profilePicUrl)
+                    },
+                )
+            }
+
+            val minYear = profileScreenUiState.filteredEventResultProfileInfoList.filter { it.time > 0 }
+                    .minOfOrNull { it.startDate.year }
 
             //TODO: Why is it fetching when moving to main screen? because of athleteinfo?
             //TODO: Problem: when first opening the screen, the results is empty + after recomposition
@@ -431,16 +466,16 @@ fun Appv2(
             ProfileScreen(
                 athleteInfo = athleteInfo,
                 isUserLoggedIn = athleteInfo.athleteId != "-1", //TODO: is it possible to be ""?
-                registeredEvents = appScreenUiState.events.filter { it -> profileScreenUiState.registeredEventsUuid.contains(it.evenUuid) },
+                registeredEvents = appScreenUiState.events.filter { it -> profileScreenUiState.registeredEventsUuid.contains(it.eventUuid) },
                 onEventClick = { eventInfo: EventInfo ->
                     eventScreenViewModel.updateEvent(eventInfo)
-                    eventScreenViewModel.getEventResultAthleteInfo(eventInfo.evenUuid)
+                    eventScreenViewModel.getEventResultAthleteInfo(eventInfo.eventUuid)
                     navController.navigate(AppScreen.Event.name)
                },
                 selectedFilterButton = profileScreenUiState.selectedFilterButton,
                 selectedFilterResultButton = profileScreenUiState.selectedFilterResultButton,
-                yearsOfResults =  (2020..LocalDate.now().year).map { it.toString() }, //profileScreenUiState.eventResultProfileInfoList.map { it.startDate.year } .distinct().sortedBy { it }.map { it.toString() },
-                eventCategories = profileScreenUiState.eventResultProfileInfoList.map { it.eventCategory }
+                yearsOfResults = if(minYear == null) emptyList() else (minYear..LocalDate.now().year).map { it.toString() }, //profileScreenUiState.eventResultProfileInfoList.map { it.startDate.year } .distinct().sortedBy { it }.map { it.toString() },
+                eventCategories = appScreenUiState.events.map { it -> it.category }
                     .distinct(),
                 results = profileScreenUiState.filteredEventResultProfileInfoList.filter { it.time > 0 },
                 onLogoutButtonClick = {
@@ -464,6 +499,11 @@ fun Appv2(
                 onFilterButtonClick = { fitler ->
                     profileScreenViewModel.updateSelectedFilterButton(fitler)
                 },
+                onStravaButtonClick = {
+                    profileScreenViewModel.onUpdateProfilePicFromStravaClick(
+                        context = currentContext
+                    )
+                },
                 onBottomBarIconClick = { int: Int ->
                     when (int) {
                         0 -> navController.navigate(AppScreen.Main.name) {
@@ -481,7 +521,20 @@ fun Appv2(
                 },
             )
         }
-        
+
+        composable(
+            route = AppScreen.Loading.name,
+            deepLinks = listOf(navDeepLink { uriPattern = "myapp://localhost" })
+        ) {
+            LoadingWithCheckAnimation(
+                onFinishLoadingAnimation = {
+                    navController.navigate(AppScreen.Profile.name) {
+                        launchSingleTop = true
+                    }
+                }
+            )
+        }
+
     }
 }
 

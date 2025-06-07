@@ -1,5 +1,6 @@
 package com.example.racebuddy.ui.v2.profile
 
+import android.content.Context
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.MarqueeSpacing
 import androidx.compose.foundation.background
@@ -96,6 +97,7 @@ fun ProfileScreen(
     onEventClick: (eventInfo: EventInfo) -> Unit,
     onFilterButtonClick: (filter: String) -> Unit,
     onFilterResultsButtonClick: (filter: String) -> Unit,
+    onStravaButtonClick: () -> Unit,
     yearsOfResults: List<String>,
     eventCategories: List<String>,
     onLogoutButtonClick: () -> Unit,
@@ -137,6 +139,7 @@ fun ProfileScreen(
                 item {
                     AthleteDetails(
                         athleteInfo = athleteInfo,
+                        onStravaButtonClick = onStravaButtonClick,
                         modifier = Modifier
                     )
                 }
@@ -161,6 +164,54 @@ fun ProfileScreen(
                     when(selectedFilterButton) {
                         "Results" -> {
 
+                            if(yearsOfResults.isEmpty()) {
+                                Column(
+                                    modifier = Modifier
+                                        .padding(paddings.spacingSmall)
+                                        .shadow(3.dp, shapes.small) // Shadow with rounded corners
+                                        .background(Color.White, shapes.small) // Background is required//
+                                ) {
+                                    Text(
+                                        text = "Year",
+                                        style = MaterialTheme.typography.bodyMedium,
+                                        color = Color.Gray,
+                                        fontWeight = FontWeight.Bold,
+                                        modifier = Modifier
+                                            //.background(Color(0xFFEEEEEE))
+                                            .padding(
+                                                paddings.spacingSmall
+                                                //start = paddings.spacingMedium,
+                                                //bottom = paddings.spacingSmall
+                                                //top = paddings.spacingXSmall
+                                            )
+                                            .fillMaxWidth(1f)
+
+                                            .drawBehind {
+                                                val borderSize = 2.dp.toPx()
+                                                drawLine(
+                                                    color = Color(0xFFEEEEEE),
+                                                    start = Offset(0f, size.height),
+                                                    end = Offset(size.width, size.height),
+                                                    strokeWidth = borderSize
+                                                )
+                                            }
+                                    )
+
+                                    Column(
+                                        verticalArrangement = Arrangement.Center,
+                                        horizontalAlignment = Alignment.CenterHorizontally,
+                                        modifier = Modifier
+                                            .fillMaxWidth()
+                                            .height(75.dp)
+                                    ) {
+                                        Text(
+                                            text = "You have no results...",
+                                            maxLines = 2,
+                                            textAlign = TextAlign.Center
+                                        )
+                                    }
+                                }
+                            }
                             yearsOfResults.sortedDescending().forEach{ year ->
                                 Column(
                                     modifier = Modifier
@@ -320,7 +371,8 @@ fun RegisteredTab(
 @Composable
 fun AthleteDetails(
     athleteInfo: AthleteInfo,
-    modifier: Modifier = Modifier
+    onStravaButtonClick: () -> Unit,
+    modifier: Modifier = Modifier,
 ) {
     Column(
         verticalArrangement = Arrangement.Center,
@@ -392,7 +444,7 @@ fun AthleteDetails(
                     elevation = ButtonDefaults.buttonElevation(2.dp),
                     shape = RoundedCornerShape(shapes.small.topEnd),
                     contentPadding = PaddingValues(horizontal = 16.dp, vertical = 8.dp),
-                    onClick = {},
+                    onClick = onStravaButtonClick,
                     modifier = Modifier
                         .scale(0.8f)
                         .align(Alignment.CenterHorizontally)
@@ -993,6 +1045,7 @@ fun LoginButton(
 fun AthleteDetailsPreview() {
     AthleteDetails(
         athleteInfo = testAthlete,
+        onStravaButtonClick = {},
         modifier = Modifier
     )
 }
@@ -1041,5 +1094,6 @@ fun ProfileScreenPreview() {
         selectedFilterButton = "Results",
         selectedFilterResultButton = "All",
         onFilterButtonClick = {},
+        onStravaButtonClick = {}
     )
 }

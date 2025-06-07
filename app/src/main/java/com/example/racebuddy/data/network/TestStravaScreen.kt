@@ -82,7 +82,7 @@ fun StravaScreenIntent(
                 .data(stravaAuthResult.athlete.profilePictureUrl)
                 .crossfade(true)
                 .build(),
-            error = painterResource(R.drawable.ic_launcher_background),
+            error = painterResource(R.drawable.error_image_generic),
             placeholder = painterResource(R.drawable.default_profile),
             contentDescription = "Profile picture",
             contentScale = ContentScale.Crop

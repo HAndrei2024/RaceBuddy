@@ -3,6 +3,7 @@ package com.example.racebuddy.ui.v2.main
 import android.util.Log
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -139,6 +140,7 @@ fun MainScreen(
     favoriteEventsId: List<String> = emptyList(),
     searchFilters: List<String> = listOf("All", "Past", "Upcoming"),
     onSearchIconClick: () -> Unit,
+    onProfilePicClick: () -> Unit,
     onEventClick: (eventInfo: EventInfo) -> Unit,
     onFavoriteIconBottomBarClick: () -> Unit,
     onProfileIconBottomBarClick: () -> Unit,
@@ -210,6 +212,7 @@ fun MainScreen(
                 HelloText(
                     athleteFirstName = athleteInfo.firstName ?: "",
                     imageUrl = athleteInfo.profilePictureUrl ?: "",
+                    onProfilePicClick = onProfilePicClick
                 )
 
                 Spacer(
@@ -372,13 +375,13 @@ fun SearchEventList(
                 eventInfo = eventInfo,
                 isUserLoggedIn = isUserLoggedIn,
                 countryCodeEmoji = countryMap[eventInfo.city] ?: "",
-                favoriteIcon = if(favoriteEventsId.contains(eventInfo.evenUuid)) painterResource(R.drawable.baseline_favorite_24) else painterResource(R.drawable.baseline_favorite_border_24),
+                favoriteIcon = if(favoriteEventsId.contains(eventInfo.eventUuid)) painterResource(R.drawable.baseline_favorite_24) else painterResource(R.drawable.baseline_favorite_border_24),
                 onFavoriteIconClick = {
                     //TODO: Pass the event id, and update the database and local favorite list
-                    Log.d("MainScreen UI", "onFavoriteClickFromUi -> ${eventInfo.evenUuid}, ${favoriteEventsId.contains(eventInfo.evenUuid)}")
+                    Log.d("MainScreen UI", "onFavoriteClickFromUi -> ${eventInfo.eventUuid}, ${favoriteEventsId.contains(eventInfo.eventUuid)}")
                     onFavoriteIconClick(
-                        eventInfo.evenUuid,
-                        favoriteEventsId.contains(eventInfo.evenUuid)
+                        eventInfo.eventUuid,
+                        favoriteEventsId.contains(eventInfo.eventUuid)
                     )
                 },
                 onEventClick = {
@@ -534,6 +537,7 @@ fun SearchFilterButtons(
 fun HelloText(
     athleteFirstName: String,
     imageUrl: String,
+    onProfilePicClick: () -> Unit,
     modifier: Modifier = Modifier
 ) {
 //    Spacer(
@@ -585,6 +589,9 @@ fun HelloText(
                     .size(52.dp) // Adjust size as needed
                     .clip(CircleShape)
                     .border(2.dp, MaterialTheme.colorScheme.primary, CircleShape)
+                    .clickable {
+                        onProfilePicClick()
+                    }
             )
 //        Image(
 //            painter = painterResource(R.drawable.default_profile),
@@ -716,13 +723,13 @@ fun Events(
                     eventInfo = eventInfo,
                     isUserLoggedIn = isUserLoggedIn,
                     countryCodeEmoji = countryMap[eventInfo.city] ?: "",
-                    favoriteIcon = if(favoriteEventsId.contains(eventInfo.evenUuid)) painterResource(R.drawable.baseline_favorite_24) else painterResource(R.drawable.baseline_favorite_border_24),
+                    favoriteIcon = if(favoriteEventsId.contains(eventInfo.eventUuid)) painterResource(R.drawable.baseline_favorite_24) else painterResource(R.drawable.baseline_favorite_border_24),
                     onFavoriteIconClick = {
                         //TODO: Pass the event id, and update the database and local favorite list
-                        Log.d("MainScreen UI", "onFavoriteClickFromUi -> ${eventInfo.evenUuid}, ${favoriteEventsId.contains(eventInfo.evenUuid)}")
+                        Log.d("MainScreen UI", "onFavoriteClickFromUi -> ${eventInfo.eventUuid}, ${favoriteEventsId.contains(eventInfo.eventUuid)}")
                         onFavoriteIconClick(
-                            eventInfo.evenUuid,
-                            favoriteEventsId.contains(eventInfo.evenUuid)
+                            eventInfo.eventUuid,
+                            favoriteEventsId.contains(eventInfo.eventUuid)
                         )
                     },
                     onEventClick = {
@@ -777,6 +784,7 @@ fun MainScreenPreview() {
         onBottomBarIconClicked = {},
         isUserLoggedIn = true,
         onEventClick = {},
-        selectedFilter = "All"
+        selectedFilter = "All",
+        onProfilePicClick = {}
     )
 }

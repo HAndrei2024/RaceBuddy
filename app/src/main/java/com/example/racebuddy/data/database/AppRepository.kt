@@ -153,4 +153,8 @@ class AppRepository(
         return remoteDataSource.getAthleteRegisteredEventsUuid(athleteUuid)
     }
 
+    suspend fun updateSupabaseAthleteProfilePic(athleteUuid: String, profilePictureUrl: String): Boolean {
+        return remoteDataSource.updateAthleteProfilePic(athleteUuid, profilePictureUrl)
+    }
+
 }

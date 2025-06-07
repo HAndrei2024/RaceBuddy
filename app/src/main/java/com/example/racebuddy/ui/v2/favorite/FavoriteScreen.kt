@@ -93,9 +93,9 @@ fun FavoriteScreen(
                     favoriteIcon =  painterResource(R.drawable.baseline_favorite_24),
                     onFavoriteIconClick = {
                         //TODO: Pass the event id, and update the database and local favorite list
-                        Log.d("MainScreen UI", "onFavoriteClickFromUi -> ${eventInfo.evenUuid}, false")
+                        Log.d("MainScreen UI", "onFavoriteClickFromUi -> ${eventInfo.eventUuid}, false")
                         onFavoriteIconClick(
-                            eventInfo.evenUuid,
+                            eventInfo.eventUuid,
                             true
                         )
                     },

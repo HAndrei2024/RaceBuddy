@@ -144,7 +144,7 @@ class RemoteDataSource {
                 order = Order.ASCENDING,
             )
         }.decodeList<EventInfo>()
-        Log.d("Supabase", "Getting events... - ${events}")
+        //Log.d("Supabase", "Getting events... - ${events}")
         return events
     }
 
@@ -222,18 +222,25 @@ class RemoteDataSource {
     }
 
     suspend fun getEventResultProfileInfo(athleteUuid: String): List<EventResultProfileInfo> {
-        try {
-        val param = AthleteParam(athleteUuid)
-        val response = SupabaseClient.client.postgrest
-            .rpc("get_athlete_results", param).decodeList<EventResultProfileInfo>()
 
-        Log.d("SUPABASE", "Fetched EventResultProfileInfo info: ${response.size}")
+        //TODO: Check why is it getting called with athleteUuid -1
+        if(athleteUuid != "-1") {
+            try {
+                val param = AthleteParam(athleteUuid)
+                val response = SupabaseClient.client.postgrest
+                    .rpc("get_athlete_results", param).decodeList<EventResultProfileInfo>()
 
-        return response
+                Log.d("SUPABASE", "Fetched EventResultProfileInfo info: ${response.size}")
 
-    } catch (exception: Exception) {
-        Log.d("SUPABASE", "Tried fetching EventResultProfileInfo join data and failed, exception: $exception")
-    }
+                return response
+
+            } catch (exception: Exception) {
+                Log.d(
+                    "SUPABASE",
+                    "Tried fetching EventResultProfileInfo join data and failed, exception: $exception"
+                )
+            }
+        }
 
     return emptyList()
     }
@@ -267,37 +274,73 @@ class RemoteDataSource {
     }
 
     suspend fun getAthleteRegisteredEvents(athleteUuid: String): List<EventInfo> {
-        try {
-            val param = AthleteParam(athleteUuid)
-            val response = SupabaseClient.client.postgrest
-                .rpc("get_athlete_registered_events", param).decodeList<EventInfo>()
+        if (athleteUuid != "-1") {
+            try {
+                val param = AthleteParam(athleteUuid)
+                val response = SupabaseClient.client.postgrest
+                    .rpc("get_athlete_registered_events", param).decodeList<EventInfo>()
 
-            Log.d("SUPABASE", "Fetched EventInfo (Registered) info: ${response.size}")
+                Log.d("SUPABASE", "Fetched EventInfo (Registered) info: ${response.size}")
 
-            return response
+                return response
 
-        } catch (exception: Exception) {
-            Log.d("SUPABASE", "Tried fetching EventInfo (Registered)  data and failed, exception: $exception")
+            } catch (exception: Exception) {
+                Log.d(
+                    "SUPABASE",
+                    "Tried fetching EventInfo (Registered)  data and failed, exception: $exception"
+                )
+            }
         }
 
         return emptyList()
     }
 
     suspend fun getAthleteRegisteredEventsUuid(athleteUuid: String): List<String> {
-        try {
-            val param = AthleteParam(athleteUuid)
-            val response = SupabaseClient.client.postgrest
-                .rpc("get_athlete_registered_events_uuid", param).decodeList<EventParamProfile>()
+        if(athleteUuid != "-1") {
+            try {
+                val param = AthleteParam(athleteUuid)
+                val response = SupabaseClient.client.postgrest
+                    .rpc("get_athlete_registered_events_uuid", param)
+                    .decodeList<EventParamProfile>()
 
-            Log.d("SUPABASE", "Fetched EventInfo - only uuid (Registered) info: ${response.size}")
+                Log.d(
+                    "SUPABASE",
+                    "Fetched EventInfo - only uuid (Registered) info: ${response.size}"
+                )
 
-            return response.map { it.eventUuid }
+                return response.map { it.eventUuid }
 
-        } catch (exception: Exception) {
-            Log.d("SUPABASE", "Tried fetching EventInfo - only uuid (Registered)  data and failed, exception: $exception")
+            } catch (exception: Exception) {
+                Log.d(
+                    "SUPABASE",
+                    "Tried fetching EventInfo - only uuid (Registered)  data and failed, exception: $exception"
+                )
+            }
         }
 
         return emptyList()
+    }
+
+    suspend fun updateAthleteProfilePic(athleteUuid: String, profilePictureUrl: String): Boolean {
+        val response = SupabaseClient.client.from("Athlete").update(
+            {
+                set("profile_picture_url", profilePictureUrl)
+            }
+        ) {
+            select()
+            filter {
+                eq("athlete_uuid", athleteUuid)
+            }
+        }.decodeSingle<AthleteInfo>()
+
+        if (response != null) {
+            Log.d("Supabase Profile Screen", "Updated database succesfuly - profile pic. $response")
+
+            return true
+        } else {
+            Log.d("Supabase Profile Screen", "Database NOT updated succesfuly - profile pic.")
+            return false
+        }
     }
 
 
@@ -348,7 +391,7 @@ data class AthleteInfo(
 
 @Serializable
 data class EventInfo(
-    @SerialName("event_uuid") val evenUuid: String,
+    @SerialName("event_uuid") val eventUuid: String,
     @SerialName("created_at") val createdAt: String,
     @SerialName("title") val title: String,
     @SerialName("start_date") val startDate: LocalDate,
@@ -489,7 +532,7 @@ val testEvent: EventInfo = EventInfo(
     organizerId = "",
     category = "XC",
     createdAt = LocalDate.now().toString(),
-    evenUuid = "1",
+    eventUuid = "1",
     backgroundPictureUrl = "",
     categories = listOf(CategoriesData("Junior", 14, 18), CategoriesData("Elite", 19, 29))
 )
@@ -537,7 +580,7 @@ val cyclingEvents = listOf(
         category = "Stage Race",
         organizerId = "org001",
         createdAt = LocalDate.now().toString(),
-        evenUuid = "2",
+        eventUuid = "2",
         backgroundPictureUrl = "",
         categories = listOf(CategoriesData("Junior", 14, 18), CategoriesData("Elite", 19, 29))
     ),
@@ -553,7 +596,7 @@ val cyclingEvents = listOf(
         category = "Stage Race",
         organizerId = "org002",
         createdAt = LocalDate.now().toString(),
-        evenUuid = "3",
+        eventUuid = "3",
         backgroundPictureUrl = "",
         categories = listOf(CategoriesData("Junior", 14, 18), CategoriesData("Elite", 19, 29))
     ),
@@ -569,7 +612,7 @@ val cyclingEvents = listOf(
         category = "Stage Race",
         organizerId = "org003",
         createdAt = LocalDate.now().toString(),
-        evenUuid = "4",
+        eventUuid = "4",
         backgroundPictureUrl = "",
         categories = listOf(CategoriesData("Junior", 14, 18), CategoriesData("Elite", 19, 29))
     )

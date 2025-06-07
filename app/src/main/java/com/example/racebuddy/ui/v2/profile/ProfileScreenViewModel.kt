@@ -1,5 +1,8 @@
 package com.example.racebuddy.ui.v2.profile
 
+import android.content.Context
+import android.content.Intent
+import android.net.Uri
 import android.util.Log
 import androidx.compose.runtime.collectAsState
 import androidx.lifecycle.ViewModel
@@ -9,6 +12,7 @@ import androidx.lifecycle.viewModelScope
 import androidx.lifecycle.viewmodel.initializer
 import androidx.lifecycle.viewmodel.viewModelFactory
 import com.example.racebuddy.Application
+import com.example.racebuddy.BuildConfig
 import com.example.racebuddy.data.database.AppRepository
 import com.example.racebuddy.data.database.AthleteInfo
 import com.example.racebuddy.data.database.EventIdForFavorite
@@ -16,6 +20,7 @@ import com.example.racebuddy.data.database.EventInfo
 import com.example.racebuddy.data.database.EventResultProfileInfo
 import com.example.racebuddy.data.database.UserPreferencesRepository
 import com.example.racebuddy.data.database.testAthlete
+import com.example.racebuddy.data.network.StravaApi
 import com.example.racebuddy.ui.v2.main.MainScreenUiState
 import com.example.racebuddy.ui.v2.main.MainScreenViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -25,6 +30,8 @@ import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+
+private val TAG = "Profile Screen VM"
 
 class ProfileScreenViewModel(
     val appRepository: AppRepository,
@@ -39,7 +46,8 @@ class ProfileScreenViewModel(
             registeredEventsUuid = emptyList(),
             filteredEventResultProfileInfoList = emptyList(),
             selectedFilterButton = "Results",
-            selectedFilterResultButton = "All"
+            selectedFilterResultButton = "All",
+            stravaResponseCode = "null"
         )
     )
     val uiState = _uiState.asStateFlow()
@@ -62,7 +70,7 @@ class ProfileScreenViewModel(
     }
 
     fun updateEventResultProfileList(list: List<EventResultProfileInfo>) {
-        Log.d("PROFILE VM", "updating results list... ${list.size}")
+        Log.d(TAG, "updating results list... ${list.size}")
         _uiState.update { currentValue ->
             currentValue.copy(
                 eventResultProfileInfoList = list
@@ -71,7 +79,7 @@ class ProfileScreenViewModel(
     }
 
     fun updateFilteredEventResultProfileList(list: List<EventResultProfileInfo>) {
-        Log.d("PROFILE VM", "updating filtered results list... ${list.size}")
+        Log.d(TAG, "updating filtered results list... ${list.size}")
         _uiState.update { currentValue ->
             currentValue.copy(
                 filteredEventResultProfileInfoList = list
@@ -111,6 +119,62 @@ class ProfileScreenViewModel(
         }
     }
 
+    fun onUpdateProfilePicFromStravaClick(context: Context) {
+        viewModelScope.launch {
+            val intentUri = Uri.parse("https://www.strava.com/oauth/mobile/authorize")
+                .buildUpon()
+                .appendQueryParameter("client_id", BuildConfig.CLIENT_ID)
+                .appendQueryParameter("redirect_uri", BuildConfig.REDIRECT_URL)
+                .appendQueryParameter("response_type", "code")
+                .appendQueryParameter("approval_prompt", "auto")
+                .appendQueryParameter("scope", "activity:write,read")
+                .build()
+
+            val intentFromButton = Intent(Intent.ACTION_VIEW, intentUri)
+
+            context.startActivity(intentFromButton)
+        }
+    }
+
+    fun updateResponseCode(response: String, athleteUuid: String, updateLocalAthleteInfo: (profilePicUrl: String) -> Unit) {
+        if(response != "null") {
+            if(response != _uiState.value.stravaResponseCode) {
+                _uiState.update { currentState ->
+                    currentState.copy(
+                        stravaResponseCode = response
+                    )
+                }
+                updateProfilePictureFromProfileScreen(
+                    responseCode = response,
+                    athleteUuid = athleteUuid,
+                    updateLocalAthleteInfo = updateLocalAthleteInfo
+                )
+            }
+        }
+    }
+
+    private fun updateProfilePictureFromProfileScreen(responseCode: String, athleteUuid: String, updateLocalAthleteInfo: (profilePicUrl: String) -> Unit) {
+        viewModelScope.launch {
+            Log.d(TAG, "Making request to Strava")
+            val stravaAuthResult = StravaApi.retrofitService.getAuthDetails(
+                clientId = BuildConfig.CLIENT_ID,
+                clientSecret = BuildConfig.CLIENT_SECRET,
+                authorizationCode = responseCode
+            )
+            if (!stravaAuthResult.athlete.profilePictureUrl.contains("avatar/athlete")) {
+                // Database update
+                Log.d(TAG, "Updating database: ${_uiState.value.athleteInfo.athleteId}, ${stravaAuthResult.athlete.profilePictureUrl}")
+                appRepository.updateSupabaseAthleteProfilePic(
+                    athleteUuid = athleteUuid,
+                    profilePictureUrl = stravaAuthResult.athlete.profilePictureUrl
+                )
+
+                updateLocalAthleteInfo(stravaAuthResult.athlete.profilePictureUrl)
+            }
+        }
+    }
+
+
     companion object {
         val factory: ViewModelProvider.Factory = viewModelFactory {
             initializer {
@@ -131,4 +195,5 @@ data class ProfileScreenUiState(
     val registeredEventsUuid: List<String>,
     val selectedFilterButton: String,
     val selectedFilterResultButton: String,
+    val stravaResponseCode: String
 )

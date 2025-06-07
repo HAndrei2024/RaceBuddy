@@ -78,6 +78,19 @@ class AppScreenViewModel(
         }
     }
 
+    fun updateAthleteInfoProfilePicUrl(profilePictureUrl: String) {
+
+        val newAthlete = athleteInfo.value.copy(profilePictureUrl = profilePictureUrl)
+
+        updateUserPreferencesRepository(athleteInfo = newAthlete)
+//        _uiState.update { currentState ->
+//
+//            currentState.copy(
+//                athleteInfo = newAthlete
+//            )
+//        }
+    }
+
     companion object {
         val factory: ViewModelProvider.Factory = viewModelFactory {
             initializer {

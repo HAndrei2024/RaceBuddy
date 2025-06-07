@@ -1,5 +1,7 @@
 package com.example.racebuddy.ui.v2.common
 
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.Crossfade
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
@@ -24,6 +26,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.ArrowDropDown
+import androidx.compose.material.icons.filled.CheckCircle
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Email
 import androidx.compose.material.icons.filled.Favorite
@@ -56,6 +59,7 @@ import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarColors
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -95,6 +99,7 @@ import com.example.racebuddy.ui.theme.paddings
 import com.example.racebuddy.ui.theme.shapes
 import com.example.racebuddy.ui.theme.sizes
 import com.example.racebuddy.ui.v2.signup.Country
+import kotlinx.coroutines.delay
 import kotlin.math.exp
 
 @Composable
@@ -837,6 +842,46 @@ fun TestElevation() {
         }
     }
 }
+
+@Composable
+fun LoadingWithCheckAnimation(
+    onFinishLoadingAnimation: () -> Unit
+) {
+    var isLoading by remember { mutableStateOf(true) }
+    var showCheck by remember { mutableStateOf(false) }
+
+    // Simulate loading
+    LaunchedEffect(Unit) {
+        delay(500) // loading duration
+        isLoading = false
+        showCheck = true
+        delay(500) // check visible for 1 second
+        // Optionally do something else after
+
+        onFinishLoadingAnimation()
+    }
+
+    Box(
+        modifier = Modifier
+            .fillMaxSize(),
+        contentAlignment = Alignment.Center
+    ) {
+        AnimatedVisibility(visible = isLoading) {
+            CircularProgressIndicator(modifier = Modifier.size(64.dp))
+        }
+
+        // Check icon
+        AnimatedVisibility(visible = showCheck) {
+            Icon(
+                imageVector = Icons.Default.CheckCircle,
+                contentDescription = "Success",
+                tint = MaterialTheme.colorScheme.primary,
+                modifier = Modifier.size(64.dp)
+            )
+        }
+    }
+}
+
 
 @Preview
 @Composable
