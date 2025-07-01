@@ -5,6 +5,7 @@ package com.example.racebuddy.data.database
 import android.util.Log
 import androidx.lifecycle.viewModelScope
 import com.example.racebuddy.data.database.Result
+import com.example.racebuddy.models.Organizer
 import io.github.jan.supabase.SupabaseClient
 import io.github.jan.supabase.auth.Auth
 import io.github.jan.supabase.auth.OtpType
@@ -26,14 +27,30 @@ import kotlinx.datetime.LocalDate
 import kotlinx.datetime.plus
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
+import kotlinx.serialization.json.buildJsonObject
+import kotlinx.serialization.json.put
 import network.chaintech.kmp_date_time_picker.utils.now
+import java.io.Serial
 
 class RemoteDataSource {
 
+    object SupabaseClient {
+        val client = createSupabaseClient(
+            supabaseUrl = "https://mkiafnnklxyysprdgmcb.supabase.co",
+            supabaseKey = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im1raWFmbm5rbHh5eXNwcmRnbWNiIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDIzNzY2MjEsImV4cCI6MjA1Nzk1MjYyMX0.PtT-E5J_KL5Geueo15TYoIax2PmomAc_9iDx75HSeGI"
+        ) {
+            install(Postgrest)
+            install(Auth)
+        }
+    }
+
     suspend fun verifyLogin(
         email: String,
-        password: String
-    ): String {
+        password: String,
+        isOrganizer: Boolean
+    ): User {
+
+        Log.d("LOGIN Remote Data Source", "Trying to verify login... isOrganizer = $isOrganizer" )
 
         try {
             val response = SupabaseClient.client.auth.signInWith(Email) {
@@ -45,12 +62,46 @@ class RemoteDataSource {
 
             Log.d("LOGIN", id)
 
-            return "true $id"
+            // check if athlete or organizer
+
+            return if(isOrganizer) {
+                //check if organizer
+                checkOrganizerAccountOrDefault(id)
+
+            } else {
+                checkAthleteAccountOrDefault(id)
+                //return "true $id"
+            }
         } catch (authException: AuthRestException) {
-            return authException.message.toString()
+            return defaultAthlete
         }
 
 
+    }
+
+    suspend fun checkOrganizerAccountOrDefault(organizer_uuid: String): OrganizerInfo {
+        Log.d("LOGIN Remote Data Source", "Checking if an orginzer exists for: $organizer_uuid")
+        val organizer = SupabaseClient.client.from("Organizer")
+            .select() {
+                filter {
+                    eq("organizer_uuid", organizer_uuid)
+                }
+            }.decodeSingleOrNull<OrganizerInfo>()
+
+        Log.d("LOGIN Remote Data Source", "This is the response: $organizer")
+
+        return organizer ?: defaultOrganizer
+    }
+
+    suspend fun checkAthleteAccountOrDefault(athleteUuid: String): AthleteInfo {
+        val athlete = SupabaseClient.client.from("Athlete")
+            .select() {
+                filter {
+                    eq("athlete_uuid", athleteUuid)
+                }
+            }.decodeSingleOrNull<AthleteInfo>()
+
+        return athlete ?: defaultAthlete
     }
 
     suspend fun signUp(
@@ -62,6 +113,9 @@ class RemoteDataSource {
             val result = SupabaseClient.client.auth.signUpWith(Email) {
                 this.email = email
                 this.password = password
+                data = buildJsonObject {
+                    put("is_organizer", true)
+                }
             }
 
             if(result == null) {
@@ -353,17 +407,21 @@ class RemoteDataSource {
         }
     }
 
-
-    object SupabaseClient {
-        val client = createSupabaseClient(
-            supabaseUrl = "https://mkiafnnklxyysprdgmcb.supabase.co",
-            supabaseKey = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im1raWFmbm5rbHh5eXNwcmRnbWNiIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDIzNzY2MjEsImV4cCI6MjA1Nzk1MjYyMX0.PtT-E5J_KL5Geueo15TYoIax2PmomAc_9iDx75HSeGI"
-        ) {
-            install(Postgrest)
-            install(Auth)
+    suspend fun getOrganizerInfo(organizerUuid: String): OrganizerInfo {
+        val organizer: OrganizerInfo = SupabaseClient.client.from("Organizer").select() {
+            filter {
+                eq("organizer_uuid", organizerUuid)
+            }
         }
+            .decodeSingle()
+        Log.d("SUPABASE User", "Selected user from database: ${organizer.administratorFirstName} ${organizer.administratorLastName}")
+
+        return organizer
     }
+
 }
+
+sealed class User
 
 @Serializable
 data class EventParam(
@@ -396,8 +454,30 @@ data class AthleteInfo(
     @SerialName("local_registration_number") val licenseNumber: String?,
     @SerialName("uci_registration_number") val uciLicenseNumber: String?,
     @SerialName("profile_picture_url") val profilePictureUrl: String?
-)
+): User()
 
+@Serializable
+data class OrganizerInfo(
+    @SerialName("organizer_uuid") val organizerUuid: String,
+    @SerialName("created_at") val createdAt: String,
+    @SerialName("name") val name: String,
+    @SerialName("identification_number") val identificationNumber: String,
+    @SerialName("administrator_first_name") val administratorFirstName: String,
+    @SerialName("administrator_last_name") val administratorLastName: String,
+    @SerialName("country") val country: String,
+    @SerialName("administrator_phone_number") val administratorPhoneNumber: String,
+): User()
+
+val defaultOrganizer = OrganizerInfo(
+    createdAt = "",
+    organizerUuid = "-1",
+    name = "",
+    identificationNumber = "",
+    administratorFirstName = "",
+    administratorLastName = "",
+    country = "",
+    administratorPhoneNumber = ""
+)
 
 @Serializable
 data class EventInfo(
@@ -412,7 +492,7 @@ data class EventInfo(
     @SerialName("details") val details: String,
     @SerialName("track") val track: String,
     @SerialName("category") val category: String,
-    @SerialName("organizer_id") val organizerId: String,
+    @SerialName("organizer_uuid") val organizerId: String,
     @SerialName("background_picture_url") val backgroundPictureUrl: String,
     @SerialName("categories") val categories: List<CategoriesData>
 )
@@ -508,6 +588,7 @@ data class Favorites(
     @SerialName("event_uuid") val eventUuid: String,
 )
 
+
 val testResult: ResultInfo = ResultInfo(
     time = 83000,
     penalties = "-",
@@ -560,6 +641,21 @@ val testAthlete: AthleteInfo = AthleteInfo(
     licenseNumber = "",
     uciLicenseNumber = "",
     profilePictureUrl = "https://mkiafnnklxyysprdgmcb.supabase.co/storage/v1/object/public/pictures//4fc5528145aac3fcd27b68038b821e4420f6f8a08725d3a2b8e19a1ccff67d51.jpg"
+)
+
+val defaultAthlete: AthleteInfo = AthleteInfo(
+    createdAt = "",
+    firstName = "",
+    lastName = "",
+    birthdate = LocalDate.now(),
+    gender = "",
+    country = "",
+    phoneNumber = "",
+    username = "",
+    athleteId = "-1",
+    licenseNumber = "",
+    uciLicenseNumber = "",
+    profilePictureUrl = ""
 )
 
 val firstAthlete: AthleteInfo = AthleteInfo(

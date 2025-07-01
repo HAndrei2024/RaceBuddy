@@ -43,6 +43,7 @@ import com.example.racebuddy.ui.v2.login.LoginScreen
 import com.example.racebuddy.ui.v2.login.LoginScreenViewModel
 import com.example.racebuddy.ui.v2.main.MainScreen
 import com.example.racebuddy.ui.v2.main.MainScreenViewModel
+import com.example.racebuddy.ui.v2.organizer.main.OrganizerMainScreen
 import com.example.racebuddy.ui.v2.profile.ProfileScreen
 import com.example.racebuddy.ui.v2.profile.ProfileScreenViewModel
 import com.example.racebuddy.ui.v2.signup.SignUpFirstScreen
@@ -69,7 +70,8 @@ enum class AppScreen {
     Search,
     Loading,
     LoadingWithCheck,
-    Settings
+    Settings,
+    OrganizerMain
 }
 
 @Composable
@@ -104,6 +106,7 @@ fun Appv2(
     var isFirstStartUp by remember { mutableStateOf(true) }
 
     val athleteInfo by appScreenViewModel.athleteInfo.collectAsState()
+    val organizerInfo by appScreenViewModel.organizerInfo.collectAsState()
 
     profileScreenViewModel.getEventResultProfileInfoList(athleteInfo.athleteId ?: "")
     profileScreenViewModel.getRegisteredEventsUuids(athleteInfo.athleteId ?: "")
@@ -122,8 +125,15 @@ fun Appv2(
         composable(route = AppScreen.Login.name) {
             LaunchedEffect(loginScreenUiState) {
                 if (loginScreenUiState.loginSucces) {
-                    navController.navigate(AppScreen.Main.name) {
-                        launchSingleTop = true
+                    if(!loginScreenUiState.isOrganizer) {
+                        navController.navigate(AppScreen.Main.name) {
+                            launchSingleTop = true
+                        }
+                    } else {
+                        // navigate to organizer
+                        navController.navigate(AppScreen.OrganizerMain.name) {
+                            launchSingleTop = true
+                        }
                     }
                     //mainScreenViewModel.updateAthlete()
                 }
@@ -150,6 +160,8 @@ fun Appv2(
                         launchSingleTop = true
                     }
                 },
+                isOrganizerChecked = loginScreenUiState.isOrganizer,
+                onIsOrganizerCheckClick = {value: Boolean -> loginScreenViewModel.onIsOrganizerCheckClick(value) }
             )
         }
 
@@ -227,6 +239,17 @@ fun Appv2(
             )
             BackHandler {  }
         }
+
+        composable(
+            route = AppScreen.OrganizerMain.name
+        ) {
+            OrganizerMainScreen(
+                organizer = organizerInfo,
+                isRefreshing = false,
+                onRefresh = {},
+                modifier = Modifier
+            )
+        }
         
 //        composable(
 //            route = AppScreen.Search.name,
@@ -253,13 +276,21 @@ fun Appv2(
             }
         ) {
             LaunchedEffect(signupScreensUiState) {
-                if (signupScreensUiState.signupSucces) {
-                    mainScreenViewModel.updateAthlete()
-                    navController.navigate(AppScreen.SignUpSecond.name) {
-                        //launchSingleTop = true
-                        popUpTo(AppScreen.SignUpFirst.name) { inclusive = true }
+                if (signupScreensUiState.signupSucces && !signupScreensUiState.isOrganizer) {
+                    if (signupScreensUiState.isOrganizer) {
+                        navController.navigate(AppScreen.OrganizerMain.name) {
+                            launchSingleTop = true
+                        }
+                    }
+                    else {
+                        mainScreenViewModel.updateAthlete()
+                        navController.navigate(AppScreen.SignUpSecond.name) {
+                            //launchSingleTop = true
+                            popUpTo(AppScreen.SignUpFirst.name) { inclusive = true }
+                        }
                     }
                 }
+
             }
 
             SignUpFirstScreen(
@@ -637,7 +668,7 @@ class AppViewModel(
                 val application = (this[APPLICATION_KEY] as Application)
                 AppViewModel(
                     appRepository = application.container.appRepository,
-                    userPreferencesRepository = application.userPreferencesRepository
+                    userPreferencesRepository = application.userPreferencesContainer.userPreferencesRepository
                 )
             }
         }

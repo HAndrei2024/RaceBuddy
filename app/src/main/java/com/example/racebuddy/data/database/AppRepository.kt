@@ -19,9 +19,10 @@ class AppRepository(
 
     suspend fun verifySupabaseLogin(
         email: String,
-        password: String
-    ): String {
-        return remoteDataSource.verifyLogin(email, password)
+        password: String,
+        isOrganizer: Boolean
+    ): User {
+        return remoteDataSource.verifyLogin(email, password, isOrganizer)
     }
 
     suspend fun signUpSupabase(

@@ -20,6 +20,7 @@ class UserPreferencesRepository(
     companion object {
         val ATHLETE_LOGIN_ID = intPreferencesKey("ATHLETE_LOGIN_ID")
         val SUPABASE_ATHLETE_INFO = stringPreferencesKey("SUPABASE_ATHLETE_INFO")
+        val SUPABASE_ORGANIZER_INFO = stringPreferencesKey("SUPABASE_ORGANIZER_INFO")
     }
 
     val athleteLoginId: Flow<Int> = dataStore.data
@@ -57,6 +58,27 @@ class UserPreferencesRepository(
             }!!
         }
 
+    val supabaseOrganizerInfo: Flow<OrganizerInfo> = dataStore.data
+        .catch {
+            if(it is IOException) {
+                Log.e("UserPreferencesRepository", "IOException", it)
+                emit(emptyPreferences())
+            }
+            else {
+                throw it
+            }
+        }
+        .map { preferences ->
+            preferences[SUPABASE_ORGANIZER_INFO] ?: Json.encodeToString(defaultOrganizer)
+        }.map { jsonString ->
+            try {
+                Json.decodeFromString<OrganizerInfo>(jsonString)
+            } catch (e: Exception) {
+                Log.e("UserParseError", "Invalid JSON: $jsonString", e)
+                null
+            }!!
+        }
+
     suspend fun saveAthleteLoginId(loginId: Int) {
         dataStore.edit { preferences ->
             preferences[ATHLETE_LOGIN_ID] = loginId
@@ -70,9 +92,22 @@ class UserPreferencesRepository(
         }
     }
 
+    suspend fun saveSupabaseOrganizerInfo(organizerInfo: OrganizerInfo) {
+        Log.d("PREFERENCES", "Updating athlete info: ${organizerInfo.administratorFirstName}")
+        dataStore.edit { preferences ->
+            preferences[SUPABASE_ORGANIZER_INFO] = Json.encodeToString(organizerInfo)
+        }
+    }
+
     suspend fun logoutSupabaseAthleteInfo() {
         dataStore.edit { prefereces ->
             prefereces[SUPABASE_ATHLETE_INFO] = Json.encodeToString(testAthlete)
+        }
+    }
+
+    suspend fun logoutSupabaseOrganizerInfo() {
+        dataStore.edit { prefereces ->
+            prefereces[SUPABASE_ORGANIZER_INFO] = Json.encodeToString(defaultOrganizer)
         }
     }
 

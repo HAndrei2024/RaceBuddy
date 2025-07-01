@@ -34,6 +34,7 @@ import androidx.compose.material.icons.filled.PlayArrow
 import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.Checkbox
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
@@ -97,6 +98,8 @@ fun LoginScreen(
     isLoading: Boolean,
     onSignUpClick: () -> Unit,
     onSkipClick: () -> Unit,
+    isOrganizerChecked: Boolean,
+    onIsOrganizerCheckClick: (Boolean) -> Unit,
     modifier: Modifier = Modifier
 ) {
     val animatedBlur by animateDpAsState(targetValue = if(isLoading) 1.dp else 0.dp)
@@ -134,6 +137,12 @@ fun LoginScreen(
                 onFocusChange = {}
             )
 
+            IsOrganizerCheckBox(
+                checked = isOrganizerChecked,
+                onCheckedChange = onIsOrganizerCheckClick,
+                modifier = Modifier
+            )
+
             if (errorMessage) {
                 ErrorText()
             }
@@ -148,6 +157,28 @@ fun LoginScreen(
     }
 }
 
+@Composable
+fun IsOrganizerCheckBox(
+    checked: Boolean,
+    onCheckedChange: (Boolean) -> Unit,
+    modifier: Modifier = Modifier
+) {
+
+    Row(
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.Start,
+        modifier = modifier.offset(x = -paddings.spacingXSmall)
+    ) {
+        Checkbox(
+            checked = checked,
+            onCheckedChange = { onCheckedChange(it) }
+        )
+        Text(
+            text = "Login as Organizer"
+        )
+    }
+
+}
 
 
 @Composable
@@ -539,7 +570,9 @@ fun LoginScreenPreview() {
         passwordStringValue = "Password",
         onSignUpClick = {},
         errorMessage = false,
-        isLoading = true
+        isLoading = true,
+        isOrganizerChecked = false,
+        onIsOrganizerCheckClick = {}
     )
 }
 

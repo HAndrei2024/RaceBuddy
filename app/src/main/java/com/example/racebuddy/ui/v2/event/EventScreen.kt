@@ -294,7 +294,7 @@ fun EventScreen2(
 //                        scope = scope
 //                    )
                     FilterButtons(
-                        items = if(eventInfo.startDate > LocalDate.now()) listOf("Summary", "Posts", "Participants") else listOf("Summary", "Posts", "Results"),
+                        items = if(eventInfo.startDate > LocalDate.now()) listOf("Summary", "Participants") else listOf("Summary", "Results"),
                         onFilterButtonClick = { filterString: String ->
                             selectedFilterButton = filterString
                         }

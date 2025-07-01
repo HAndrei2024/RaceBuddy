@@ -11,7 +11,9 @@ import com.example.racebuddy.Application
 import com.example.racebuddy.data.database.AppRepository
 import com.example.racebuddy.data.database.AthleteInfo
 import com.example.racebuddy.data.database.EventInfo
+import com.example.racebuddy.data.database.OrganizerInfo
 import com.example.racebuddy.data.database.UserPreferencesRepository
+import com.example.racebuddy.data.database.defaultOrganizer
 import com.example.racebuddy.data.database.testAthlete
 import com.example.racebuddy.ui.v2.login.LoginScreenUiState
 import com.example.racebuddy.ui.v2.login.LoginScreenViewModel
@@ -37,6 +39,14 @@ class AppScreenViewModel(
             viewModelScope,
             SharingStarted.WhileSubscribed(5000),
             testAthlete // or some default UserInfo
+        )
+
+        val organizerInfo = userPreferencesRepository.supabaseOrganizerInfo.map { organizerInfo ->
+            organizerInfo
+        }.stateIn(
+            viewModelScope,
+            SharingStarted.WhileSubscribed(5000),
+            defaultOrganizer // or some default UserInfo
         )
 
     init {
@@ -78,6 +88,14 @@ class AppScreenViewModel(
         }
     }
 
+    fun updateUserPreferencesRepositoryOrganizer(organizerInfo: OrganizerInfo) {
+        viewModelScope.launch {
+            userPreferencesRepository.saveSupabaseOrganizerInfo(
+                organizerInfo = organizerInfo
+            )
+        }
+    }
+
     fun updateAthleteInfoProfilePicUrl(profilePictureUrl: String) {
 
         val newAthlete = athleteInfo.value.copy(profilePictureUrl = profilePictureUrl)
@@ -97,7 +115,7 @@ class AppScreenViewModel(
                 val application = (this[APPLICATION_KEY] as Application)
                 AppScreenViewModel(
                     appRepository = application.container.appRepository,
-                    userPreferencesRepository = application.userPreferencesRepository
+                    userPreferencesRepository = application.userPreferencesContainer.userPreferencesRepository
                 )
             }
         }

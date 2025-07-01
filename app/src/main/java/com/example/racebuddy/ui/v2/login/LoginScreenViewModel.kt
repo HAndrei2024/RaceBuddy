@@ -12,6 +12,7 @@ import androidx.lifecycle.viewmodel.viewModelFactory
 import com.example.racebuddy.Application
 import com.example.racebuddy.data.database.AppRepository
 import com.example.racebuddy.data.database.AthleteInfo
+import com.example.racebuddy.data.database.OrganizerInfo
 import com.example.racebuddy.data.database.UserPreferencesRepository
 import io.github.jan.supabase.auth.OtpType
 import io.github.jan.supabase.auth.admin.AdminUserBuilder
@@ -65,6 +66,18 @@ class LoginScreenViewModel(
         }
     }
 
+    fun isOrganizerUpdate(value: Boolean) {
+        _uiState.update { currentValue ->
+            currentValue.copy(
+                isOrganizer = value
+            )
+        }
+    }
+
+    fun onIsOrganizerCheckClick(value: Boolean) {
+        isOrganizerUpdate(value)
+    }
+
     private fun errorMessageSuccesUpdate(value: Boolean) {
         _uiState.update { currentValue ->
             currentValue.copy(
@@ -85,31 +98,64 @@ class LoginScreenViewModel(
         if(checkEmail(_uiState.value.email) && _uiState.value.password.isNotEmpty()) {
             viewModelScope.launch {
                 Log.d("LOGIN", "API CALL")
-                val responseString = appRepository.verifySupabaseLogin(
+                val userObject = appRepository.verifySupabaseLogin(
                     email = _uiState.value.email,
-                    password = _uiState.value.password
+                    password = _uiState.value.password,
+                    isOrganizer = _uiState.value.isOrganizer
                 )
 
-                if (responseString.substring(0, 4) == "true") {
-                    loginSuccesUpdate(true)
-                    errorMessageSuccesUpdate(false)
+                when(userObject) {
+                    is AthleteInfo -> {
+                        if(userObject.athleteId != "-1") {
+                            loginSuccesUpdate(true)
+                            errorMessageSuccesUpdate(false)
+                            userPreferencesRepository.saveSupabaseAthleteInfo(
+                                athleteInfo = userObject
+                            )
+                        } else {
+                            loginSuccesUpdate(false)
+                            errorMessageSuccesUpdate(true)
+                        }
+                    }
+                    is OrganizerInfo -> {
+                        Log.d("LOGIN", "Checking Organizer info... -> ${userObject.organizerUuid}")
+                        if(userObject.organizerUuid != "-1") {
+                            loginSuccesUpdate(true)
+                            errorMessageSuccesUpdate(false)
 
-                    // Update user preferences (id
-                    val athleteInfo = appRepository.getSupabaseAthleteInfo(appRepository.getSupabaseLoggedInAthlete())
-                    userPreferencesRepository.saveSupabaseAthleteInfo(
-                        athleteInfo = athleteInfo
-                    )
-                    Log.d("LOGIN", "AthleteInfo saved to User Preferences")
+                            //TODO save organizer in shared preferences
 
-                    //userPreferencesRepository.saveSupabaseAthleteId(responseString.substring(6))
-                    Log.d("LOGIN", "Current logged in supabase user: " + appRepository.getSupabaseLoggedInAthlete())
-
-                    resetFields()
-                } else {
-                    loginSuccesUpdate(false)
-                    errorMessageSuccesUpdate(true)
-                    Log.d("LOGIN", responseString)
+                            userPreferencesRepository.saveSupabaseOrganizerInfo(
+                                organizerInfo = userObject
+                            )
+                        }
+                        else {
+                            loginSuccesUpdate(false)
+                            errorMessageSuccesUpdate(true)
+                        }
+                    }
                 }
+
+//                if (responseString.substring(0, 4) == "true") {
+//                    loginSuccesUpdate(true)
+//                    errorMessageSuccesUpdate(false)
+//
+//                    // Update user preferences (id
+//                    val athleteInfo = appRepository.getSupabaseAthleteInfo(appRepository.getSupabaseLoggedInAthlete())
+//                    userPreferencesRepository.saveSupabaseAthleteInfo(
+//                        athleteInfo = athleteInfo
+//                    )
+//                    Log.d("LOGIN", "AthleteInfo saved to User Preferences")
+//
+//                    //userPreferencesRepository.saveSupabaseAthleteId(responseString.substring(6))
+//                    Log.d("LOGIN", "Current logged in supabase user: " + appRepository.getSupabaseLoggedInAthlete())
+//
+//                    resetFields()
+//                } else {
+//                    loginSuccesUpdate(false)
+//                    errorMessageSuccesUpdate(true)
+//                    Log.d("LOGIN", responseString)
+//                }
 
                 isLoadingUpdate(false)
             }
@@ -146,7 +192,7 @@ class LoginScreenViewModel(
                 val application = (this[APPLICATION_KEY] as Application)
                 LoginScreenViewModel(
                     appRepository = application.container.appRepository,
-                    userPreferencesRepository = application.userPreferencesRepository
+                    userPreferencesRepository = application.userPreferencesContainer.userPreferencesRepository
                 )
             }
         }
@@ -160,5 +206,6 @@ data class LoginScreenUiState(
     val password: String,
     val errorMessage: Boolean = false,
     val isLoading: Boolean = false,
-    val loginSucces: Boolean = false
+    val loginSucces: Boolean = false,
+    val isOrganizer: Boolean = false
 )

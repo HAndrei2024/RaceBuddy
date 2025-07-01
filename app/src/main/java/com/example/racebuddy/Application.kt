@@ -7,6 +7,7 @@ import androidx.datastore.preferences.core.Preferences
 import androidx.datastore.preferences.preferencesDataStore
 import com.example.racebuddy.data.database.AppContainer
 import com.example.racebuddy.data.database.AppDataContainer
+import com.example.racebuddy.data.database.UserPreferencesContainer
 import com.example.racebuddy.data.database.UserPreferencesRepository
 
 private const val USER_PREFERENCE_NAME = "user_preferences"
@@ -17,11 +18,13 @@ private val Context.dataStore: DataStore<Preferences> by preferencesDataStore(
 
 class Application : Application() {
     lateinit var container: AppContainer
-    lateinit var userPreferencesRepository: UserPreferencesRepository
+    //lateinit var userPreferencesRepository: UserPreferencesRepository
+    lateinit var userPreferencesContainer: UserPreferencesContainer
 
     override fun onCreate() {
         super.onCreate()
         container = AppDataContainer(this)
-        userPreferencesRepository = UserPreferencesRepository(dataStore)
+        userPreferencesContainer = UserPreferencesContainer(this)
+        //userPreferencesRepository = UserPreferencesRepository(dataStore)
     }
 }

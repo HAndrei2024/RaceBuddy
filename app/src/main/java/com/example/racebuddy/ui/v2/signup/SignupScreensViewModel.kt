@@ -425,7 +425,7 @@ class SignupScreensViewModel(
                 val application = (this[APPLICATION_KEY] as Application)
                 SignupScreensViewModel(
                     appRepository = application.container.appRepository,
-                    userPreferencesRepository = application.userPreferencesRepository
+                    userPreferencesRepository = application.userPreferencesContainer.userPreferencesRepository
                 )
             }
         }
@@ -458,5 +458,6 @@ data class SignupScreensUiState(
     // Remove or not?
     val currentSignUpScreen: CurrentSignUpScreen = CurrentSignUpScreen.SignupScreenFirst,
     val snackbarHostState: SnackbarHostState = SnackbarHostState(),
-    val isUpdatingDetails: Boolean = false
+    val isUpdatingDetails: Boolean = false,
+    val isOrganizer: Boolean = false
 )

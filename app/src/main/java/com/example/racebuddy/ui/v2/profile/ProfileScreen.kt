@@ -348,11 +348,11 @@ fun ProfileScreen(
 
                     }
 
-                    item {
-                        LogoutButton(
-                            onLogoutButtonClick
-                        )
-                    }
+//                    item {
+//                        LogoutButton(
+//                            onLogoutButtonClick
+//                        )
+//                    }
 
 
                 } else {

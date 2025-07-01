@@ -269,7 +269,7 @@ class MainScreenViewModel(
                 val application = (this[APPLICATION_KEY] as Application)
                 MainScreenViewModel(
                     appRepository = application.container.appRepository,
-                    userPreferencesRepository = application.userPreferencesRepository
+                    userPreferencesRepository = application.userPreferencesContainer.userPreferencesRepository
                 )
             }
         }
