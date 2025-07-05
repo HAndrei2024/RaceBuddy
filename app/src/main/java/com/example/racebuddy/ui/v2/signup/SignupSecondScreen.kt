@@ -514,10 +514,12 @@ fun BirthdatePicker(
 
 @Composable
 fun BirthdateInputFields(
+    titleText: String = "Enter your birthday",
     dayValue: String,
     onDayValueChange: (String) -> Unit,
     yearValue: String,
     onYearValueChange: (String) -> Unit,
+    yearReadOnly: Boolean = false,
     monthValue: String,
     onMonthValueChange: (String) -> Unit,
 ) {
@@ -562,7 +564,7 @@ fun BirthdateInputFields(
 //        )
 
         Text(
-            text = "Enter your birthday",
+            text = titleText,
             style = MaterialTheme.typography.labelMedium,
             color = Color.Gray,
             modifier = Modifier
@@ -682,6 +684,7 @@ fun BirthdateInputFields(
                         keyboardController?.hide()
                     }
                 ),
+                readOnly = yearReadOnly,
                 modifier = Modifier
                     .width(80.dp) // Fixed width for consistency
                     .focusRequester(yearFocusRequester) // Assign focus requester for the year input
@@ -823,8 +826,9 @@ fun CountrySelector() {
 
 @Composable
 fun CountrySelectorWithFlags(
-
+    titleText: String = "Country of birth",
     onNationalityTextFieldChange: (String) -> Unit,
+    modifier: Modifier = Modifier
 ) {
     val countries = listOf(
         Country("Argentina", "🇦🇷"),
@@ -872,7 +876,7 @@ fun CountrySelectorWithFlags(
     var expanded by remember { mutableStateOf(false) }
 
     Column(
-        modifier = Modifier
+        modifier = modifier
             .padding(
                 top = paddings.spacingXSmall,
                 bottom = paddings.spacingXSmall
@@ -881,7 +885,7 @@ fun CountrySelectorWithFlags(
     ) {
 
         Text(
-            text = "Country of birth",
+            text = titleText,
             style = MaterialTheme.typography.labelMedium,
             color = Color.Gray,
             modifier = Modifier

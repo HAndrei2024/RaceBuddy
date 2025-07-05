@@ -2751,7 +2751,7 @@ fun EventScreenPreview() {
         onRegisterButtonClick = {},
         onShowMoreTextClick = {},
         isFavorite = true,
-        isAthleteRegistered = false,
+        isAthleteRegistered = true,
         eventCategories = listOf(CategoriesData("Junior", 14, 18), CategoriesData("Elite", 19, 29)),
         resultAthleteInfoList = emptyList<ResultAthleteInfo>(),
         onFilterResultsButtonClick = {},
