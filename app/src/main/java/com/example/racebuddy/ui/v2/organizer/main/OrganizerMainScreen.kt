@@ -82,8 +82,8 @@ fun OrganizerMainScreen(
         },
         floatingActionButton = {
             FloatingActionButton(
-                onClick = { /* Handle click */ },
-                containerColor = MaterialTheme.colors.primary, // Custom background color
+                onClick = onFloatingActionButtonClick,
+                containerColor = Color(0xFF4169E1), // Custom background color
                 contentColor = Color.White,        // Icon color
                 elevation = FloatingActionButtonDefaults.elevation(6.dp)
             ) {

@@ -44,6 +44,8 @@ import com.example.racebuddy.ui.v2.login.LoginScreen
 import com.example.racebuddy.ui.v2.login.LoginScreenViewModel
 import com.example.racebuddy.ui.v2.main.MainScreen
 import com.example.racebuddy.ui.v2.main.MainScreenViewModel
+import com.example.racebuddy.ui.v2.organizer.addEvent.AddEventScreen
+import com.example.racebuddy.ui.v2.organizer.addEvent.AddEventScreenViewModel
 import com.example.racebuddy.ui.v2.organizer.main.OrganizerMainScreen
 import com.example.racebuddy.ui.v2.organizer.main.OrganizerMainScreenViewModel
 import com.example.racebuddy.ui.v2.profile.ProfileScreen
@@ -100,6 +102,9 @@ fun Appv2(
     organizerMainScreenViewModel: OrganizerMainScreenViewModel = viewModel(
         factory = OrganizerMainScreenViewModel.factory
     ),
+    organizerAddEventScreenViewModel: AddEventScreenViewModel = viewModel(
+        factory = AddEventScreenViewModel.factory
+    ),
     appScreenViewModel: AppScreenViewModel = viewModel(
         factory = AppScreenViewModel.factory
     ),
@@ -111,6 +116,7 @@ fun Appv2(
     val eventScreenUiState by eventScreenViewModel.uiState.collectAsState()
     val profileScreenUiState by profileScreenViewModel.uiState.collectAsState()
     val organizerMainScreenUiState by organizerMainScreenViewModel.uiState.collectAsState()
+    val organizerAddEventScreenUiState by organizerAddEventScreenViewModel.uiState.collectAsState()
     val appScreenUiState by appScreenViewModel.uiState.collectAsState()
 
     var isFirstStartUp by remember { mutableStateOf(true) }
@@ -122,7 +128,7 @@ fun Appv2(
     profileScreenViewModel.getRegisteredEventsUuids(athleteInfo.athleteId ?: "")
 
 
-    val startDestination = AppScreen.Main.name //if (athleteInfo.athleteId == "-1") AppScreen.Login.name else AppScreen.Main.name
+    val startDestination = AppScreen.Profile.name //if (athleteInfo.athleteId == "-1") AppScreen.Login.name else AppScreen.Main.name
 
 
     //appViewModel.updateScreenSelected(AppScreen.valueOf(startDestination))
@@ -268,7 +274,11 @@ fun Appv2(
                 selectedFilter = "",
                 onFilterButtonClick = {},
                 onEventClick = {},
-                onFloatingActionButtonClick = {}
+                onFloatingActionButtonClick = {
+                    navController.navigate(AppScreen.OrganizerAddEvent.name) {
+                        launchSingleTop = true
+                    }
+                }
             )
         }
         
@@ -696,7 +706,34 @@ fun Appv2(
         composable(
             route = AppScreen.OrganizerAddEvent.name
         ) {
-
+            AddEventScreen(
+                selectedEventCategory = organizerAddEventScreenUiState.eventCategory,
+                onFilterCategoryButtonClick = {category: String -> organizerAddEventScreenViewModel.onEventCategoryFilterClick(category)},
+                titleTextStringValue = organizerAddEventScreenUiState.title,
+                onCountryTextFieldChange = {country: String -> organizerAddEventScreenViewModel.onCountryChange(country)},
+                cityTextFieldValue = organizerAddEventScreenUiState.city,
+                onCityValueChange = { organizerAddEventScreenViewModel.onCityChange(it) },
+                countyTextFieldValue = organizerAddEventScreenUiState.county,
+                onCountyValueChange = { organizerAddEventScreenViewModel.onCountyChange(it) },
+                onTitleValueChange = { organizerAddEventScreenViewModel.onTitleChange(it) },
+                startDayValue = organizerAddEventScreenUiState.startDay,
+                onStartDayValueChange = { organizerAddEventScreenViewModel.onStartDayChange(it) },
+                startMonthValue = organizerAddEventScreenUiState.startMonth,
+                onStartMonthValueChange = { organizerAddEventScreenViewModel.onStartMonthChange(it) },
+                endDayValue = organizerAddEventScreenUiState.endDay,
+                onEndDayValueChange = { organizerAddEventScreenViewModel.onEndDayChange(it) },
+                endMonthValue = organizerAddEventScreenUiState.endMonth,
+                onEndMonthValueChange = { organizerAddEventScreenViewModel.onEndMonthChange(it) },
+                detailsTextFieldValue = organizerAddEventScreenUiState.details,
+                onDetailsValueChange = { organizerAddEventScreenViewModel.onDetailsChange(it) },
+                athleteCategoryRows = organizerAddEventScreenUiState.athleteCategories,
+                updateCategoryRowCell = { rowIndex: Int, columnIndex: Int, value: String -> organizerAddEventScreenViewModel.updateCategoryRowCell(rowIndex, columnIndex, value) },
+                addAthleteCategoryRow = { organizerAddEventScreenViewModel.addAthleteCategoryRow() },
+                removeAthleteCategoryRow = { index: Int -> organizerAddEventScreenViewModel.removeAthleteCategoryRow(index) },
+                onBackClick = {
+                    navController.popBackStack()
+                }
+            )
         }
     }
 }

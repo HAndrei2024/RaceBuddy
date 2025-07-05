@@ -1,6 +1,11 @@
 package com.example.racebuddy.ui.v2.organizer.addEvent
 
 import android.graphics.Paint.Align
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.expandVertically
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.shrinkVertically
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -31,8 +36,12 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.material3.*
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateMapOf
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.mutableStateSetOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
@@ -56,6 +65,7 @@ import com.example.racebuddy.ui.v2.event.FilterButtons
 import com.example.racebuddy.ui.v2.signup.BirthdateInputFields
 import com.example.racebuddy.ui.v2.signup.BirthdatePicker
 import com.example.racebuddy.ui.v2.signup.CountrySelectorWithFlags
+import kotlinx.coroutines.delay
 import kotlinx.datetime.LocalDate
 import network.chaintech.kmp_date_time_picker.utils.now
 
@@ -85,12 +95,13 @@ fun AddEventScreen(
     updateCategoryRowCell: (rowIndex: Int, colIndex: Int, value: String) -> Unit,
     addAthleteCategoryRow: () -> Unit,
     removeAthleteCategoryRow: (index: Int) -> Unit,
+    onBackClick: () -> Unit
 ) {
     Scaffold(
         topBar = {
             CustomTopAppBar(
                 title = "Add Event",
-                onBackClick = {}
+                onBackClick = onBackClick
             )
         },
         bottomBar = {
@@ -133,7 +144,7 @@ fun AddEventScreen(
 
             item {
                 InputBlock(
-                    title = "Informations"
+                    title = "Information"
                 ) {
                     EventInformations(
                         onCountryTextFieldChange = onCountryTextFieldChange,
@@ -329,32 +340,37 @@ fun DateBlock(
 ) {
     Column(
         verticalArrangement = Arrangement.Center,
-        horizontalAlignment = Alignment.Start,
+        horizontalAlignment = Alignment.CenterHorizontally,
         modifier = modifier
             .fillMaxWidth()
             .padding(start = paddings.spacingLarge, end = paddings.spacingMedium)
     ) {
-        BirthdateInputFields(
-            titleText = "Start date",
-            dayValue = startDayValue,
-            onDayValueChange = onStartDayValueChange,
-            yearValue = LocalDate.now().year.toString(),
-            onYearValueChange = {},
-            yearReadOnly = true,
-            monthValue = startMonthValue,
-            onMonthValueChange = onStartMonthValueChange
-        )
+        Column(
+            verticalArrangement = Arrangement.Center,
+            horizontalAlignment = Alignment.Start
+        ) {
+            BirthdateInputFields(
+                titleText = "Start date",
+                dayValue = startDayValue,
+                onDayValueChange = onStartDayValueChange,
+                yearValue = LocalDate.now().year.toString(),
+                onYearValueChange = {},
+                yearReadOnly = true,
+                monthValue = startMonthValue,
+                onMonthValueChange = onStartMonthValueChange
+            )
 
-        BirthdateInputFields(
-            titleText = "End date",
-            dayValue = endDayValue,
-            onDayValueChange = onEndDayValueChange,
-            yearValue = LocalDate.now().year.toString(),
-            onYearValueChange = {},
-            yearReadOnly = true,
-            monthValue = endMonthValue,
-            onMonthValueChange = onEndMonthValueChange
-        )
+            BirthdateInputFields(
+                titleText = "End date",
+                dayValue = endDayValue,
+                onDayValueChange = onEndDayValueChange,
+                yearValue = LocalDate.now().year.toString(),
+                onYearValueChange = {},
+                yearReadOnly = true,
+                monthValue = endMonthValue,
+                onMonthValueChange = onEndMonthValueChange
+            )
+        }
     }
 }
 
@@ -500,7 +516,10 @@ fun CustomTopAppBar(
 ) {
     Surface(
         shadowElevation = 4.dp, // Elevation for shadow
-        color = Color.White // Background color
+        color = Color.White, // Background color,
+        modifier = Modifier
+            //.padding(top = paddings.spacingLarge)
+            .height(75.dp)
     ) {
         Box(
             modifier = Modifier
@@ -704,7 +723,7 @@ fun AddCategoryRow(
             onValueChange = {
                 if (it.length <= 2 && it.all { char -> char.isDigit() }) { // Allow up to 2 digits
                     // Update Month TODO
-                    onMinimumAgeValueChange(it)
+                    onMaximumAgeValueChange(it)
                     // If month has 2 digits, move focus to the year field
                     if (it.length == 2) {
                         //maxAgeFocusRequester.requestFocus()
@@ -714,7 +733,7 @@ fun AddCategoryRow(
             //label = { Text("MM") },
             placeholder = { Text("YY") },
             textStyle = AppTypography.bodyLarge.copy(
-                color = if (mininumAgeStringValue == "YY") {
+                color = if (maximumAgeStringValue == "YY") {
                     MaterialTheme.colorScheme.onSurface
                 } else {
                     Color.Black
@@ -766,41 +785,65 @@ fun DynamicCategoryRows(
         AddCategoryRowHeader()
 
         rows.forEachIndexed { index, row ->
-            AddCategoryRow(
-                categoryStringValue = row[0],
-                onCategoryValueChange = {
-                    updateCell(index, 0, it)
-                },
-                mininumAgeStringValue = row[1],
-                onMinimumAgeValueChange = {
-                    updateCell(index, 1, it)
-                },
-                maximumAgeStringValue = row[2],
-                onMaximumAgeValueChange = {
-                    updateCell(index, 2, it)
-                },
-                removeRow = { removeRow(index) }
-            )
+            var visible by remember(index) { mutableStateOf(true) }
+            var shouldDelete by remember(index) { mutableStateOf(false) }
 
-            Spacer(modifier = Modifier.height(16.dp))
 
-            Button(
-                onClick = {
-                    addRow()
-                },
-                colors = ButtonDefaults.buttonColors(
-                    containerColor = MaterialTheme.colorScheme.primary,
-                    contentColor = Color.White
-                ),
-                shape = shapes.small,
-                modifier = Modifier.align(Alignment.CenterHorizontally)
-            ) {
-                Text("+ Add Row")
+            if (shouldDelete) {
+                // Run this effect after visible = false
+                LaunchedEffect(Unit) {
+                    delay(250) // Give time for animation
+                    removeRow(index)
+                }
             }
 
+
+            AnimatedVisibility(
+                visible = visible,
+                exit = fadeOut() + shrinkVertically(),
+                enter = fadeIn() + expandVertically()
+            ) {
+                AddCategoryRow(
+                    categoryStringValue = row[0],
+                    onCategoryValueChange = {
+                        updateCell(index, 0, it)
+                    },
+                    mininumAgeStringValue = row[1],
+                    onMinimumAgeValueChange = {
+                        updateCell(index, 1, it)
+                    },
+                    maximumAgeStringValue = row[2],
+                    onMaximumAgeValueChange = {
+                        updateCell(index, 2, it)
+                    },
+                    removeRow = {
+                        visible = false
+                        shouldDelete = true
+                    }
+                )
+
+                Spacer(modifier = Modifier.height(16.dp))
+            }
+        }
+
+
+        Button(
+            onClick = {
+                addRow()
+            },
+            colors = ButtonDefaults.buttonColors(
+                containerColor = MaterialTheme.colorScheme.primary,
+                contentColor = Color.White
+            ),
+            shape = shapes.small,
+            modifier = Modifier.align(Alignment.CenterHorizontally)
+        ) {
+            Text("+ Add Row")
         }
     }
 }
+
+
 
 @Preview
 @Composable
@@ -846,7 +889,8 @@ fun AddEventScreenPreview() {
         athleteCategoryRows = listOf(List(3) { "" }),
         updateCategoryRowCell = {rowIndex: Int, colIndex: Int, value: String ->},
         addAthleteCategoryRow = {},
-        removeAthleteCategoryRow = {}
+        removeAthleteCategoryRow = {},
+        onBackClick = {}
     )
 }
 
