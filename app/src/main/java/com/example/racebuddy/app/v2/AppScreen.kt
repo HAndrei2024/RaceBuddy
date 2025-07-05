@@ -33,6 +33,7 @@ import com.example.racebuddy.data.database.EventInfo
 import com.example.racebuddy.data.database.EventResultProfileInfo
 import com.example.racebuddy.data.database.RemoteDataSource
 import com.example.racebuddy.data.database.UserPreferencesRepository
+import com.example.racebuddy.ui.v2.common.ConfirmationScreen
 import com.example.racebuddy.ui.v2.common.LoadingAnimation
 import com.example.racebuddy.ui.v2.common.LoadingWithCheckAnimation
 import com.example.racebuddy.ui.v2.common.SettingsScreen
@@ -44,6 +45,7 @@ import com.example.racebuddy.ui.v2.login.LoginScreenViewModel
 import com.example.racebuddy.ui.v2.main.MainScreen
 import com.example.racebuddy.ui.v2.main.MainScreenViewModel
 import com.example.racebuddy.ui.v2.organizer.main.OrganizerMainScreen
+import com.example.racebuddy.ui.v2.organizer.main.OrganizerMainScreenViewModel
 import com.example.racebuddy.ui.v2.profile.ProfileScreen
 import com.example.racebuddy.ui.v2.profile.ProfileScreenViewModel
 import com.example.racebuddy.ui.v2.signup.SignUpFirstScreen
@@ -70,6 +72,7 @@ enum class AppScreen {
     Search,
     Loading,
     LoadingWithCheck,
+    Confirmation,
     Settings,
     OrganizerMain
 }
@@ -91,6 +94,9 @@ fun Appv2(
     eventScreenViewModel: EventScreenViewModel = viewModel(
         factory = EventScreenViewModel.factory
     ),
+    organizerMainScreenViewModel: OrganizerMainScreenViewModel = viewModel(
+        factory = OrganizerMainScreenViewModel.factory
+    ),
     appScreenViewModel: AppScreenViewModel = viewModel(
         factory = AppScreenViewModel.factory
     ),
@@ -101,6 +107,7 @@ fun Appv2(
     val mainScreenUiState by mainScreenViewModel.uiState.collectAsState()
     val eventScreenUiState by eventScreenViewModel.uiState.collectAsState()
     val profileScreenUiState by profileScreenViewModel.uiState.collectAsState()
+    val organizerMainScreenUiState by organizerMainScreenViewModel.uiState.collectAsState()
     val appScreenUiState by appScreenViewModel.uiState.collectAsState()
 
     var isFirstStartUp by remember { mutableStateOf(true) }
@@ -276,11 +283,11 @@ fun Appv2(
             }
         ) {
             LaunchedEffect(signupScreensUiState) {
-                if (signupScreensUiState.signupSucces && !signupScreensUiState.isOrganizer) {
+                if (signupScreensUiState.signupSucces) {
                     if (signupScreensUiState.isOrganizer) {
-                        navController.navigate(AppScreen.OrganizerMain.name) {
-                            launchSingleTop = true
-                        }
+                        Log.d("App Screen", "Starting to update organizer and navigating to OrganizerMainScreen")
+                        organizerMainScreenViewModel.updateOrganizer()
+                        navController.navigate(AppScreen.Confirmation.name)
                     }
                     else {
                         mainScreenViewModel.updateAthlete()
@@ -639,6 +646,22 @@ fun Appv2(
                 onDetailsButtonClick = {
                     signupScreensViewModel.updateIsUpdatingDetails(true)
                     navController.navigate(AppScreen.SignUpSecond.name)
+                },
+                onCreateOrganizerAccountClick = {
+                    // Move to signup first screen organizer flow
+                    //
+                    signupScreensViewModel.updateIsOrganizer(true)
+                    navController.navigate(AppScreen.SignUpFirst.name)
+                }
+            )
+        }
+
+        composable(
+            route = AppScreen.Confirmation.name
+        ) {
+            ConfirmationScreen(
+                onContinueClick = {
+                    navController.navigate(AppScreen.OrganizerMain.name)
                 }
             )
         }

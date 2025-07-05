@@ -931,6 +931,7 @@ fun SettingsScreen(
     onBackIconClick: () -> Unit,
     onLogInOutButtonClick: () -> Unit,
     onDetailsButtonClick: () -> Unit,
+    onCreateOrganizerAccountClick: () -> Unit,
     ) {
 
     Scaffold(
@@ -996,6 +997,14 @@ fun SettingsScreen(
                     modifier = Modifier
                 )
             }
+
+            item {
+                GeneralSettingsRows(
+                    isAthleteLoggedIn = isAthleteLoggedIn,
+                    onCreateOrganizerAccountClick = onCreateOrganizerAccountClick,
+                    modifier = Modifier
+                )
+            }
         }
     }
 }
@@ -1039,6 +1048,42 @@ fun UserSettingsRows(
             onButtonClick = onDetailsButtonClick,
             isButtonEnabled = isAthleteLoggedIn && !areAthleteDetailsFilled,
             modifier = Modifier
+        )
+
+    }
+}
+
+@Composable
+fun GeneralSettingsRows(
+    isAthleteLoggedIn: Boolean,
+    onCreateOrganizerAccountClick: () -> Unit,
+    modifier: Modifier = Modifier
+) {
+    Column(
+        modifier = modifier
+            .padding(top = paddings.spacingMedium, start = paddings.spacingSmall, end = paddings.spacingSmall)
+            .fillMaxWidth()
+    ) {
+        Text(
+            text = "General",
+            style = MaterialTheme.typography.titleMedium,
+            color = Color.Black,
+            fontWeight = FontWeight.Normal,
+            modifier = Modifier
+                .padding(
+                    start = paddings.spacingXSmall,
+                    end = paddings.spacingXSmall,
+                    bottom = paddings.spacingXSmall
+                )
+        )
+
+        UserSettingsRow(
+            icon = Icons.Default.Person,
+            detailsText = "Create an Organizer Account",
+            buttonText = "Create",
+            onButtonClick = onCreateOrganizerAccountClick,
+            isButtonEnabled = !isAthleteLoggedIn,
+            modifier = Modifier,
         )
     }
 }
@@ -1085,6 +1130,7 @@ fun UserSettingsRow(
                 .padding(paddings.spacingXSmall)
         ) {
             Row(
+                verticalAlignment = Alignment.CenterVertically,
                 horizontalArrangement = Arrangement.spacedBy(7.dp),
                 modifier = Modifier
                     .weight(5f)
@@ -1141,7 +1187,8 @@ fun SettingsBottomSheetPreview() {
         onLogInOutButtonClick = {},
         onDetailsButtonClick = {},
         onBackIconClick = {},
-        areAthleteDetailsFilled = false
+        areAthleteDetailsFilled = false,
+        onCreateOrganizerAccountClick = {}
     )
 }
 

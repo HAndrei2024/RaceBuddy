@@ -104,7 +104,8 @@ class SignupScreensViewModel(
             viewModelScope.launch {
                 val responeString = appRepository.signUpSupabase(
                     email = _uiState.value.email,
-                    password = _uiState.value.password
+                    password = _uiState.value.password,
+                    isOrganizer = _uiState.value.isOrganizer
                 )
                 Log.d("SIGNUP1", responeString)
 
@@ -148,6 +149,10 @@ class SignupScreensViewModel(
             updateErrorMessage("Password doesn't meet requirments.")
             updateIsLoading(false)
         }
+    }
+
+    fun signUpOrganizer() {
+
     }
 
     private fun formateDate(): String {
@@ -374,10 +379,20 @@ class SignupScreensViewModel(
         }
     }
 
+
+
     fun onLicenseNumberChange(localRegistrationNumber: String) {
         _uiState.update { currentState ->
             currentState.copy(
                 localRegistrationNumber = localRegistrationNumber
+            )
+        }
+    }
+
+    fun updateIsOrganizer(value: Boolean) {
+        _uiState.update { currentState ->
+            currentState.copy(
+                isOrganizer = value
             )
         }
     }

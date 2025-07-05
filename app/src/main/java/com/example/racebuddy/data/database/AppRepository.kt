@@ -27,9 +27,10 @@ class AppRepository(
 
     suspend fun signUpSupabase(
         email: String,
-        password: String
+        password: String,
+        isOrganizer: Boolean
     ): String {
-        return remoteDataSource.signUp(email, password)
+        return remoteDataSource.signUp(email, password, isOrganizer)
     }
 
     suspend fun createNewAccount(athlete: Athlete) {
@@ -156,6 +157,10 @@ class AppRepository(
 
     suspend fun updateSupabaseAthleteProfilePic(athleteUuid: String, profilePictureUrl: String): Boolean {
         return remoteDataSource.updateAthleteProfilePic(athleteUuid, profilePictureUrl)
+    }
+
+    suspend fun getSupabaseOrganizerInfo(organizerUuid: String): OrganizerInfo {
+        return remoteDataSource.checkOrganizerAccountOrDefault(organizerUuid)
     }
 
 }

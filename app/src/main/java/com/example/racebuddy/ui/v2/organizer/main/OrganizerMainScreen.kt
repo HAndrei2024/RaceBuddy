@@ -9,8 +9,11 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.pulltorefresh.PullToRefreshBox
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.tooling.preview.Preview
 import com.example.racebuddy.data.database.OrganizerInfo
+import com.example.racebuddy.data.database.defaultOrganizer
 import com.example.racebuddy.models.Organizer
+import com.example.racebuddy.ui.v2.common.MainScreenTopAppBar
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -21,7 +24,13 @@ fun OrganizerMainScreen(
     modifier: Modifier = Modifier
 ) {
     Scaffold(
-        topBar = {},
+        topBar = {
+            MainScreenTopAppBar(
+                onSearchIconClick = {},
+                onSettingsIconClick = {},
+                showSearchIcon = false
+            )
+        },
         bottomBar = {}
     ) { innerPadding ->
         PullToRefreshBox(
@@ -39,4 +48,15 @@ fun OrganizerMainScreen(
             }
         }
     }
+}
+
+@Preview
+@Composable
+fun OrganizerMainScreenPreview() {
+    OrganizerMainScreen(
+        organizer = defaultOrganizer,
+        isRefreshing = false,
+        onRefresh = {  },
+        modifier = Modifier
+    )
 }

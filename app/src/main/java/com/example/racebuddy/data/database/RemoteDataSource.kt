@@ -106,7 +106,8 @@ class RemoteDataSource {
 
     suspend fun signUp(
         email: String,
-        password: String
+        password: String,
+        isOrganizer: Boolean
     ): String {
 
         try {
@@ -114,18 +115,23 @@ class RemoteDataSource {
                 this.email = email
                 this.password = password
                 data = buildJsonObject {
-                    put("is_organizer", true)
+                    put("is_organizer", isOrganizer)
                 }
             }
 
-            if(result == null) {
-                Log.d("SIGNUP1", "Result is null, getting logged in athlete..." + " From Remote Data source")
+
+            if (result == null) {
+                Log.d(
+                    "SIGNUP1",
+                    "Result is null, getting logged in athlete..." + " From Remote Data source"
+                )
                 return "true " + getLoggedInAthlete()
             }
 
             Log.d("SIGNUP1", result.toString() + " From Remote Data source")
 
             return "true " + result?.id
+
         } catch (e: Exception) {
             Log.e("SignUp", "Error: ${e.message}")
             if(e.message?.contains("user_already_exists") == true) {
@@ -630,7 +636,7 @@ val testEvent: EventInfo = EventInfo(
 
 val testAthlete: AthleteInfo = AthleteInfo(
     createdAt = "Today",
-    firstName = "Test",
+    firstName = "Cyclist",
     lastName = "Last",
     birthdate = LocalDate.now(),
     gender = "Male",
