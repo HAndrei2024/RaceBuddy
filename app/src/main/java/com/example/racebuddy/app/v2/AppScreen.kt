@@ -74,7 +74,10 @@ enum class AppScreen {
     LoadingWithCheck,
     Confirmation,
     Settings,
-    OrganizerMain
+    OrganizerMain,
+    OrganizerProfile,
+    OrganizerEvent,
+    OrganizerAddEvent
 }
 
 @Composable
@@ -137,6 +140,8 @@ fun Appv2(
                             launchSingleTop = true
                         }
                     } else {
+                        //update state
+                        organizerMainScreenViewModel.updateStateAfterLogin(organizerInfo)
                         // navigate to organizer
                         navController.navigate(AppScreen.OrganizerMain.name) {
                             launchSingleTop = true
@@ -254,7 +259,16 @@ fun Appv2(
                 organizer = organizerInfo,
                 isRefreshing = false,
                 onRefresh = {},
-                modifier = Modifier
+                onBottomBarIconClick = {
+                    navController.navigate(AppScreen.OrganizerProfile.name) {
+                        launchSingleTop = true
+                    }
+                },
+                events = organizerMainScreenUiState.events,
+                selectedFilter = "",
+                onFilterButtonClick = {},
+                onEventClick = {},
+                onFloatingActionButtonClick = {}
             )
         }
         
@@ -286,7 +300,7 @@ fun Appv2(
                 if (signupScreensUiState.signupSucces) {
                     if (signupScreensUiState.isOrganizer) {
                         Log.d("App Screen", "Starting to update organizer and navigating to OrganizerMainScreen")
-                        organizerMainScreenViewModel.updateOrganizer()
+                        organizerMainScreenViewModel.updateStateAfterSignUp()
                         navController.navigate(AppScreen.Confirmation.name)
                     }
                     else {
@@ -666,6 +680,24 @@ fun Appv2(
             )
         }
 
+
+        composable(
+            route = AppScreen.OrganizerProfile.name
+        ) {
+
+        }
+
+        composable(
+            route = AppScreen.OrganizerEvent.name
+        ) {
+
+        }
+
+        composable(
+            route = AppScreen.OrganizerAddEvent.name
+        ) {
+
+        }
     }
 }
 

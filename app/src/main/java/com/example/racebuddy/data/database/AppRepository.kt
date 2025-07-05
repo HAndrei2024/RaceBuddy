@@ -163,4 +163,8 @@ class AppRepository(
         return remoteDataSource.checkOrganizerAccountOrDefault(organizerUuid)
     }
 
+    suspend fun getSupabaseOrganizerEvents(organizerUuid: String): List<EventInfo> {
+        return remoteDataSource.getOrganizerEvents(organizerUuid)
+    }
+
 }

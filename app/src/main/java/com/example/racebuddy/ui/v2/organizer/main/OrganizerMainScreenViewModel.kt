@@ -1,5 +1,6 @@
 package com.example.racebuddy.ui.v2.organizer.main
 
+import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.ViewModelProvider.AndroidViewModelFactory.Companion.APPLICATION_KEY
@@ -21,6 +22,8 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import kotlinx.datetime.LocalDate
+import network.chaintech.kmp_date_time_picker.utils.now
 
 class OrganizerMainScreenViewModel(
     val appRepository: AppRepository,
@@ -29,21 +32,53 @@ class OrganizerMainScreenViewModel(
 
     private val _uiState = MutableStateFlow(
         OrganizerMainScreenUiState(
-            organizerInfo = defaultOrganizer
+            organizerInfo = defaultOrganizer,
+            events = emptyList(),
+            filteredEvents = emptyList(),
+            selectedFilter = "Upcoming",
         )
     )
     val uiState = _uiState.asStateFlow()
 
-    fun updateOrganizer() {
+
+
+    fun updateStateAfterSignUp() {
         viewModelScope.launch {
             _uiState.update { currentState ->
+                val organizerInfo = appRepository.getSupabaseOrganizerInfo(appRepository.getSupabaseLoggedInAthlete())
+                val events = appRepository.getSupabaseOrganizerEvents(organizerInfo.organizerUuid)
+
+                val filteredEvents = events.filter { it.startDate > LocalDate.now() }
+
                 currentState.copy(
-                    organizerInfo = appRepository.getSupabaseOrganizerInfo(appRepository.getSupabaseLoggedInAthlete())
+                    organizerInfo = appRepository.getSupabaseOrganizerInfo(appRepository.getSupabaseLoggedInAthlete()),
+                    events = events,
+                    filteredEvents = filteredEvents
                 )
             }
         }
     }
 
+
+    fun updateStateAfterLogin(
+        organizerInfo: OrganizerInfo
+    ) {
+        viewModelScope.launch {
+            _uiState.update { currentState ->
+
+                Log.d("OrganizerMainScreenViewModel", "Trying to update state after login... ${organizerInfo.organizerUuid}")
+                val events = appRepository.getSupabaseOrganizerEvents(organizerInfo.organizerUuid)
+                val filteredEvents = events.filter { it.startDate > LocalDate.now() }
+
+
+                currentState.copy(
+                    organizerInfo = organizerInfo,
+                    events = events,
+                    filteredEvents = filteredEvents
+                )
+            }
+        }
+    }
 
 
     companion object {
@@ -61,4 +96,7 @@ class OrganizerMainScreenViewModel(
 
 data class OrganizerMainScreenUiState(
     val organizerInfo: OrganizerInfo,
+    val events: List<EventInfo>,
+    val filteredEvents: List<EventInfo>,
+    val selectedFilter: String
 )

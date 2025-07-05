@@ -745,7 +745,8 @@ fun BottomAppBarUpdated(
     isProfileSelected: Boolean = false,
     onHomeClick: () -> Unit = { },
     onFavoriteClick: () -> Unit = { },
-    onProfileClick: () -> Unit = { }
+    onProfileClick: () -> Unit = { },
+    isFavoritesVisible: Boolean = true
 ) {
     BottomAppBar(
         containerColor = Color.White,//Color(0xFFF5F5F5),
@@ -762,12 +763,16 @@ fun BottomAppBarUpdated(
                 unselectedImage = R.drawable.outline_home_24,
                 onClick = onHomeClick
             )
-            BottomBarIconUpdated(
-                isSelected = isFavoriteSelected,
-                selectedImage = R.drawable.baseline_favorite_24,
-                unselectedImage = R.drawable.baseline_favorite_border_24,
-                onClick = onFavoriteClick
-            )
+
+            if(isFavoritesVisible) {
+                BottomBarIconUpdated(
+                    isSelected = isFavoriteSelected,
+                    selectedImage = R.drawable.baseline_favorite_24,
+                    unselectedImage = R.drawable.baseline_favorite_border_24,
+                    onClick = onFavoriteClick
+                )
+            }
+
             BottomBarIconUpdated(
                 isSelected = isProfileSelected,
                 selectedImage = R.drawable.baseline_person_24,
@@ -782,7 +787,9 @@ fun BottomAppBarUpdated(
 @Composable
 fun BottomNavigationBarChat(
     selectedItem: Int,
-    onItemSelected: (Int) -> Unit) {
+    onItemSelected: (Int) -> Unit,
+    isFavoritesVisible: Boolean = true
+) {
     val royalBlue = Color(0xFF4169E1)
 
     NavigationBar(
@@ -799,9 +806,12 @@ fun BottomNavigationBarChat(
             }
         //tonalElevation = 8.dp
     ) {
-        val items = listOf(
+        val items = if(isFavoritesVisible) listOf(
             Pair("Home", Icons.Default.Home),
             Pair("Favorite", Icons.Default.Favorite),
+            Pair("Profile", Icons.Default.Person)
+        ) else listOf(
+            Pair("Home", Icons.Default.Home),
             Pair("Profile", Icons.Default.Person)
         )
 

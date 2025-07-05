@@ -218,6 +218,22 @@ class RemoteDataSource {
         return events
     }
 
+    suspend fun getOrganizerEvents(organizerUuid: String): List<EventInfo> {
+        val events = SupabaseClient.client.from("Event").select() {
+            filter {
+                eq(column = "organizer_uuid", value = organizerUuid)
+            }
+            order(
+                column = "created_at",
+                order = Order.ASCENDING,
+            )
+        }.decodeList<EventInfo>()
+
+        Log.d("Supabase Remote Data Source", "API call for organizer events: ${events.size}")
+
+        return events
+    }
+
     suspend fun getAthleteInfo(athleteId: String): AthleteInfo {
         val athlete: AthleteInfo = SupabaseClient.client.from("Athlete").select() {
             filter {

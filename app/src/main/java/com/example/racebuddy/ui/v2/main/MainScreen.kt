@@ -610,6 +610,7 @@ fun SearchFilterButtons(
 fun HelloText(
     athleteFirstName: String,
     imageUrl: String,
+    personalizedText: String = "Let's explore events nearby...",
     onProfilePicClick: () -> Unit,
     modifier: Modifier = Modifier
 ) {
@@ -645,7 +646,7 @@ fun HelloText(
                 )
 
                 Text(
-                    text = "Let's explore events nearby...",
+                    text = personalizedText,
                     style = MaterialTheme.typography.bodyLarge,
                     color = Color.Gray
                 )
