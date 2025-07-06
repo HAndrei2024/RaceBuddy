@@ -123,6 +123,13 @@ class OrganizerMainScreenViewModel(
         }
     }
 
+    fun onLogoutClick() {
+        viewModelScope.launch {
+            appRepository.logoutSupabaseAthlete()
+            userPreferencesRepository.logoutSupabaseOrganizerInfo()
+        }
+    }
+
     companion object {
         val factory: ViewModelProvider.Factory = viewModelFactory {
             initializer {
@@ -141,5 +148,6 @@ data class OrganizerMainScreenUiState(
     val events: List<EventInfo>,
     val filteredEvents: List<EventInfo>,
     val selectedFilter: String,
-    val isLoading: Boolean
+    val isLoading: Boolean,
+    val detailsFilled: Boolean = false,
 )

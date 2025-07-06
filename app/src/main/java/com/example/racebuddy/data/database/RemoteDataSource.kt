@@ -471,23 +471,7 @@ class RemoteDataSource {
                 organizerUuid = organizerUuid
             )
 
-//            val response = SupabaseClient.client.from("Event").insert(
-//                mapOf(
-//                    "title" to title,
-//                    "start_date" to startDate.toString(),
-//                    "end_date" to endDate.toString(),
-//                    "country" to country,
-//                    "city" to city,
-//                    "county" to county,
-//                    "details" to details,
-//                    "category" to eventCategory,
-//                    "categories" to athleteCategories,
-//                    "organizer_uuid" to organizerUuid
-//                )
-//            ) {
-//                select(columns = Columns.list("event_uuid"))
-//            }
-//                .decodeSingle<String>()
+
 
             val response = SupabaseClient.client.from("Event").insert(
                 eventInsert
@@ -501,6 +485,39 @@ class RemoteDataSource {
             Log.d("Supabase Add Event", "Couldn't add event: $exception")
         }
         return "-1"
+    }
+
+    suspend fun updateOrganizerDetails(
+        organizerUuid: String,
+        name: String,
+        administratorLastName: String,
+        identificationNumber: String,
+        administratorFirstName: String,
+        country: String,
+    ): OrganizerInfo {
+        val response = SupabaseClient.client.from("Organizer").update(
+            {
+                set("name", name)
+                set("identification_number", identificationNumber)
+                set("administrator_first_name", administratorFirstName)
+                set("administrator_last_name", administratorLastName)
+                set("country", country)
+            }
+        ) {
+            select()
+            filter {
+                eq("organizer_uuid", organizerUuid)
+            }
+        }.decodeSingleOrNull<OrganizerInfo>()
+
+        if (response != null) {
+            Log.d("Supabase Organizer", "Updated database succesfuly - organizer details. $response")
+
+            return response
+        } else {
+            Log.d("Supabase Organizer", "Database NOT updated succesfuly - organizer details.")
+            return defaultOrganizer
+        }
     }
 
 }
@@ -847,4 +864,13 @@ data class EventInsert(
 @Serializable
 data class EventIdResult(
     @SerialName("event_uuid") val eventUuid: String
+)
+
+@Serializable
+data class OrganizerDetails(
+    @SerialName("name") val name: String,
+    @SerialName("identification_number") val identificationNumber: String,
+    @SerialName("administrator_first_name") val administratorFirstName: String,
+    @SerialName("administrator_last_name") val administratorLastName: String,
+    @SerialName("country") val country: String,
 )

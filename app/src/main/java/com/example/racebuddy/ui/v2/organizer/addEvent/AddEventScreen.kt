@@ -608,7 +608,12 @@ fun CustomTopAppBarMaterial3(
                     tint = Color.Black
                 )
             }
-        }
+        },
+        colors = TopAppBarDefaults.centerAlignedTopAppBarColors(
+            containerColor = Color.White,          // Background
+            navigationIconContentColor = Color.Black, // Back icon
+            titleContentColor = Color.Black           // Title text
+        )
     )
 }
 

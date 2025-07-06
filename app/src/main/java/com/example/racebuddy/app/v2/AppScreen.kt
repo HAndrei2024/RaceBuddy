@@ -36,6 +36,7 @@ import com.example.racebuddy.data.database.UserPreferencesRepository
 import com.example.racebuddy.ui.v2.common.ConfirmationScreen
 import com.example.racebuddy.ui.v2.common.LoadingAnimation
 import com.example.racebuddy.ui.v2.common.LoadingWithCheckAnimation
+import com.example.racebuddy.ui.v2.common.OrganizerSettingsScreen
 import com.example.racebuddy.ui.v2.common.SettingsScreen
 import com.example.racebuddy.ui.v2.event.EventScreen2
 import com.example.racebuddy.ui.v2.event.EventScreenViewModel
@@ -48,6 +49,8 @@ import com.example.racebuddy.ui.v2.organizer.addEvent.AddEventScreen
 import com.example.racebuddy.ui.v2.organizer.addEvent.AddEventScreenViewModel
 import com.example.racebuddy.ui.v2.organizer.main.OrganizerMainScreen
 import com.example.racebuddy.ui.v2.organizer.main.OrganizerMainScreenViewModel
+import com.example.racebuddy.ui.v2.organizer.updateDetails.OrganizerUpdateDetailsScreen
+import com.example.racebuddy.ui.v2.organizer.updateDetails.OrganizerUpdateDetailsScreenViewModel
 import com.example.racebuddy.ui.v2.profile.ProfileScreen
 import com.example.racebuddy.ui.v2.profile.ProfileScreenViewModel
 import com.example.racebuddy.ui.v2.signup.SignUpFirstScreen
@@ -79,7 +82,9 @@ enum class AppScreen {
     OrganizerMain,
     OrganizerProfile,
     OrganizerEvent,
-    OrganizerAddEvent
+    OrganizerAddEvent,
+    OrganizerSettings,
+    OrganizerUpdateDetails
 }
 
 @Composable
@@ -105,6 +110,9 @@ fun Appv2(
     organizerAddEventScreenViewModel: AddEventScreenViewModel = viewModel(
         factory = AddEventScreenViewModel.factory
     ),
+    organizerUpdateDetailsScreenViewModel: OrganizerUpdateDetailsScreenViewModel = viewModel(
+        factory = OrganizerUpdateDetailsScreenViewModel.factory
+    ),
     appScreenViewModel: AppScreenViewModel = viewModel(
         factory = AppScreenViewModel.factory
     ),
@@ -117,6 +125,7 @@ fun Appv2(
     val profileScreenUiState by profileScreenViewModel.uiState.collectAsState()
     val organizerMainScreenUiState by organizerMainScreenViewModel.uiState.collectAsState()
     val organizerAddEventScreenUiState by organizerAddEventScreenViewModel.uiState.collectAsState()
+    val organizerUpdateDetailsScreenUiState by organizerUpdateDetailsScreenViewModel.uiState.collectAsState()
     val appScreenUiState by appScreenViewModel.uiState.collectAsState()
 
     var isFirstStartUp by remember { mutableStateOf(true) }
@@ -280,7 +289,7 @@ fun Appv2(
                     }
                 },
                 onSettingsIconClick = {
-                    navController.navigate(AppScreen.Settings.name){
+                    navController.navigate(AppScreen.OrganizerSettings.name){
                         launchSingleTop = true
                     }
                 }
@@ -756,6 +765,75 @@ fun Appv2(
                 onAddEventClick = { organizerAddEventScreenViewModel.onAddEvent(organizerUuid = organizerInfo.organizerUuid) },
                 showError = organizerAddEventScreenUiState.showError,
                 errorMessage = organizerAddEventScreenUiState.errorMessage
+            )
+        }
+
+        composable(
+            route = AppScreen.OrganizerSettings.name
+        ) {
+            OrganizerSettingsScreen(
+                areOrganizerDetailsFilled = organizerMainScreenUiState.detailsFilled,
+                organizerName = organizerInfo.name,
+                onBackIconClick = {
+                    navController.navigate(AppScreen.OrganizerMain.name) {
+                        popUpTo(AppScreen.OrganizerMain.name) {
+                            inclusive = true // ✅ Removes the current screen from the stack
+                        }
+                    }
+                },
+                onLogInOutButtonClick = {
+                    loginScreenViewModel.loginSuccesUpdate(false)
+                    organizerMainScreenViewModel.onLogoutClick()
+                    navController.navigate(AppScreen.Login.name) {
+                        launchSingleTop = true
+                    }
+                },
+                onDetailsButtonClick = {
+                    //Update details screen
+                    navController.navigate(route = AppScreen.OrganizerUpdateDetails.name) {
+                        launchSingleTop = true
+                    }
+                }
+            )
+        }
+
+        composable(
+            route = AppScreen.OrganizerUpdateDetails.name
+        ) {
+            val isFormValid by organizerUpdateDetailsScreenViewModel.isFormValid.collectAsState()
+
+            LaunchedEffect(organizerUpdateDetailsScreenUiState) {
+                if(organizerUpdateDetailsScreenUiState.isUpdateSuccessful) {
+                    navController.navigate(AppScreen.Confirmation.name) {
+                        popUpTo(AppScreen.OrganizerUpdateDetails.name) {
+                            inclusive = true // ✅ Removes the current screen from the stack
+                        }
+                    }
+
+                    organizerUpdateDetailsScreenViewModel.resetFields()
+                }
+            }
+
+            OrganizerUpdateDetailsScreen(
+                firstNameValue = organizerUpdateDetailsScreenUiState.AdministratorFirstName,
+                onFirstNameChange = { organizerUpdateDetailsScreenViewModel.onAdministratorFirstNameChange(it) },
+                lastNameValue = organizerUpdateDetailsScreenUiState.AdministratorLastName,
+                onLastNameChange = { organizerUpdateDetailsScreenViewModel.onAdministratorLastNameChange(it) },
+                onNationalityTextFieldChange = { organizerUpdateDetailsScreenViewModel.onCountryChange(it) },
+                organizerNameValue = organizerUpdateDetailsScreenUiState.name,
+                onOrganizerNameChange = { organizerUpdateDetailsScreenViewModel.onNameChange(it) },
+                organizerIdentificationNumberValue = organizerUpdateDetailsScreenUiState.identificationNumber,
+                onOrganizerIdentificationNumberChange = { organizerUpdateDetailsScreenViewModel.onIdentificationNumberChange(it) },
+                errorMessage = organizerUpdateDetailsScreenUiState.errorMessage,
+                showError = organizerUpdateDetailsScreenUiState.showError,
+                onDoneClick = {
+                    organizerUpdateDetailsScreenViewModel.onDoneClick(organizerUuid = organizerInfo.organizerUuid)
+                },
+                onBackClick = {
+                    navController.popBackStack()
+                },
+                isDoneButtonEnabled = isFormValid,
+                modifier = Modifier
             )
         }
     }

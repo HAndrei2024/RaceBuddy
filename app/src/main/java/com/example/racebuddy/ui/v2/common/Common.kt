@@ -1026,7 +1026,6 @@ fun OrganizerSettingsScreen(
     onBackIconClick: () -> Unit,
     onLogInOutButtonClick: () -> Unit,
     onDetailsButtonClick: () -> Unit,
-    onCreateOrganizerAccountClick: () -> Unit,
 ) {
 
     Scaffold(
@@ -1084,7 +1083,8 @@ fun OrganizerSettingsScreen(
 
             item {
                 UserSettingsRows(
-                    isAthleteLoggedIn = false,
+                    title = "Organizer",
+                    isAthleteLoggedIn = true,
                     areAthleteDetailsFilled = areOrganizerDetailsFilled,
                     name = organizerName,
                     onLogInOutButtonClick = onLogInOutButtonClick,
@@ -1101,7 +1101,41 @@ fun OrganizerSettingsScreen(
 }
 
 @Composable
+fun OrganizerSettingsBlock() {
+
+}
+
+@Composable
+fun SettingsBlock(
+    title: String,
+    modifier: Modifier = Modifier,
+    content: @Composable () -> Unit
+) {
+    Column(
+        modifier = modifier
+            .padding(top = paddings.spacingMedium, start = paddings.spacingSmall, end = paddings.spacingSmall)
+            .fillMaxWidth()
+    ) {
+        Text(
+            text = title,
+            style = MaterialTheme.typography.titleMedium,
+            color = Color.Black,
+            fontWeight = FontWeight.Normal,
+            modifier = Modifier
+                .padding(
+                    start = paddings.spacingXSmall,
+                    end = paddings.spacingXSmall,
+                    bottom = paddings.spacingXSmall
+                )
+        )
+
+        content()
+    }
+}
+
+@Composable
 fun UserSettingsRows(
+    title: String = "Athlete",
     isAthleteLoggedIn: Boolean,
     areAthleteDetailsFilled: Boolean,
     name: String,
@@ -1115,7 +1149,7 @@ fun UserSettingsRows(
             .fillMaxWidth()
     ) {
         Text(
-            text = "Athlete",
+            text = title,
             style = MaterialTheme.typography.titleMedium,
             color = Color.Black,
             fontWeight = FontWeight.Normal,
@@ -1334,6 +1368,18 @@ fun EventCardPreview() {
         favoriteIcon = painterResource(R.drawable.baseline_favorite_24),
         onFavoriteIconClick = {},
         onEventClick = {}
+    )
+}
+
+@Preview
+@Composable
+fun OrganizerSettingsScreenPreview() {
+    OrganizerSettingsScreen(
+        areOrganizerDetailsFilled = false,
+        organizerName = "Test",
+        onBackIconClick = {},
+        onLogInOutButtonClick = {},
+        onDetailsButtonClick = {}
     )
 }
 

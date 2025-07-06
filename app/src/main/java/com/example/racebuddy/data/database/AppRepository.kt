@@ -195,4 +195,22 @@ class AppRepository(
             organizerUuid = organizerUuid
         )
     }
+
+    suspend fun updateOrganizerDetails(
+        organizerUuid: String,
+        name: String,
+        administratorLastName: String,
+        identificationNumber: String,
+        administratorFirstName: String,
+        country: String,
+    ): OrganizerInfo {
+        return remoteDataSource.updateOrganizerDetails(
+            organizerUuid = organizerUuid,
+            name = name,
+            administratorLastName = administratorLastName,
+            identificationNumber = identificationNumber,
+            administratorFirstName = administratorFirstName,
+            country = country
+        )
+    }
 }
