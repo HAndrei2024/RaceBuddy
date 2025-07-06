@@ -27,6 +27,9 @@ import kotlinx.datetime.LocalDate
 import kotlinx.datetime.plus
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
+import kotlinx.serialization.json.Json
+import kotlinx.serialization.json.JsonArray
+import kotlinx.serialization.json.JsonElement
 import kotlinx.serialization.json.buildJsonObject
 import kotlinx.serialization.json.put
 import network.chaintech.kmp_date_time_picker.utils.now
@@ -441,6 +444,65 @@ class RemoteDataSource {
         return organizer
     }
 
+    suspend fun addEvent(
+        title: String,
+        startDate: LocalDate,
+        endDate: LocalDate,
+        country: String,
+        city: String,
+        county: String,
+        details: String,
+        eventCategory: String,
+        athleteCategories: JsonElement,
+        organizerUuid: String
+    ): String {
+        //Log.d("Supabase", "Adding event... ${rowData["title"]}")
+        try {
+            val eventInsert = EventInsert(
+                title = title,
+                startDate = startDate,
+                endDate = endDate,
+                country = country,
+                city = city,
+                county = county,
+                details = details,
+                eventCategory = eventCategory,
+                categories = athleteCategories,
+                organizerUuid = organizerUuid
+            )
+
+//            val response = SupabaseClient.client.from("Event").insert(
+//                mapOf(
+//                    "title" to title,
+//                    "start_date" to startDate.toString(),
+//                    "end_date" to endDate.toString(),
+//                    "country" to country,
+//                    "city" to city,
+//                    "county" to county,
+//                    "details" to details,
+//                    "category" to eventCategory,
+//                    "categories" to athleteCategories,
+//                    "organizer_uuid" to organizerUuid
+//                )
+//            ) {
+//                select(columns = Columns.list("event_uuid"))
+//            }
+//                .decodeSingle<String>()
+
+            val response = SupabaseClient.client.from("Event").insert(
+                eventInsert
+            ) {
+                select(columns = Columns.list("event_uuid"))
+            }
+                .decodeSingle<EventIdResult>()
+
+            return response.eventUuid
+        } catch (exception: Exception) {
+            Log.d("Supabase Add Event", "Couldn't add event: $exception")
+        }
+        return "-1"
+    }
+
 }
 
 sealed class User
@@ -744,4 +806,45 @@ val cyclingEvents = listOf(
         backgroundPictureUrl = "",
         categories = listOf(CategoriesData("Junior", 14, 18), CategoriesData("Elite", 19, 29))
     )
+)
+
+
+@Serializable
+data class AthleteCategory(
+    @SerialName("max_age") val maxAge: Int,
+    @SerialName("min_age") val minAge: Int,
+    @SerialName("category") val category: String
+)
+
+
+
+@Serializable
+data class EventInsert(
+    val title: String,
+
+    @SerialName("start_date")
+    val startDate: LocalDate,
+
+    @SerialName("end_date")
+    val endDate: LocalDate,
+
+    val country: String,
+    val city: String,
+    val county: String,
+    val details: String,
+
+    @SerialName("category")
+    val eventCategory: String,
+
+    // This should be a JsonArray of objects like:
+    // [{"category":"Junior","min_age":10,"max_age":18}, ...]
+    val categories: JsonElement,
+
+    @SerialName("organizer_uuid")
+    val organizerUuid: String
+)
+
+@Serializable
+data class EventIdResult(
+    @SerialName("event_uuid") val eventUuid: String
 )

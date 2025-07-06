@@ -1,6 +1,10 @@
 package com.example.racebuddy.data.database
 
 import kotlinx.coroutines.flow.Flow
+import kotlinx.datetime.LocalDate
+import kotlinx.serialization.json.Json
+import kotlinx.serialization.json.JsonArray
+import kotlinx.serialization.json.JsonElement
 
 class AppRepository(
     private val localDataSource: LocalDataSource,
@@ -167,4 +171,28 @@ class AppRepository(
         return remoteDataSource.getOrganizerEvents(organizerUuid)
     }
 
+    suspend fun addSupabaseEvent(title: String,
+                                 startDate: LocalDate,
+                                 endDate: LocalDate,
+                                 country: String,
+                                 city: String,
+                                 county: String,
+                                 details: String,
+                                 eventCategory: String,
+                                 athleteCategories: JsonElement,
+                                 organizerUuid: String
+    ): String {
+        return remoteDataSource.addEvent(
+            title = title,
+            startDate = startDate,
+            endDate = endDate,
+            country = country,
+            city = city,
+            county = county,
+            details = details,
+            eventCategory = eventCategory,
+            athleteCategories = athleteCategories,
+            organizerUuid = organizerUuid
+        )
+    }
 }

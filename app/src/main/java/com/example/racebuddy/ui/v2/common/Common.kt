@@ -1020,6 +1020,87 @@ fun SettingsScreen(
 }
 
 @Composable
+fun OrganizerSettingsScreen(
+    areOrganizerDetailsFilled: Boolean,
+    organizerName: String,
+    onBackIconClick: () -> Unit,
+    onLogInOutButtonClick: () -> Unit,
+    onDetailsButtonClick: () -> Unit,
+    onCreateOrganizerAccountClick: () -> Unit,
+) {
+
+    Scaffold(
+        topBar = {
+            Row(
+                horizontalArrangement = Arrangement.Start,
+                verticalAlignment = Alignment.CenterVertically,
+                modifier = Modifier
+                    .padding(paddings.spacingXSmall)
+                    .fillMaxWidth()
+            ) {
+                IconButton(
+                    onClick = onBackIconClick
+                ) {
+                    Icon(
+                        imageVector = Icons.Default.ArrowBack,
+                        contentDescription = ""
+                    )
+                }
+            }
+        },
+        bottomBar = {
+
+        },
+        containerColor = Color.White,
+        contentColor = Color.Black
+    ) { innerPadding ->
+        LazyColumn(
+            modifier = Modifier
+                .fillMaxWidth()
+                //.fillMaxHeight(1f)
+                .padding(innerPadding)
+        ) {
+            item {
+                Text(
+                    text = "⚙\uFE0F Settings",
+                    style = MaterialTheme.typography.headlineMedium,
+                    fontWeight = FontWeight.Normal,
+                    letterSpacing = 0.2.sp,
+                    modifier = Modifier
+                        .padding(paddings.spacingMedium)
+                        .drawBehind {
+                            val strokeWidth = 1.dp.toPx()
+                            val y =
+                                size.height - strokeWidth / 2  // Adjust for stroke centering
+//                            drawLine(
+//                                color = Color(0xFFDDDDDD),
+//                                start = Offset(0f, y),
+//                                end = Offset(size.width, y),
+//                                strokeWidth = strokeWidth
+//                            )
+                        }
+                )
+            }
+
+            item {
+                UserSettingsRows(
+                    isAthleteLoggedIn = false,
+                    areAthleteDetailsFilled = areOrganizerDetailsFilled,
+                    name = organizerName,
+                    onLogInOutButtonClick = onLogInOutButtonClick,
+                    onDetailsButtonClick = onDetailsButtonClick,
+                    modifier = Modifier
+                )
+            }
+
+            item {
+
+            }
+        }
+    }
+}
+
+@Composable
 fun UserSettingsRows(
     isAthleteLoggedIn: Boolean,
     areAthleteDetailsFilled: Boolean,

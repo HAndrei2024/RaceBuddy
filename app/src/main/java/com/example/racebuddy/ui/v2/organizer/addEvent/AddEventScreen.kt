@@ -95,11 +95,19 @@ fun AddEventScreen(
     updateCategoryRowCell: (rowIndex: Int, colIndex: Int, value: String) -> Unit,
     addAthleteCategoryRow: () -> Unit,
     removeAthleteCategoryRow: (index: Int) -> Unit,
-    onBackClick: () -> Unit
+    isAddButtonEnabled: Boolean,
+    onBackClick: () -> Unit,
+    onAddEventClick: () -> Unit,
+    showError: Boolean,
+    errorMessage: String
 ) {
     Scaffold(
         topBar = {
-            CustomTopAppBar(
+//            CustomTopAppBar(
+//                title = "Add Event",
+//                onBackClick = onBackClick
+//            )
+            CustomTopAppBarMaterial3(
                 title = "Add Event",
                 onBackClick = onBackClick
             )
@@ -107,7 +115,10 @@ fun AddEventScreen(
         bottomBar = {
             BottomBarWithButtonUsingShadow(
                 buttonText = "Add",
-                onClick = {}
+                onClick = onAddEventClick,
+                isEnabled = isAddButtonEnabled,
+                showError = showError,
+                errorMessage = errorMessage
             )
         },
         containerColor = Color.White,
@@ -208,8 +219,34 @@ fun AddEventScreen(
                 }
             }
 
+            if(showError) {
+                item {
+
+                }
+            }
+
         }
 
+    }
+}
+
+@Composable
+fun ErrorText(
+    textString: String = "Incorrect email or password.",
+    modifier: Modifier = Modifier
+) {
+    Column(
+        horizontalAlignment = Alignment.Start,
+        verticalArrangement = Arrangement.Center,
+        modifier = modifier
+            .padding(start = paddings.spacingLarge)
+            .fillMaxWidth()
+    ) {
+        Text(
+            text = textString,
+            style = AppTypography.bodyLarge,
+            color = Color.Red
+        )
     }
 }
 
@@ -549,39 +586,81 @@ fun CustomTopAppBar(
     }
 }
 
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun CustomTopAppBarMaterial3(
+    title: String,
+    onBackClick: () -> Unit
+) {
+    CenterAlignedTopAppBar(
+        title = {
+            Text(
+                text = title,
+                style = MaterialTheme.typography.titleLarge,
+                color = Color.Black
+            )
+        },
+        navigationIcon = {
+            IconButton(onClick = onBackClick) {
+                Icon(
+                    imageVector = Icons.Default.ArrowBack,
+                    contentDescription = "Back",
+                    tint = Color.Black
+                )
+            }
+        }
+    )
+}
+
+
 @Composable
 fun BottomBarWithButtonUsingShadow(
     buttonText: String,
-    onClick: () -> Unit
+    onClick: () -> Unit,
+    isEnabled: Boolean,
+    showError: Boolean,
+    errorMessage: String
 ) {
-    Row(
-        horizontalArrangement = Arrangement.Center,
-        modifier = Modifier
-            .fillMaxWidth()
-            .shadow(10.dp) // Applies visual shadow all around
-            .background(Color.White)
-            .padding(paddings.spacingMedium)
-            .zIndex(2f)
+    Column(
+        verticalArrangement = Arrangement.Center,
+        horizontalAlignment = Alignment.CenterHorizontally,
+        modifier = Modifier.fillMaxWidth()
     ) {
-        Button(
-            onClick = onClick,
-            colors = ButtonDefaults.buttonColors(
-                containerColor = MaterialTheme.colorScheme.primary,
-                contentColor = Color.White
-            ),
-            shape = shapes.small,
-            modifier = Modifier
-                //.fillMaxWidth()
-                .height(48.dp)
-                .width(281.dp)
-        ) {
-            Text(
-                text = buttonText,
-                fontWeight = FontWeight.Bold,
-                style = AppTypography.bodyLarge.copy(
-                    letterSpacing = 2.sp
-                )
+        if(showError) {
+            ErrorText(
+                textString = errorMessage
             )
+        }
+        Row(
+            horizontalArrangement = Arrangement.Center,
+            modifier = Modifier
+                .fillMaxWidth()
+                .shadow(10.dp) // Applies visual shadow all around
+                .background(Color.White)
+                .padding(paddings.spacingMedium)
+                .zIndex(2f)
+        ) {
+            Button(
+                onClick = onClick,
+                colors = ButtonDefaults.buttonColors(
+                    containerColor = MaterialTheme.colorScheme.primary,
+                    contentColor = Color.White
+                ),
+                enabled = isEnabled,
+                shape = shapes.small,
+                modifier = Modifier
+                    //.fillMaxWidth()
+                    .height(48.dp)
+                    .width(281.dp)
+            ) {
+                Text(
+                    text = buttonText,
+                    fontWeight = FontWeight.Bold,
+                    style = AppTypography.bodyLarge.copy(
+                        letterSpacing = 2.sp
+                    )
+                )
+            }
         }
     }
 }
@@ -890,7 +969,11 @@ fun AddEventScreenPreview() {
         updateCategoryRowCell = {rowIndex: Int, colIndex: Int, value: String ->},
         addAthleteCategoryRow = {},
         removeAthleteCategoryRow = {},
-        onBackClick = {}
+        onBackClick = {},
+        isAddButtonEnabled = false,
+        onAddEventClick = {},
+        showError = true,
+        errorMessage = "lalal"
     )
 }
 

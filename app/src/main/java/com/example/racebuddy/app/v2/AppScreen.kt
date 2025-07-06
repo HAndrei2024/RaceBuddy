@@ -270,12 +270,17 @@ fun Appv2(
                         launchSingleTop = true
                     }
                 },
-                events = organizerMainScreenUiState.events,
-                selectedFilter = "",
-                onFilterButtonClick = {},
+                events = organizerMainScreenUiState.filteredEvents,
+                selectedFilter = organizerMainScreenUiState.selectedFilter,
+                onFilterButtonClick = {filter: String -> organizerMainScreenViewModel.onFilterButtonClick(filter) },
                 onEventClick = {},
                 onFloatingActionButtonClick = {
                     navController.navigate(AppScreen.OrganizerAddEvent.name) {
+                        launchSingleTop = true
+                    }
+                },
+                onSettingsIconClick = {
+                    navController.navigate(AppScreen.Settings.name){
                         launchSingleTop = true
                     }
                 }
@@ -706,6 +711,20 @@ fun Appv2(
         composable(
             route = AppScreen.OrganizerAddEvent.name
         ) {
+            val isFormValid by organizerAddEventScreenViewModel.isFormValid.collectAsState()
+
+            LaunchedEffect(organizerAddEventScreenUiState) {
+                if(organizerAddEventScreenUiState.isAddSuccessful) {
+                    organizerMainScreenViewModel.updateEvents()
+                    navController.navigate(AppScreen.Confirmation.name) {
+                        popUpTo(AppScreen.OrganizerAddEvent.name) {
+                            inclusive = true // ✅ Removes the current screen from the stack
+                        }
+                    }
+                    organizerAddEventScreenViewModel.resetFields()
+                }
+            }
+
             AddEventScreen(
                 selectedEventCategory = organizerAddEventScreenUiState.eventCategory,
                 onFilterCategoryButtonClick = {category: String -> organizerAddEventScreenViewModel.onEventCategoryFilterClick(category)},
@@ -732,7 +751,11 @@ fun Appv2(
                 removeAthleteCategoryRow = { index: Int -> organizerAddEventScreenViewModel.removeAthleteCategoryRow(index) },
                 onBackClick = {
                     navController.popBackStack()
-                }
+                },
+                isAddButtonEnabled = isFormValid,
+                onAddEventClick = { organizerAddEventScreenViewModel.onAddEvent(organizerUuid = organizerInfo.organizerUuid) },
+                showError = organizerAddEventScreenUiState.showError,
+                errorMessage = organizerAddEventScreenUiState.errorMessage
             )
         }
     }

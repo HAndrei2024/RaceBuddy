@@ -36,11 +36,33 @@ class OrganizerMainScreenViewModel(
             events = emptyList(),
             filteredEvents = emptyList(),
             selectedFilter = "Upcoming",
+            isLoading = false
         )
     )
     val uiState = _uiState.asStateFlow()
 
+    fun updateEvents() {
+        viewModelScope.launch {
+            _uiState.update { currentState ->
+                val events = appRepository.getSupabaseOrganizerEvents(_uiState.value.organizerInfo.organizerUuid)
 
+                currentState.copy(
+                    events = events,
+                    filteredEvents = events.filter { it.startDate > LocalDate.now() }
+                )
+            }
+        }
+    }
+
+    fun updateSelectedFilter(filter: String) {
+        viewModelScope.launch {
+            _uiState.update { currentState ->
+                currentState.copy(
+                    selectedFilter = filter
+                )
+            }
+        }
+    }
 
     fun updateStateAfterSignUp() {
         viewModelScope.launch {
@@ -80,6 +102,26 @@ class OrganizerMainScreenViewModel(
         }
     }
 
+    fun onFilterButtonClick(filter: String) {
+        when(filter) {
+            "Finished" -> {
+                updateSelectedFilter(filter)
+                updateFilteredEventsList(_uiState.value.events.filter { it.endDate < LocalDate.now() })
+            }
+            "Upcoming" -> {
+                updateSelectedFilter(filter)
+                updateFilteredEventsList(_uiState.value.events.filter { it.startDate >= LocalDate.now() })
+            }
+        }
+    }
+
+    fun updateFilteredEventsList(filteredEvents: List<EventInfo>) {
+        _uiState.update { currentState ->
+            currentState.copy(
+                filteredEvents = filteredEvents
+            )
+        }
+    }
 
     companion object {
         val factory: ViewModelProvider.Factory = viewModelFactory {
@@ -98,5 +140,6 @@ data class OrganizerMainScreenUiState(
     val organizerInfo: OrganizerInfo,
     val events: List<EventInfo>,
     val filteredEvents: List<EventInfo>,
-    val selectedFilter: String
+    val selectedFilter: String,
+    val isLoading: Boolean
 )
