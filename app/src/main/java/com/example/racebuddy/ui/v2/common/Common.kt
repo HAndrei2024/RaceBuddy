@@ -946,22 +946,36 @@ fun SettingsScreen(
 
     Scaffold(
         topBar = {
-            Row(
-                horizontalArrangement = Arrangement.Start,
-                verticalAlignment = Alignment.CenterVertically,
-                modifier = Modifier
-                    .padding(paddings.spacingXSmall)
-                    .fillMaxWidth()
-            ) {
-                IconButton(
-                    onClick = onBackIconClick
-                ) {
-                    Icon(
-                        imageVector = Icons.Default.ArrowBack,
-                        contentDescription = ""
-                    )
-                }
-            }
+//            Row(
+//                horizontalArrangement = Arrangement.Start,
+//                verticalAlignment = Alignment.CenterVertically,
+//                modifier = Modifier
+//                    .padding(paddings.spacingXSmall)
+//                    .fillMaxWidth()
+//            ) {
+//                IconButton(
+//                    onClick = onBackIconClick
+//                ) {
+//                    Icon(
+//                        imageVector = Icons.Default.ArrowBack,
+//                        contentDescription = ""
+//                    )
+//                }
+//            }
+            TopAppBar(
+                navigationIcon = {
+                    IconButton(onClick = onBackIconClick) {
+                        Icon(
+                            imageVector = Icons.Default.ArrowBack,
+                            contentDescription = "Back"
+                        )
+                    }
+                },
+                title = {
+                    // You can put a title Text here, or leave empty if no title needed
+                },
+                modifier = Modifier.padding(paddings.spacingXSmall)
+            )
         },
         bottomBar = {
 
@@ -1019,6 +1033,7 @@ fun SettingsScreen(
     }
 }
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun OrganizerSettingsScreen(
     areOrganizerDetailsFilled: Boolean,
@@ -1030,22 +1045,36 @@ fun OrganizerSettingsScreen(
 
     Scaffold(
         topBar = {
-            Row(
-                horizontalArrangement = Arrangement.Start,
-                verticalAlignment = Alignment.CenterVertically,
-                modifier = Modifier
-                    .padding(paddings.spacingXSmall)
-                    .fillMaxWidth()
-            ) {
-                IconButton(
-                    onClick = onBackIconClick
-                ) {
-                    Icon(
-                        imageVector = Icons.Default.ArrowBack,
-                        contentDescription = ""
-                    )
-                }
-            }
+//            Row(
+//                horizontalArrangement = Arrangement.Start,
+//                verticalAlignment = Alignment.CenterVertically,
+//                modifier = Modifier
+//                    .padding(paddings.spacingXSmall)
+//                    .fillMaxWidth()
+//            ) {
+//                IconButton(
+//                    onClick = onBackIconClick
+//                ) {
+//                    Icon(
+//                        imageVector = Icons.Default.ArrowBack,
+//                        contentDescription = ""
+//                    )
+//                }
+//            }
+            TopAppBar(
+                navigationIcon = {
+                    IconButton(onClick = onBackIconClick) {
+                        Icon(
+                            imageVector = Icons.Default.ArrowBack,
+                            contentDescription = "Back"
+                        )
+                    }
+                },
+                title = {
+                    // You can put a title Text here, or leave empty if no title needed
+                },
+                modifier = Modifier.padding(paddings.spacingXSmall)
+            )
         },
         bottomBar = {
 

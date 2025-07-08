@@ -49,6 +49,8 @@ import com.example.racebuddy.ui.v2.organizer.addEvent.AddEventScreen
 import com.example.racebuddy.ui.v2.organizer.addEvent.AddEventScreenViewModel
 import com.example.racebuddy.ui.v2.organizer.main.OrganizerMainScreen
 import com.example.racebuddy.ui.v2.organizer.main.OrganizerMainScreenViewModel
+import com.example.racebuddy.ui.v2.organizer.profile.OrganizerProfileScreen
+import com.example.racebuddy.ui.v2.organizer.profile.OrganizerProfileScreenViewModel
 import com.example.racebuddy.ui.v2.organizer.updateDetails.OrganizerUpdateDetailsScreen
 import com.example.racebuddy.ui.v2.organizer.updateDetails.OrganizerUpdateDetailsScreenViewModel
 import com.example.racebuddy.ui.v2.profile.ProfileScreen
@@ -113,6 +115,9 @@ fun Appv2(
     organizerUpdateDetailsScreenViewModel: OrganizerUpdateDetailsScreenViewModel = viewModel(
         factory = OrganizerUpdateDetailsScreenViewModel.factory
     ),
+    organizerProfileScreenViewModel: OrganizerProfileScreenViewModel = viewModel(
+        factory = OrganizerProfileScreenViewModel.factory
+    ),
     appScreenViewModel: AppScreenViewModel = viewModel(
         factory = AppScreenViewModel.factory
     ),
@@ -126,6 +131,7 @@ fun Appv2(
     val organizerMainScreenUiState by organizerMainScreenViewModel.uiState.collectAsState()
     val organizerAddEventScreenUiState by organizerAddEventScreenViewModel.uiState.collectAsState()
     val organizerUpdateDetailsScreenUiState by organizerUpdateDetailsScreenViewModel.uiState.collectAsState()
+    val organizerProfileScreenUiState by organizerProfileScreenViewModel.uiState.collectAsState()
     val appScreenUiState by appScreenViewModel.uiState.collectAsState()
 
     var isFirstStartUp by remember { mutableStateOf(true) }
@@ -272,8 +278,10 @@ fun Appv2(
         ) {
             OrganizerMainScreen(
                 organizer = organizerInfo,
-                isRefreshing = false,
-                onRefresh = {},
+                isRefreshing = organizerMainScreenUiState.isRefreshing,
+                onRefresh = {
+                    organizerMainScreenViewModel.refreshUi()
+                },
                 onBottomBarIconClick = {
                     navController.navigate(AppScreen.OrganizerProfile.name) {
                         launchSingleTop = true
@@ -289,6 +297,11 @@ fun Appv2(
                     }
                 },
                 onSettingsIconClick = {
+                    navController.navigate(AppScreen.OrganizerSettings.name){
+                        launchSingleTop = true
+                    }
+                },
+                onLoginDialogGoClick = {
                     navController.navigate(AppScreen.OrganizerSettings.name){
                         launchSingleTop = true
                     }
@@ -708,7 +721,24 @@ fun Appv2(
         composable(
             route = AppScreen.OrganizerProfile.name
         ) {
-
+            OrganizerProfileScreen(
+                organizer = organizerInfo,
+                isRefreshing = organizerProfileScreenUiState.isRefreshing,
+                onRefresh = {
+                    organizerProfileScreenViewModel.refreshUi()
+                },
+                onBottomBarIconClick = {
+                    navController.navigate(AppScreen.OrganizerMain.name) {
+                        launchSingleTop = true
+                    }
+                },
+                onSettingsIconClick = {
+                    navController.navigate(AppScreen.OrganizerSettings.name) {
+                        launchSingleTop = true
+                    }
+                },
+                modifier = Modifier
+            )
         }
 
         composable(
@@ -772,7 +802,7 @@ fun Appv2(
             route = AppScreen.OrganizerSettings.name
         ) {
             OrganizerSettingsScreen(
-                areOrganizerDetailsFilled = organizerMainScreenUiState.detailsFilled,
+                areOrganizerDetailsFilled = false, //organizerMainScreenUiState.detailsFilled,
                 organizerName = organizerInfo.name,
                 onBackIconClick = {
                     navController.navigate(AppScreen.OrganizerMain.name) {
@@ -790,6 +820,7 @@ fun Appv2(
                 },
                 onDetailsButtonClick = {
                     //Update details screen
+                    organizerUpdateDetailsScreenViewModel.initializeFields(organizerInfo)
                     navController.navigate(route = AppScreen.OrganizerUpdateDetails.name) {
                         launchSingleTop = true
                     }
@@ -815,9 +846,9 @@ fun Appv2(
             }
 
             OrganizerUpdateDetailsScreen(
-                firstNameValue = organizerUpdateDetailsScreenUiState.AdministratorFirstName,
+                firstNameValue = organizerUpdateDetailsScreenUiState.administratorFirstName,
                 onFirstNameChange = { organizerUpdateDetailsScreenViewModel.onAdministratorFirstNameChange(it) },
-                lastNameValue = organizerUpdateDetailsScreenUiState.AdministratorLastName,
+                lastNameValue = organizerUpdateDetailsScreenUiState.administratorLastName,
                 onLastNameChange = { organizerUpdateDetailsScreenViewModel.onAdministratorLastNameChange(it) },
                 onNationalityTextFieldChange = { organizerUpdateDetailsScreenViewModel.onCountryChange(it) },
                 organizerNameValue = organizerUpdateDetailsScreenUiState.name,

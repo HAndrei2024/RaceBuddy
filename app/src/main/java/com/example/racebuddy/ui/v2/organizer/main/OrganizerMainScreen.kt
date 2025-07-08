@@ -16,6 +16,7 @@ import androidx.compose.material.MaterialTheme
 import androidx.compose.material.Scaffold
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.Warning
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.FloatingActionButtonDefaults
@@ -26,7 +27,10 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.pulltorefresh.PullToRefreshBox
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.BlurredEdgeTreatment
@@ -43,7 +47,9 @@ import com.example.racebuddy.data.database.defaultOrganizer
 import com.example.racebuddy.models.Organizer
 import com.example.racebuddy.ui.theme.paddings
 import com.example.racebuddy.ui.v2.common.BottomNavigationBarChat
+import com.example.racebuddy.ui.v2.common.LoadingAnimation
 import com.example.racebuddy.ui.v2.common.MainScreenTopAppBar
+import com.example.racebuddy.ui.v2.event.AlertDialogExample
 import com.example.racebuddy.ui.v2.main.Events
 import com.example.racebuddy.ui.v2.main.FilterButtons
 import com.example.racebuddy.ui.v2.main.HelloText
@@ -61,12 +67,16 @@ fun OrganizerMainScreen(
     onEventClick: (EventInfo) -> Unit,
     onFloatingActionButtonClick: () -> Unit,
     onSettingsIconClick: () -> Unit,
+    onLoginDialogGoClick: () -> Unit,
     modifier: Modifier = Modifier
 ) {
 
     val scope = rememberCoroutineScope()
 
     val animatedBlur by animateDpAsState(targetValue = if(isRefreshing) 1.dp else 0.dp)
+
+    var showOrganizerDetailsNotUpdated by remember { mutableStateOf(false) }
+
 
     Scaffold(
         topBar = {
@@ -85,7 +95,13 @@ fun OrganizerMainScreen(
         },
         floatingActionButton = {
             FloatingActionButton(
-                onClick = onFloatingActionButtonClick,
+                onClick = {
+                    if(organizer.name != "-") {
+                        onFloatingActionButtonClick()
+                    } else {
+                        showOrganizerDetailsNotUpdated = true
+                    }
+                },
                 containerColor = Color(0xFF4169E1), // Custom background color
                 contentColor = Color.White,        // Icon color
                 elevation = FloatingActionButtonDefaults.elevation(6.dp)
@@ -103,6 +119,12 @@ fun OrganizerMainScreen(
                 onRefresh()
             },
         ) {
+            if (isRefreshing) {
+                LoadingAnimation(
+                    modifier = Modifier
+                        .zIndex(2f)
+                )
+            }
             Column(
                 modifier = modifier
                     .padding(innerPadding)
@@ -160,6 +182,23 @@ fun OrganizerMainScreen(
 
 
         }
+
+        if(showOrganizerDetailsNotUpdated) {
+            AlertDialogExample(
+                onDismissRequest = {
+                    showOrganizerDetailsNotUpdated = false
+                },
+                onConfirmation = {
+                    showOrganizerDetailsNotUpdated = false
+
+                    // Navigate
+                    onLoginDialogGoClick()
+                },
+                dialogTitle = "\uD83D\uDE15 Organizer Details not updated.",
+                dialogText = "Please update the details first.\n\nSettings -> Details",
+                icon = Icons.Default.Warning
+            )
+        }
     }
 }
 
@@ -197,6 +236,7 @@ fun OrganizerMainScreenPreview() {
         onFilterButtonClick = {},
         onEventClick = {},
         onFloatingActionButtonClick = {},
-        onSettingsIconClick = {}
+        onSettingsIconClick = {},
+        onLoginDialogGoClick = {}
     )
 }

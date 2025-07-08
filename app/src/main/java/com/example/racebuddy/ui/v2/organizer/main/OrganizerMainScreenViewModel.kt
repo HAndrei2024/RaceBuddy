@@ -18,6 +18,7 @@ import com.example.racebuddy.data.database.defaultOrganizer
 import com.example.racebuddy.data.database.testAthlete
 import com.example.racebuddy.ui.v2.main.MainScreenUiState
 import com.example.racebuddy.ui.v2.main.MainScreenViewModel
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
@@ -36,7 +37,7 @@ class OrganizerMainScreenViewModel(
             events = emptyList(),
             filteredEvents = emptyList(),
             selectedFilter = "Upcoming",
-            isLoading = false
+            isRefreshing = false
         )
     )
     val uiState = _uiState.asStateFlow()
@@ -102,6 +103,27 @@ class OrganizerMainScreenViewModel(
         }
     }
 
+    fun refreshUi() {
+        viewModelScope.launch {
+            Log.d("Organizer Main Screen", "Is refreshing...")
+            updateIsRefreshing(true)
+            delay(500)
+
+            updateEvents()
+
+            delay(500)
+            updateIsRefreshing(false)
+        }
+    }
+
+    fun updateIsRefreshing(value: Boolean) {
+        _uiState.update { currentState ->
+            currentState.copy(
+                isRefreshing = value
+            )
+        }
+    }
+
     fun onFilterButtonClick(filter: String) {
         when(filter) {
             "Finished" -> {
@@ -121,6 +143,10 @@ class OrganizerMainScreenViewModel(
                 filteredEvents = filteredEvents
             )
         }
+    }
+
+    fun onRefresh() {
+
     }
 
     fun onLogoutClick() {
@@ -148,6 +174,6 @@ data class OrganizerMainScreenUiState(
     val events: List<EventInfo>,
     val filteredEvents: List<EventInfo>,
     val selectedFilter: String,
-    val isLoading: Boolean,
+    val isRefreshing: Boolean,
     val detailsFilled: Boolean = false,
 )

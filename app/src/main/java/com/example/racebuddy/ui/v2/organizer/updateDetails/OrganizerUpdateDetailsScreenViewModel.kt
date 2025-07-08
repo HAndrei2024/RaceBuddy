@@ -32,8 +32,8 @@ class OrganizerUpdateDetailsScreenViewModel(
     private val _uiState = MutableStateFlow(
         OrganizerUpdateDetailsUiState(
             name = "",
-            AdministratorFirstName = "",
-            AdministratorLastName = "",
+            administratorFirstName = "",
+            administratorLastName = "",
             country = "",
             identificationNumber = "",
             showError = false,
@@ -46,14 +46,30 @@ class OrganizerUpdateDetailsScreenViewModel(
         .map { state ->
             listOf(
                 state.name,
-                state.AdministratorFirstName,
-                state.AdministratorLastName,
+                state.administratorFirstName,
+                state.administratorLastName,
                 state.country,
                 state.identificationNumber
-            ).all { it.isNotBlank() }
+            ).all { it != "-" }
         }
         .stateIn(viewModelScope, SharingStarted.Eagerly, false)
 
+    fun initializeFields(
+        organizerInfo: OrganizerInfo
+    ) {
+        _uiState.update { currentState ->
+            currentState.copy(
+                name = organizerInfo.name,
+                administratorFirstName = organizerInfo.administratorFirstName,
+                administratorLastName = organizerInfo.administratorLastName,
+                country = organizerInfo.country,
+                identificationNumber = organizerInfo.identificationNumber,
+                showError = false,
+                errorMessage = "",
+                isUpdateSuccessful = false
+            )
+        }
+    }
 
     fun onNameChange(name: String) {
         _uiState.update { currentState ->
@@ -63,13 +79,13 @@ class OrganizerUpdateDetailsScreenViewModel(
 
     fun onAdministratorFirstNameChange(firstName: String) {
         _uiState.update { currentState ->
-            currentState.copy(AdministratorFirstName = firstName)
+            currentState.copy(administratorFirstName = firstName)
         }
     }
 
     fun onAdministratorLastNameChange(lastName: String) {
         _uiState.update { currentState ->
-            currentState.copy(AdministratorLastName = lastName)
+            currentState.copy(administratorLastName = lastName)
         }
     }
 
@@ -116,12 +132,12 @@ class OrganizerUpdateDetailsScreenViewModel(
             return false
         }
 
-        if (state.AdministratorFirstName.isBlank()) {
+        if (state.administratorFirstName.isBlank()) {
             updateShowError("Administrator's first name cannot be empty")
             return false
         }
 
-        if (state.AdministratorLastName.isBlank()) {
+        if (state.administratorLastName.isBlank()) {
             updateShowError("Administrator's last name cannot be empty")
             return false
         }
@@ -151,8 +167,8 @@ class OrganizerUpdateDetailsScreenViewModel(
         _uiState.update {
             OrganizerUpdateDetailsUiState(
                 name = "",
-                AdministratorFirstName = "",
-                AdministratorLastName = "",
+                administratorFirstName = "",
+                administratorLastName = "",
                 country = "",
                 identificationNumber = "",
                 showError = false,
@@ -176,9 +192,9 @@ class OrganizerUpdateDetailsScreenViewModel(
                     val organizerInfo = appRepository.updateOrganizerDetails(
                         organizerUuid = organizerUuid,
                         name = _uiState.value.name,
-                        administratorLastName = _uiState.value.AdministratorLastName,
+                        administratorLastName = _uiState.value.administratorLastName,
                         identificationNumber = _uiState.value.identificationNumber,
-                        administratorFirstName = _uiState.value.AdministratorFirstName,
+                        administratorFirstName = _uiState.value.administratorFirstName,
                         country = _uiState.value.country
                     )
 
@@ -214,8 +230,8 @@ class OrganizerUpdateDetailsScreenViewModel(
 
 data class OrganizerUpdateDetailsUiState(
     val name: String,
-    val AdministratorFirstName: String,
-    val AdministratorLastName: String,
+    val administratorFirstName: String,
+    val administratorLastName: String,
     val country: String,
     val identificationNumber: String,
     val showError: Boolean,
