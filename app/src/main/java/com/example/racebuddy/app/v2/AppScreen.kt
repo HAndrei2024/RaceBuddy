@@ -47,6 +47,8 @@ import com.example.racebuddy.ui.v2.main.MainScreen
 import com.example.racebuddy.ui.v2.main.MainScreenViewModel
 import com.example.racebuddy.ui.v2.organizer.addEvent.AddEventScreen
 import com.example.racebuddy.ui.v2.organizer.addEvent.AddEventScreenViewModel
+import com.example.racebuddy.ui.v2.organizer.event.OrganizerEventScreen
+import com.example.racebuddy.ui.v2.organizer.event.OrganizerEventScreenViewModel
 import com.example.racebuddy.ui.v2.organizer.main.OrganizerMainScreen
 import com.example.racebuddy.ui.v2.organizer.main.OrganizerMainScreenViewModel
 import com.example.racebuddy.ui.v2.organizer.profile.OrganizerProfileScreen
@@ -118,6 +120,9 @@ fun Appv2(
     organizerProfileScreenViewModel: OrganizerProfileScreenViewModel = viewModel(
         factory = OrganizerProfileScreenViewModel.factory
     ),
+    organizerEventScreenViewModel: OrganizerEventScreenViewModel = viewModel(
+        factory = OrganizerEventScreenViewModel.factory
+    ),
     appScreenViewModel: AppScreenViewModel = viewModel(
         factory = AppScreenViewModel.factory
     ),
@@ -132,6 +137,7 @@ fun Appv2(
     val organizerAddEventScreenUiState by organizerAddEventScreenViewModel.uiState.collectAsState()
     val organizerUpdateDetailsScreenUiState by organizerUpdateDetailsScreenViewModel.uiState.collectAsState()
     val organizerProfileScreenUiState by organizerProfileScreenViewModel.uiState.collectAsState()
+    val organizerEventScreenUiState by organizerEventScreenViewModel.uiState.collectAsState()
     val appScreenUiState by appScreenViewModel.uiState.collectAsState()
 
     var isFirstStartUp by remember { mutableStateOf(true) }
@@ -160,6 +166,8 @@ fun Appv2(
                         navController.navigate(AppScreen.Main.name) {
                             launchSingleTop = true
                         }
+                        delay(500)
+                        loginScreenViewModel.resetFields()
                     } else {
                         //update state
                         organizerMainScreenViewModel.updateStateAfterLogin(organizerInfo)
@@ -167,6 +175,8 @@ fun Appv2(
                         navController.navigate(AppScreen.OrganizerMain.name) {
                             launchSingleTop = true
                         }
+                        delay(500)
+                        loginScreenViewModel.resetFields()
                     }
                     //mainScreenViewModel.updateAthlete()
                 }
@@ -290,7 +300,12 @@ fun Appv2(
                 events = organizerMainScreenUiState.filteredEvents,
                 selectedFilter = organizerMainScreenUiState.selectedFilter,
                 onFilterButtonClick = {filter: String -> organizerMainScreenViewModel.onFilterButtonClick(filter) },
-                onEventClick = {},
+                onEventClick = { eventInfo ->
+                    organizerEventScreenViewModel.updateEvent(eventInfo)
+                    organizerEventScreenViewModel.getEventResultAthleteInfo(eventInfo.eventUuid)
+                    navController.navigate(AppScreen.OrganizerEvent.name)
+
+                },
                 onFloatingActionButtonClick = {
                     navController.navigate(AppScreen.OrganizerAddEvent.name) {
                         launchSingleTop = true
@@ -744,7 +759,18 @@ fun Appv2(
         composable(
             route = AppScreen.OrganizerEvent.name
         ) {
+            OrganizerEventScreen(
+                eventInfo = organizerEventScreenUiState.eventInfo,
+                organizerInfo = organizerInfo,
+                resultAthleteInfoList = organizerEventScreenUiState.resultAthleteInfoList,
+                onConfirmClick = {
 
+                },
+                onBackClick = {
+                    navController.popBackStack()
+                },
+                isInFuture = organizerEventScreenUiState.eventInfo.startDate > LocalDate.now()
+            )
         }
 
         composable(

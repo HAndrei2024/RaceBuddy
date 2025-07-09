@@ -107,11 +107,12 @@ class LoginScreenViewModel(
                 when(userObject) {
                     is AthleteInfo -> {
                         if(userObject.athleteId != "-1") {
-                            loginSuccesUpdate(true)
-                            errorMessageSuccesUpdate(false)
                             userPreferencesRepository.saveSupabaseAthleteInfo(
                                 athleteInfo = userObject
                             )
+
+                            loginSuccesUpdate(true)
+                            errorMessageSuccesUpdate(false)
                         } else {
                             loginSuccesUpdate(false)
                             errorMessageSuccesUpdate(true)
@@ -120,14 +121,13 @@ class LoginScreenViewModel(
                     is OrganizerInfo -> {
                         Log.d("LOGIN", "Checking Organizer info... -> ${userObject.organizerUuid}")
                         if(userObject.organizerUuid != "-1") {
-                            loginSuccesUpdate(true)
-                            errorMessageSuccesUpdate(false)
-
                             //TODO save organizer in shared preferences
-
                             userPreferencesRepository.saveSupabaseOrganizerInfo(
                                 organizerInfo = userObject
                             )
+
+                            loginSuccesUpdate(true)
+                            errorMessageSuccesUpdate(false)
                         }
                         else {
                             loginSuccesUpdate(false)

@@ -978,7 +978,7 @@ fun ParticipantsScreen(
             .shadow(3.dp, shapes.small) // Shadow with rounded corners
             .background(Color.White, shapes.small) // Background is required//
     ) {
-        ParticipantsHeader()
+        //ParticipantsHeader()
 
         if(participants.isNotEmpty()) {
             participants.forEach { participant ->
