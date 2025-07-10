@@ -236,7 +236,7 @@ fun ErrorText(
     modifier: Modifier = Modifier
 ) {
     Column(
-        horizontalAlignment = Alignment.Start,
+        horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.Center,
         modifier = modifier
             .padding(start = paddings.spacingLarge)
@@ -633,7 +633,7 @@ fun BottomBarWithButtonUsingShadow(
     ) {
         if(showError) {
             ErrorText(
-                textString = errorMessage
+                textString = errorMessage,
             )
         }
         Row(

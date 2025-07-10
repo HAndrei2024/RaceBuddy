@@ -66,6 +66,36 @@ class OrganizerEventScreenViewModel(
         }
     }
 
+    fun onFilterCategoryButtonClick(category: String) {
+        if(category == "General") {
+            updateResutAthleteInfoListFiltered(_uiState.value.resultAthleteInfoList.sortedBy { it.firstName })
+        }
+        else {
+            updateResutAthleteInfoListFiltered(_uiState.value.resultAthleteInfoList.filter { it.category == category }.sortedBy { it.firstName })
+        }
+    }
+
+    fun onConfirmRegistrationButtonPressed(athleteUuid: String, eventUuid: String, value: Boolean) {
+        viewModelScope.launch {
+            appRepository.updateSupabaseConfirmedFieldForRegisteredAthlete(
+                athleteUuid = athleteUuid,
+                eventUuid = eventUuid,
+                value = value
+            )
+
+           updateConfirmForAthlete(athleteUuid, value)
+        }
+    }
+
+    fun updateConfirmForAthlete(athleteUuid: String, value: Boolean) {
+        _uiState.update { currentState ->
+            currentState.copy(
+                resultAthleteInfoList = _uiState.value.resultAthleteInfoList.map { if(it.athleteUuid == athleteUuid) it.copy(confirmed = value) else it },
+                resultAthleteInfoListFiltered = _uiState.value.resultAthleteInfoListFiltered.map { if(it.athleteUuid == athleteUuid) it.copy(confirmed = value) else it }
+            )
+        }
+    }
+
     companion object {
         val factory: ViewModelProvider.Factory = viewModelFactory {
             initializer {

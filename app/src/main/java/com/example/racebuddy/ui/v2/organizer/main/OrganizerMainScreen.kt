@@ -60,6 +60,7 @@ fun OrganizerMainScreen(
     organizer: OrganizerInfo,
     events: List<EventInfo>,
     isRefreshing: Boolean,
+    isLoading: Boolean,
     onRefresh: () -> Unit,
     onBottomBarIconClick: () -> Unit,
     selectedFilter: String,
@@ -119,11 +120,15 @@ fun OrganizerMainScreen(
                 onRefresh()
             },
         ) {
-            if (isRefreshing) {
+            if (isLoading) {
                 LoadingAnimation(
                     modifier = Modifier
                         .zIndex(2f)
                 )
+            }
+
+            if(isRefreshing) {
+
             }
             Column(
                 modifier = modifier
@@ -237,6 +242,7 @@ fun OrganizerMainScreenPreview() {
         onEventClick = {},
         onFloatingActionButtonClick = {},
         onSettingsIconClick = {},
-        onLoginDialogGoClick = {}
+        onLoginDialogGoClick = {},
+        isLoading = false
     )
 }

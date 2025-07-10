@@ -13,6 +13,7 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.IntrinsicSize
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -380,7 +381,10 @@ fun NoUserLoggedInScreen(
         modifier = modifier
             .fillMaxSize()
     ) {
-        
+        Spacer(
+            modifier = Modifier
+                .padding(paddings.spacingExtraLarge)
+        )
         Image(
             painter = painterResource(R.drawable.default_profile),
             contentDescription = "",
@@ -388,7 +392,7 @@ fun NoUserLoggedInScreen(
             modifier = Modifier
                 .padding(paddings.spacingSmall)
                 .size(80.dp) // Adjust size as needed
-                .clip(shapes.extraSmall)
+                .clip(shapes.medium)
         )
         
         Text(
@@ -1095,7 +1099,17 @@ fun LoginButton(
     onClick: () -> Unit
 ) {
     Button(
-        onClick = onClick
+        onClick = onClick,
+        colors = ButtonDefaults.buttonColors(
+            containerColor = MaterialTheme.colorScheme.primary,
+            contentColor = Color.White
+        ),
+        elevation = ButtonDefaults.buttonElevation(2.dp),
+        shape = RoundedCornerShape(shapes.small.topEnd),
+        contentPadding = PaddingValues(horizontal = 16.dp, vertical = 8.dp),
+        modifier = Modifier
+            .height(heights.small)
+            .width(heights.extraLarge * 2)
     ) {
         Text(
             text = "Login"

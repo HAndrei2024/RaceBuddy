@@ -520,9 +520,38 @@ class RemoteDataSource {
         }
     }
 
+    suspend fun updateConfirmedFieldForRegisteredAthlete(athleteUuid: String, eventUuid: String, value: Boolean): Boolean {
+        try {
+
+            Log.d("Supabase Result Table", "Trying to update confirm column in Result table: $value")
+
+            val response = SupabaseClient.client.from("Result").update(
+                {
+                    set("confirmed", value)
+                }
+            ) {
+                filter {
+                    eq("athlete_uuid", athleteUuid)
+                    eq("event_uuid", eventUuid)
+                }
+                select(columns = Columns.list("confirmed"))
+            }.decodeSingle<ResultConfirmedParam>()
+
+            return response.confirmed
+        } catch (exception: Exception) {
+            Log.d("Supabase Result Table", "Couldn't update confirmed column in Result table: $exception")
+            return false
+        }
+    }
+
 }
 
 sealed class User
+
+@Serializable
+data class ResultConfirmedParam(
+    @SerialName("confirmed") val confirmed: Boolean
+)
 
 @Serializable
 data class EventParam(

@@ -1,22 +1,30 @@
 package com.example.racebuddy.ui.v2.organizer.event
 
+import android.util.Log
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.defaultMinSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Close
 import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.rememberModalBottomSheetState
@@ -47,17 +55,23 @@ import com.example.racebuddy.R
 import com.example.racebuddy.data.database.EventInfo
 import com.example.racebuddy.data.database.OrganizerInfo
 import com.example.racebuddy.data.database.ResultAthleteInfo
+import com.example.racebuddy.ui.theme.heights
 import com.example.racebuddy.ui.theme.paddings
 import com.example.racebuddy.ui.theme.shapes
+import com.example.racebuddy.ui.v2.event.DragHandleWithIconOnRight
 import com.example.racebuddy.ui.v2.event.EventDetails
 import com.example.racebuddy.ui.v2.event.EventScreenBottomBar
 import com.example.racebuddy.ui.v2.event.EventScreenTopBar
 import com.example.racebuddy.ui.v2.event.FilterButtons
+import com.example.racebuddy.ui.v2.event.FilterResultsButtons
 import com.example.racebuddy.ui.v2.event.ParticipantRow
 import com.example.racebuddy.ui.v2.event.ParticipantsHeader
 import com.example.racebuddy.ui.v2.event.ParticipantsScreen
 import com.example.racebuddy.ui.v2.event.ResultRow
+import com.example.racebuddy.ui.v2.event.ResultsBottomSheet
+import com.example.racebuddy.ui.v2.event.ResultsByGender
 import com.example.racebuddy.ui.v2.main.countryMap
+import com.example.racebuddy.ui.v2.organizer.common.OrganizerBottomAppBar
 import kotlinx.coroutines.launch
 import kotlinx.datetime.LocalDate
 import network.chaintech.kmp_date_time_picker.utils.now
@@ -67,9 +81,12 @@ import network.chaintech.kmp_date_time_picker.utils.now
 fun OrganizerEventScreen(
     eventInfo: EventInfo,
     organizerInfo: OrganizerInfo,
+    categories: List<String>,
     resultAthleteInfoList: List<ResultAthleteInfo>,
-    onConfirmClick: () -> Unit,
+    onConfirmClick: (athleteUuid: String, value: Boolean) -> Unit,
     onBackClick: () -> Unit,
+    onFilterButtonClick: (String) -> Unit,
+    onUpdateResultsClick: () -> Unit,
     isInFuture: Boolean
 ){
     val screenHeight = LocalConfiguration.current.screenHeightDp.dp
@@ -89,7 +106,13 @@ fun OrganizerEventScreen(
         topBar = {
         },
         bottomBar = {
-
+            if(selectedFilterButton == "Results") {
+                EventScreenBottomBar(
+                    isAthleteRegistered = false,
+                    buttonText = "Update Results",
+                    onClick = onUpdateResultsClick
+                )
+            }
         },
         containerColor = Color.White,
         contentColor = Color.Black
@@ -108,7 +131,7 @@ fun OrganizerEventScreen(
 
             item {
                 FilterButtons(
-                    items = if(eventInfo.startDate > LocalDate.now()) listOf("Summary", "Participants") else listOf("Summary", "Results"),
+                    items = if(eventInfo.startDate > LocalDate.now()) listOf("Summary", "Participants", "Predictions") else listOf("Summary", "Results"),
                     onFilterButtonClick = { filterString: String ->
                         selectedFilterButton = filterString
                     }
@@ -136,6 +159,11 @@ fun OrganizerEventScreen(
 
                     "Participants" -> {
                         //Add possibility to confirm and estimation
+                        FilterResultsButtons(
+                            items = listOf("General") + categories,
+                            onFilterButtonClick = onFilterButtonClick
+                        )
+
 
                         OrganizerParticipantsScreen(
                             participants = resultAthleteInfoList,
@@ -144,13 +172,122 @@ fun OrganizerEventScreen(
                     }
 
                     "Results" -> {
+                        if(resultAthleteInfoList.isEmpty()) {
 
+                        }
+                        else {
+                            ResultsBlock(
+                                resultAthleteInfoList = resultAthleteInfoList,
+                                categories = categories,
+                                onFilterResultsButtonClick = onFilterButtonClick
+                            )
+                        }
+                    }
+
+                    "Predictions" -> {
+                        
                     }
                 }
             }
         }
     }
 }
+
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun ResultsBlock(
+    resultAthleteInfoList: List<ResultAthleteInfo>,
+    categories: List<String>,
+    onFilterResultsButtonClick: (String) -> Unit,
+) {
+    var genderResultSheet by remember { mutableStateOf("Male") }
+    val sheetState = rememberModalBottomSheetState(
+        skipPartiallyExpanded = true
+    )
+    val scope = rememberCoroutineScope()
+    var showResults by remember { mutableStateOf(false) }
+
+
+
+    FilterResultsButtons(
+        items = listOf("General") + categories,
+        onFilterButtonClick = onFilterResultsButtonClick
+    )
+
+    ResultsByGender(
+        gender = "Women",
+        resultAthleteInfoList = resultAthleteInfoList.filter { it -> it.gender == "Female" }.sortedBy { it.rank },
+        onClick = {
+            genderResultSheet = "Female"
+
+            scope.launch {
+                sheetState.expand()
+                sheetState.show()
+            }.invokeOnCompletion {
+                showResults = true
+            }
+        }
+    )
+
+//                            Spacer(modifier = Modifier
+//                                .padding(paddings.spacingSmall))
+
+    ResultsByGender(
+        gender = "Men",
+        resultAthleteInfoList = resultAthleteInfoList.filter { it -> it.gender == "Male" }.sortedBy { it.rank },
+        onClick = {
+            // Update the list of what results should be displayed
+            // The screen composable should take this lists as parameters
+            // switch on showResults
+            genderResultSheet = "Male"
+
+            scope.launch {
+                sheetState.expand()
+                sheetState.show()
+            }.invokeOnCompletion {
+                showResults = true
+            }
+        }
+    )
+
+    if(showResults) {
+        ModalBottomSheet(
+            onDismissRequest = {
+                scope.launch {
+                    sheetState.hide()
+                }.invokeOnCompletion {
+                    showResults = false
+                }
+            },
+            sheetState = sheetState,
+            containerColor = Color.White,
+            contentColor = Color.Black,
+            dragHandle = {
+                DragHandleWithIconOnRight(
+                    iconImageVector = Icons.Filled.Close,
+                    onIconClick = {
+                        scope.launch {
+                            sheetState.hide()
+                        }.invokeOnCompletion {
+                            showResults = false
+                        }
+                    }
+                )
+            },
+            shape = shapes.small,
+            modifier = Modifier
+                .fillMaxWidth()
+
+        ) {
+            ResultsBottomSheet(
+                resultAthleteInfoList = resultAthleteInfoList.filter { it.gender == genderResultSheet }
+            )
+        }
+    }
+
+}
+
 @Composable
 fun BackgroundImageWithIntegratedTopBar(
     pictureUrl: String?,
@@ -185,7 +322,7 @@ fun BackgroundImageWithIntegratedTopBar(
 @Composable
 fun OrganizerParticipantsScreen(
     participants: List<ResultAthleteInfo>,
-    onConfirmClick: () -> Unit,
+    onConfirmClick: (athleteUuid: String, value: Boolean) -> Unit,
     modifier: Modifier = Modifier
 ) {
     Column(
@@ -202,7 +339,7 @@ fun OrganizerParticipantsScreen(
             categories.forEach { category ->
                 RegsitrationsByCategory(
                     category = category,
-                    resultAthleteInfoList = participants,
+                    resultAthleteInfoList = participants.filter { it.category == category },
                     onCardClick = {},
                     onConfirmClick = onConfirmClick,
                     modifier = Modifier
@@ -225,11 +362,12 @@ fun OrganizerParticipantsScreen(
 
 @Composable
 fun OrganizerParticipantRow(
+    athleteUuid: String,
     fullName: String,
     profilePicUrl: String,
     country: String,
     confirmed: Boolean,
-    onConfirmClick: () -> Unit,
+    onConfirmClick: (athleteUuid: String, value: Boolean) -> Unit,
     modifier: Modifier = Modifier
 ) {
     // Profile image, Full name, status
@@ -294,6 +432,7 @@ fun OrganizerParticipantRow(
             ConfirmationButton(
                 confirmed = confirmed,
                 onConfirm = onConfirmClick,
+                athleteUuid = athleteUuid,
                 modifier = Modifier
                     .weight(1f)
             )
@@ -304,12 +443,15 @@ fun OrganizerParticipantRow(
 @Composable
 fun ConfirmationButton(
     confirmed: Boolean,
-    onConfirm: () -> Unit,
+    athleteUuid: String,
+    onConfirm: (athleteUuid: String, value: Boolean) -> Unit,
     modifier: Modifier = Modifier
 ) {
     Button(
-        onClick = { if (!confirmed) onConfirm() }, // prevent double confirmation
-        enabled = !confirmed,
+        onClick = {
+                if (!confirmed) onConfirm(athleteUuid, true)
+                Log.d("OrganizerEvent UI", "Confirmation Button pressed!")
+        }, // prevent double confirmation
         modifier = modifier
             .defaultMinSize(minWidth = 1.dp) // Optional: makes the button less wide
             .padding(horizontal = 4.dp)
@@ -327,7 +469,7 @@ fun RegsitrationsByCategory(
     category: String,
     resultAthleteInfoList: List<ResultAthleteInfo>,
     onCardClick: (gender: String) -> Unit,
-    onConfirmClick: () -> Unit,
+    onConfirmClick: (athleteUuid: String, value: Boolean) -> Unit,
     modifier: Modifier = Modifier
 ) {
     Column(
@@ -365,6 +507,7 @@ fun RegsitrationsByCategory(
         if(resultAthleteInfoList.isNotEmpty()) {
             resultAthleteInfoList.forEachIndexed { index, resultAthleteInfo ->
                 OrganizerParticipantRow(
+                    athleteUuid = resultAthleteInfo.athleteUuid,
                     fullName = "${resultAthleteInfo.firstName} ${resultAthleteInfo.lastName}",
                     profilePicUrl = resultAthleteInfo.profilePictureUrl ?: "",
                     country = resultAthleteInfo.country,
@@ -383,7 +526,7 @@ fun RegsitrationsByCategory(
                     .height(75.dp)
             ) {
                 Text(
-                    text = "There are no results...",
+                    text = "There are no athletes registered...",
                     style = MaterialTheme.typography.bodyLarge,
                     color = Color.Black,
                     fontWeight = FontWeight.Normal

@@ -159,7 +159,10 @@ class AppRepository(
         return remoteDataSource.getAthleteRegisteredEventsUuid(athleteUuid)
     }
 
-    suspend fun updateSupabaseAthleteProfilePic(athleteUuid: String, profilePictureUrl: String): Boolean {
+    suspend fun updateSupabaseAthleteProfilePic(
+        athleteUuid: String,
+        profilePictureUrl: String
+    ): Boolean {
         return remoteDataSource.updateAthleteProfilePic(athleteUuid, profilePictureUrl)
     }
 
@@ -171,16 +174,17 @@ class AppRepository(
         return remoteDataSource.getOrganizerEvents(organizerUuid)
     }
 
-    suspend fun addSupabaseEvent(title: String,
-                                 startDate: LocalDate,
-                                 endDate: LocalDate,
-                                 country: String,
-                                 city: String,
-                                 county: String,
-                                 details: String,
-                                 eventCategory: String,
-                                 athleteCategories: JsonElement,
-                                 organizerUuid: String
+    suspend fun addSupabaseEvent(
+        title: String,
+        startDate: LocalDate,
+        endDate: LocalDate,
+        country: String,
+        city: String,
+        county: String,
+        details: String,
+        eventCategory: String,
+        athleteCategories: JsonElement,
+        organizerUuid: String
     ): String {
         return remoteDataSource.addEvent(
             title = title,
@@ -211,6 +215,18 @@ class AppRepository(
             identificationNumber = identificationNumber,
             administratorFirstName = administratorFirstName,
             country = country
+        )
+    }
+
+    suspend fun updateSupabaseConfirmedFieldForRegisteredAthlete(
+        athleteUuid: String,
+        eventUuid: String,
+        value: Boolean
+    ): Boolean {
+        return remoteDataSource.updateConfirmedFieldForRegisteredAthlete(
+            athleteUuid,
+            eventUuid,
+            value
         )
     }
 }

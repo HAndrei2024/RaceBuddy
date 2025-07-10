@@ -20,7 +20,10 @@ import com.example.racebuddy.ui.v2.main.MainScreenUiState
 import com.example.racebuddy.ui.v2.main.MainScreenViewModel
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import kotlinx.datetime.LocalDate
@@ -42,10 +45,18 @@ class OrganizerMainScreenViewModel(
     )
     val uiState = _uiState.asStateFlow()
 
-    fun updateEvents() {
+    val organizerInfo = userPreferencesRepository.supabaseOrganizerInfo.map { organizerInfo ->
+        organizerInfo
+    }.stateIn(
+        viewModelScope,
+        SharingStarted.WhileSubscribed(5000),
+        defaultOrganizer // or some default UserInfo
+    )
+
+    fun updateEvents(organizerUuid: String = organizerInfo.value.organizerUuid) {
         viewModelScope.launch {
             _uiState.update { currentState ->
-                val events = appRepository.getSupabaseOrganizerEvents(_uiState.value.organizerInfo.organizerUuid)
+                val events = appRepository.getSupabaseOrganizerEvents(organizerUuid = organizerUuid)
 
                 currentState.copy(
                     events = events,
@@ -103,13 +114,13 @@ class OrganizerMainScreenViewModel(
         }
     }
 
-    fun refreshUi() {
+    fun refreshUi(organizerUuid: String) {
         viewModelScope.launch {
             Log.d("Organizer Main Screen", "Is refreshing...")
             updateIsRefreshing(true)
             delay(500)
 
-            updateEvents()
+            updateEvents(organizerUuid)
 
             delay(500)
             updateIsRefreshing(false)
@@ -123,6 +134,15 @@ class OrganizerMainScreenViewModel(
             )
         }
     }
+
+    fun updateIsLoading(value: Boolean) {
+        _uiState.update { currentState ->
+            currentState.copy(
+                isLoading = value
+            )
+        }
+    }
+
 
     fun onFilterButtonClick(filter: String) {
         when(filter) {
@@ -175,5 +195,6 @@ data class OrganizerMainScreenUiState(
     val filteredEvents: List<EventInfo>,
     val selectedFilter: String,
     val isRefreshing: Boolean,
+    val isLoading: Boolean = false,
     val detailsFilled: Boolean = false,
 )

@@ -55,6 +55,7 @@ import com.example.racebuddy.ui.v2.organizer.profile.OrganizerProfileScreen
 import com.example.racebuddy.ui.v2.organizer.profile.OrganizerProfileScreenViewModel
 import com.example.racebuddy.ui.v2.organizer.updateDetails.OrganizerUpdateDetailsScreen
 import com.example.racebuddy.ui.v2.organizer.updateDetails.OrganizerUpdateDetailsScreenViewModel
+import com.example.racebuddy.ui.v2.organizer.updateResults.OrganizerUpdateResultsScreen
 import com.example.racebuddy.ui.v2.profile.ProfileScreen
 import com.example.racebuddy.ui.v2.profile.ProfileScreenViewModel
 import com.example.racebuddy.ui.v2.signup.SignUpFirstScreen
@@ -88,7 +89,8 @@ enum class AppScreen {
     OrganizerEvent,
     OrganizerAddEvent,
     OrganizerSettings,
-    OrganizerUpdateDetails
+    OrganizerUpdateDetails,
+    OrganizerUpdateResults
 }
 
 @Composable
@@ -149,16 +151,41 @@ fun Appv2(
     profileScreenViewModel.getRegisteredEventsUuids(athleteInfo.athleteId ?: "")
 
 
-    val startDestination = AppScreen.Profile.name //if (athleteInfo.athleteId == "-1") AppScreen.Login.name else AppScreen.Main.name
-
 
     //appViewModel.updateScreenSelected(AppScreen.valueOf(startDestination))
     // is this state needed? (Selected Screen)
 
     NavHost(
         navController = navController,
-        startDestination = startDestination
+        startDestination = AppScreen.Loading.name
     ) {
+        composable(
+            route = AppScreen.Loading.name
+        ) {
+            LaunchedEffect(organizerInfo, athleteInfo) {
+                when {
+                    organizerInfo.organizerUuid != "-1" ->
+                        navController.navigate(AppScreen.OrganizerMain.name) {
+                            popUpTo(AppScreen.Loading.name) { inclusive = true }
+                        }
+
+                    athleteInfo.athleteId != "-1" ->
+                        navController.navigate(AppScreen.Main.name) {
+                            popUpTo(AppScreen.Loading.name) { inclusive = true }
+                        }
+
+                    else -> {
+                        navController.navigate(AppScreen.Main.name) {
+                            launchSingleTop = true
+                        }
+                    }
+                }
+            }
+
+            LoadingAnimation()
+        }
+
+
         composable(route = AppScreen.Login.name) {
             LaunchedEffect(loginScreenUiState) {
                 if (loginScreenUiState.loginSucces) {
@@ -286,11 +313,21 @@ fun Appv2(
         composable(
             route = AppScreen.OrganizerMain.name
         ) {
+            LaunchedEffect(isFirstStartUp) {
+                if(isFirstStartUp) {
+
+                    organizerMainScreenViewModel.refreshUi(organizerUuid = organizerInfo.organizerUuid)
+
+                    isFirstStartUp = false
+                }
+            }
+
             OrganizerMainScreen(
                 organizer = organizerInfo,
                 isRefreshing = organizerMainScreenUiState.isRefreshing,
+                isLoading = organizerMainScreenUiState.isLoading,
                 onRefresh = {
-                    organizerMainScreenViewModel.refreshUi()
+                    organizerMainScreenViewModel.refreshUi(organizerUuid = organizerInfo.organizerUuid)
                 },
                 onBottomBarIconClick = {
                     navController.navigate(AppScreen.OrganizerProfile.name) {
@@ -625,6 +662,9 @@ fun Appv2(
                 onLogoutButtonClick = {
                     loginScreenViewModel.loginSuccesUpdate(false)
                     profileScreenViewModel.onLogoutClick()
+                    navController.navigate(AppScreen.Login.name) {
+                        launchSingleTop = true
+                    }
                 },
                 onLoginButtonClick = {
                     navController.navigate(AppScreen.Login.name) {
@@ -762,15 +802,31 @@ fun Appv2(
             OrganizerEventScreen(
                 eventInfo = organizerEventScreenUiState.eventInfo,
                 organizerInfo = organizerInfo,
-                resultAthleteInfoList = organizerEventScreenUiState.resultAthleteInfoList,
-                onConfirmClick = {
-
+                categories = organizerEventScreenUiState.resultAthleteInfoList.map { it.category }.distinct(),
+                resultAthleteInfoList = organizerEventScreenUiState.resultAthleteInfoListFiltered,
+                onFilterButtonClick = { category: String ->
+                    organizerEventScreenViewModel.onFilterCategoryButtonClick(category)
+                },
+                onConfirmClick = { athleteUuid: String, value: Boolean ->
+                    Log.d("App Organizer Event UI", "Confirm button pressed")
+                    organizerEventScreenViewModel.onConfirmRegistrationButtonPressed(athleteUuid, organizerEventScreenUiState.eventInfo.eventUuid, value)
                 },
                 onBackClick = {
                     navController.popBackStack()
                 },
-                isInFuture = organizerEventScreenUiState.eventInfo.startDate > LocalDate.now()
+                isInFuture = organizerEventScreenUiState.eventInfo.startDate > LocalDate.now(),
+                onUpdateResultsClick = {
+                    navController.navigate(AppScreen.OrganizerUpdateResults.name) {
+                        launchSingleTop = true
+                    }
+                }
             )
+        }
+
+        composable(
+            route = AppScreen.OrganizerUpdateResults.name
+        ) {
+            OrganizerUpdateResultsScreen()
         }
 
         composable(
@@ -893,6 +949,8 @@ fun Appv2(
                 modifier = Modifier
             )
         }
+
+
     }
 }
 

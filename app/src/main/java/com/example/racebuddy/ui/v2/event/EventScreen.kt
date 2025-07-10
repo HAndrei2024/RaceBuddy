@@ -114,6 +114,8 @@ import com.example.racebuddy.ui.theme.paddings
 import com.example.racebuddy.ui.theme.shapes
 import com.example.racebuddy.ui.v2.common.LoadingAnimation
 import com.example.racebuddy.ui.v2.main.countryMap
+import com.example.racebuddy.ui.v2.organizer.event.OrganizerParticipantRow
+import com.example.racebuddy.ui.v2.organizer.event.RegsitrationsByCategory
 import com.example.racebuddy.ui.v2.signup.Country
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
@@ -440,8 +442,13 @@ fun EventScreen2(
                         }
 
                         "Participants" -> {
+                            FilterResultsButtons(
+                                items = listOf("General") + eventCategories.map { it.category },
+                                onFilterButtonClick = onFilterResultsButtonClick
+                            )
+
                             ParticipantsScreen(
-                                participants = resultAthleteInfoList.sortedBy { it.lastName }
+                                participants = resultAthleteInfoList.sortedBy { it.firstName }
                             )
                         }
                     }
@@ -527,9 +534,12 @@ fun EventScreen2(
                     LoadingAnimation()
                 }
 
+            Log.d("Event UI", "Register Bottom sheet: is athlete confirmed -> ${resultAthleteInfoList.find { it.athleteUuid == athleteInfo.athleteId }?.confirmed ?: false}")
+
                 RegisterBottomSheet(
                     athleteInfo = athleteInfo,
                     isAthleteRegistered = isAthleteRegistered,
+                    isAthleteConfirmed = resultAthleteInfoList.find { it.athleteUuid == athleteInfo.athleteId }?.confirmed ?: false,
                     selectedCategoryIfRegistered = selectedCategoryIfRegistered,
                     categories = eventCategories,
                     onRegisterButtonClick = { category: String ->
@@ -608,6 +618,7 @@ fun EventScreen2(
 fun RegisterBottomSheet(
     athleteInfo: AthleteInfo,
     isAthleteRegistered: Boolean,
+    isAthleteConfirmed: Boolean,
     categories: List<CategoriesData>,
     selectedCategoryIfRegistered: String,
     onRegisterButtonClick: (category: String) -> Unit,
@@ -667,7 +678,7 @@ fun RegisterBottomSheet(
         item {
             AthleteStatusRegisterSheet(
                 isAthleteRegistered = isAthleteRegistered,
-                isAthleteConfirmed = false, //TODO
+                isAthleteConfirmed = isAthleteConfirmed, //TODO
                 modifier = Modifier
             )
         }
@@ -869,7 +880,7 @@ fun AthleteStatusRegisterSheet(
     ) {
         DetailRow(
             field = "Status",
-            value = if(isAthleteRegistered) "⏳ Pending" else "❌ Not registered",
+            value = if(isAthleteConfirmed) "✅ Accepted" else if(isAthleteRegistered) "⏳ Pending" else "❌ Not registered",
             modifier = Modifier
         )
     }
@@ -981,27 +992,107 @@ fun ParticipantsScreen(
         //ParticipantsHeader()
 
         if(participants.isNotEmpty()) {
-            participants.forEach { participant ->
+//            participants.forEach { participant ->
+//                ParticipantRow(
+//                    fullName = "${participant.firstName} ${participant.lastName}",
+//                    profilePicUrl = participant.profilePictureUrl ?: "",
+//                    country = participant.country,
+//                    confirmed = participant.confirmed,
+//                    category = participant.category,
+//                    modifier = Modifier
+//                )
+//            }
+
+            val categories = participants.map { it.category }.distinct()
+
+            categories.forEach { category ->
+                RegsitrationsByCategory(
+                    category = category,
+                    resultAthleteInfoList = participants.filter { it.category == category },
+                    onCardClick = {},
+                    modifier = Modifier
+                )
+            }
+        }
+//        else {
+//            Text(
+//                text = "There are no athletes registered yet!",
+//                style = MaterialTheme.typography.bodyLarge,
+//                color = Color.Black,
+//                textAlign = TextAlign.Center,
+//                modifier = Modifier
+//                    .fillMaxWidth()
+//                    .padding(paddings.spacingMedium)
+//            )
+//        }
+    }
+}
+
+@Composable
+fun RegsitrationsByCategory(
+    category: String,
+    resultAthleteInfoList: List<ResultAthleteInfo>,
+    onCardClick: (gender: String) -> Unit,
+    modifier: Modifier = Modifier
+) {
+    Column(
+        modifier = modifier
+            .padding(paddings.spacingSmall)
+            .shadow(3.dp, shapes.small) // Shadow with rounded corners
+            .background(Color.White, shapes.small) // Background is required//
+            .clickable {
+                onCardClick(category)
+            }
+    ) {
+        Text(
+            text = category,
+            style = MaterialTheme.typography.bodyMedium,
+            color = Color.Gray,
+            fontWeight = FontWeight.Bold,
+            modifier = Modifier
+                .padding(
+                    paddings.spacingSmall
+
+                )
+                .fillMaxWidth(1f)
+
+                .drawBehind {
+                    val borderSize = 2.dp.toPx()
+                    drawLine(
+                        color = Color(0xFFEEEEEE),
+                        start = Offset(0f, size.height),
+                        end = Offset(size.width, size.height),
+                        strokeWidth = borderSize
+                    )
+                }
+        )
+
+        if(resultAthleteInfoList.isNotEmpty()) {
+            resultAthleteInfoList.forEachIndexed { index, resultAthleteInfo ->
                 ParticipantRow(
-                    fullName = "${participant.firstName} ${participant.lastName}",
-                    profilePicUrl = participant.profilePictureUrl ?: "",
-                    country = participant.country,
-                    confirmed = participant.confirmed,
-                    category = participant.category,
+                    fullName = "${resultAthleteInfo.firstName} ${resultAthleteInfo.lastName}",
+                    profilePicUrl = resultAthleteInfo.profilePictureUrl ?: "",
+                    country = resultAthleteInfo.country,
+                    confirmed = resultAthleteInfo.confirmed,
                     modifier = Modifier
                 )
             }
         }
         else {
-            Text(
-                text = "There are no athletes registered yet!",
-                style = MaterialTheme.typography.bodyLarge,
-                color = Color.Black,
-                textAlign = TextAlign.Center,
+            Column(
+                horizontalAlignment = Alignment.CenterHorizontally,
+                verticalArrangement = Arrangement.Center,
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(paddings.spacingMedium)
-            )
+                    .height(75.dp)
+            ) {
+                Text(
+                    text = "There are no athletes registered...",
+                    style = MaterialTheme.typography.bodyLarge,
+                    color = Color.Black,
+                    fontWeight = FontWeight.Normal
+                )
+            }
         }
     }
 }
@@ -1140,7 +1231,6 @@ fun ParticipantRow(
     fullName: String,
     profilePicUrl: String,
     country: String,
-    category: String,
     confirmed: Boolean,
     modifier: Modifier = Modifier
 ) {
@@ -1203,14 +1293,14 @@ fun ParticipantRow(
                     .weight(1f)
             )
 
-            Text(
-                text = category,
-                style = MaterialTheme.typography.bodyLarge,
-                maxLines = 1,
-                textAlign = TextAlign.Center,
-                modifier = Modifier
-                    .weight(1f)
-            )
+//            Text(
+//                text = category,
+//                style = MaterialTheme.typography.bodyLarge,
+//                maxLines = 1,
+//                textAlign = TextAlign.Center,
+//                modifier = Modifier
+//                    .weight(1f)
+//            )
 
             Text(
                 text = if (confirmed) "✅" else "⏳",
@@ -1227,6 +1317,7 @@ fun ParticipantRow(
 @Composable
 fun EventScreenBottomBar(
     isAthleteRegistered: Boolean,
+    buttonText: String = "",
     onClick: () -> Unit,
 ) {
     Box(
@@ -1271,7 +1362,7 @@ fun EventScreenBottomBar(
                     .width(heights.extraLarge * 2)
             ) {
                 Text(
-                    text = if(isAthleteRegistered) "Status" else "Register",
+                    text = if(buttonText != "") buttonText else if(isAthleteRegistered) "Status" else "Register",
                 )
             }
 
@@ -2690,7 +2781,6 @@ fun ParticipantRowPreview() {
             country = "Romania",
             confirmed = true,
             modifier = Modifier,
-            category = "Junior"
         )
     }
 }
@@ -2736,6 +2826,7 @@ fun RegisterBottomSheetPreview() {
         categories = listOf(CategoriesData("Cat 1", 12, 13)),
         selectedCategoryIfRegistered = "Cat 1",
         onRegisterButtonClick = {},
+        isAthleteConfirmed = true,
         modifier = Modifier
     )
 }
@@ -2757,6 +2848,6 @@ fun EventScreenPreview() {
         onFilterResultsButtonClick = {},
         onLoginDialogGoClick = {},
         onPersonalInformationDialogGoClick = {},
-        isLoading = false
+        isLoading = false,
     )
 }
