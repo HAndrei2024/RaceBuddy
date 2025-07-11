@@ -1,6 +1,7 @@
 package com.example.racebuddy.app.v2
 
 import android.app.Activity
+import android.net.Uri
 import android.util.Log
 import androidx.activity.compose.BackHandler
 import androidx.compose.animation.AnimatedContentTransitionScope
@@ -56,6 +57,7 @@ import com.example.racebuddy.ui.v2.organizer.profile.OrganizerProfileScreenViewM
 import com.example.racebuddy.ui.v2.organizer.updateDetails.OrganizerUpdateDetailsScreen
 import com.example.racebuddy.ui.v2.organizer.updateDetails.OrganizerUpdateDetailsScreenViewModel
 import com.example.racebuddy.ui.v2.organizer.updateResults.OrganizerUpdateResultsScreen
+import com.example.racebuddy.ui.v2.organizer.updateResults.OrganizerUpdateResultsScreenViewModel
 import com.example.racebuddy.ui.v2.profile.ProfileScreen
 import com.example.racebuddy.ui.v2.profile.ProfileScreenViewModel
 import com.example.racebuddy.ui.v2.signup.SignUpFirstScreen
@@ -125,6 +127,9 @@ fun Appv2(
     organizerEventScreenViewModel: OrganizerEventScreenViewModel = viewModel(
         factory = OrganizerEventScreenViewModel.factory
     ),
+    organizerUpdateResultsScreenViewModel: OrganizerUpdateResultsScreenViewModel = viewModel(
+        factory = OrganizerUpdateResultsScreenViewModel.factory
+    ),
     appScreenViewModel: AppScreenViewModel = viewModel(
         factory = AppScreenViewModel.factory
     ),
@@ -140,6 +145,7 @@ fun Appv2(
     val organizerUpdateDetailsScreenUiState by organizerUpdateDetailsScreenViewModel.uiState.collectAsState()
     val organizerProfileScreenUiState by organizerProfileScreenViewModel.uiState.collectAsState()
     val organizerEventScreenUiState by organizerEventScreenViewModel.uiState.collectAsState()
+    val organizerUpdateResultsScreenUiState by organizerUpdateResultsScreenViewModel.uiState.collectAsState()
     val appScreenUiState by appScreenViewModel.uiState.collectAsState()
 
     var isFirstStartUp by remember { mutableStateOf(true) }
@@ -162,7 +168,8 @@ fun Appv2(
         composable(
             route = AppScreen.Loading.name
         ) {
-            LaunchedEffect(organizerInfo, athleteInfo) {
+            LaunchedEffect(Unit) {
+                delay(1000)
                 when {
                     organizerInfo.organizerUuid != "-1" ->
                         navController.navigate(AppScreen.OrganizerMain.name) {
@@ -316,7 +323,7 @@ fun Appv2(
             LaunchedEffect(isFirstStartUp) {
                 if(isFirstStartUp) {
 
-                    organizerMainScreenViewModel.refreshUi(organizerUuid = organizerInfo.organizerUuid)
+                    organizerMainScreenViewModel.reloadUi(organizerUuid = organizerInfo.organizerUuid)
 
                     isFirstStartUp = false
                 }
@@ -826,7 +833,34 @@ fun Appv2(
         composable(
             route = AppScreen.OrganizerUpdateResults.name
         ) {
-            OrganizerUpdateResultsScreen()
+            val isFormValid by organizerUpdateResultsScreenViewModel.isFormValid.collectAsState()
+            val context = LocalContext.current
+
+
+            OrganizerUpdateResultsScreen(
+                selectedFileName = organizerUpdateResultsScreenUiState.fileName,
+                setSelectedFile = { fileUri: Uri ->
+                    organizerUpdateResultsScreenViewModel.updateSelectedFileUri(fileUri)
+                },
+                onUpdateClick = {
+                    organizerUpdateResultsScreenViewModel.uploadExcelToServer(
+                        context = context,
+                        eventUuid = organizerEventScreenUiState.eventInfo.eventUuid
+                    )
+                },
+                isUpdateButtonEnabled = isFormValid,
+                showError = organizerUpdateResultsScreenUiState.responseMessage != "",
+                errorMessage = organizerUpdateResultsScreenUiState.responseMessage,
+                isLoading = organizerUpdateResultsScreenUiState.isLoading,
+                isSuccessful = organizerUpdateResultsScreenUiState.isSuccessful,
+                onBackClick = {
+                    organizerEventScreenViewModel.getEventResultAthleteInfo(organizerEventScreenUiState.eventInfo.eventUuid)
+                    navController.popBackStack()
+                    organizerUpdateResultsScreenViewModel.updateIsSuccessful(false)
+                    organizerUpdateResultsScreenViewModel.updateResponseMessage("")
+                },
+                modifier = Modifier
+            )
         }
 
         composable(

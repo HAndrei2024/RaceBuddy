@@ -127,9 +127,6 @@ fun OrganizerMainScreen(
                 )
             }
 
-            if(isRefreshing) {
-
-            }
             Column(
                 modifier = modifier
                     .padding(innerPadding)

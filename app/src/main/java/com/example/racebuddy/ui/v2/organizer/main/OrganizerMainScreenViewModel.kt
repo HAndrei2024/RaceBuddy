@@ -60,7 +60,7 @@ class OrganizerMainScreenViewModel(
 
                 currentState.copy(
                     events = events,
-                    filteredEvents = events.filter { it.startDate > LocalDate.now() }
+                    filteredEvents = events.filter { if(_uiState.value.selectedFilter == "Upcoming") it.startDate > LocalDate.now() else it.startDate <= LocalDate.now() }
                 )
             }
         }
@@ -124,6 +124,19 @@ class OrganizerMainScreenViewModel(
 
             delay(500)
             updateIsRefreshing(false)
+        }
+    }
+
+    fun reloadUi(organizerUuid: String) {
+        viewModelScope.launch {
+            Log.d("Organizer Main Screen", "Is refreshing...")
+            updateIsLoading(true)
+            delay(500)
+
+            updateEvents(organizerUuid)
+
+            delay(500)
+            updateIsLoading(false)
         }
     }
 
@@ -193,7 +206,7 @@ data class OrganizerMainScreenUiState(
     val organizerInfo: OrganizerInfo,
     val events: List<EventInfo>,
     val filteredEvents: List<EventInfo>,
-    val selectedFilter: String,
+    val selectedFilter: String = "Upcoming",
     val isRefreshing: Boolean,
     val isLoading: Boolean = false,
     val detailsFilled: Boolean = false,

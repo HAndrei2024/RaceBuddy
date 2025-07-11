@@ -233,19 +233,21 @@ fun AddEventScreen(
 @Composable
 fun ErrorText(
     textString: String = "Incorrect email or password.",
+    leadingIcon: String = "✅",
+    textColor: Color = Color.Red,
     modifier: Modifier = Modifier
 ) {
     Column(
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.Center,
         modifier = modifier
-            .padding(start = paddings.spacingLarge)
+            .padding(start = paddings.spacingMedium)
             .fillMaxWidth()
     ) {
         Text(
-            text = textString,
+            text = "$leadingIcon $textString",
             style = AppTypography.bodyLarge,
-            color = Color.Red
+            color = textColor
         )
     }
 }
@@ -624,6 +626,8 @@ fun BottomBarWithButtonUsingShadow(
     onClick: () -> Unit,
     isEnabled: Boolean,
     showError: Boolean,
+    leadingIcon: String = "✅",
+    textColor: Color = Color. Red,
     errorMessage: String
 ) {
     Column(
@@ -634,6 +638,8 @@ fun BottomBarWithButtonUsingShadow(
         if(showError) {
             ErrorText(
                 textString = errorMessage,
+                leadingIcon = leadingIcon,
+                textColor = textColor
             )
         }
         Row(
