@@ -72,7 +72,7 @@ class OrganizerUpdateResultsScreenViewModel(
             }
             currentValue.copy(
                 fileUri = fileUri,
-                fileName = fileName
+                fileName = fileUri.path ?: "temp.xlsx"
             )
         }
     }
@@ -184,7 +184,7 @@ class OrganizerUpdateResultsScreenViewModel(
 
     fun copyUriToTempFile(context: Context, uri: Uri): File? {
         val contentResolver = context.contentResolver
-        val fileName = getFileName(context, uri) ?: "temp.xlsx"
+        val fileName = uri.path ?: "temp.xlsx" //getFileName(context, uri) ?: "temp.xlsx"
         val tempFile = File(context.cacheDir, fileName)
 
         return try {

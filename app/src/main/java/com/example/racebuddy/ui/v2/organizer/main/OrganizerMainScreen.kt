@@ -91,7 +91,8 @@ fun OrganizerMainScreen(
             BottomNavigationBarChat(
                 selectedItem = 0,
                 onItemSelected = { onBottomBarIconClick() },
-                isFavoritesVisible = false
+                isFavoritesVisible = false,
+                isProfileVisible = false
             )
         },
         floatingActionButton = {

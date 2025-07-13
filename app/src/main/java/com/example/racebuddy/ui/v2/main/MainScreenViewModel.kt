@@ -63,7 +63,7 @@ class MainScreenViewModel(
 
             val filteredEvents = events.filter { eventInfo ->
                 eventInfo.startDate >= LocalDate.now()
-            }
+            }.sortedBy { it.endDate }
 //
 //
 //            // TODO: Instead of getting info from database -> get info from shared preferences

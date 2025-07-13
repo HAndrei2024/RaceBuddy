@@ -78,14 +78,20 @@ class OrganizerMainScreenViewModel(
 
     fun updateStateAfterSignUp() {
         viewModelScope.launch {
-            _uiState.update { currentState ->
-                val organizerInfo = appRepository.getSupabaseOrganizerInfo(appRepository.getSupabaseLoggedInAthlete())
-                val events = appRepository.getSupabaseOrganizerEvents(organizerInfo.organizerUuid)
+            Log.d("UpdateStateAfterSignup", "logged in user: ${appRepository.getSupabaseLoggedInAthlete()}")
 
-                val filteredEvents = events.filter { it.startDate > LocalDate.now() }
+            val organizerInfo = appRepository.getSupabaseOrganizerInfo(appRepository.getSupabaseLoggedInAthlete())
+            Log.d("UpdateStateAfterSignup", "organizerInfo recieved: $organizerInfo")
+
+            userPreferencesRepository.saveSupabaseOrganizerInfo(organizerInfo)
+
+            val events = appRepository.getSupabaseOrganizerEvents(organizerInfo.organizerUuid)
+            val filteredEvents = events.filter { it.startDate > LocalDate.now() }
+            _uiState.update { currentState ->
+
 
                 currentState.copy(
-                    organizerInfo = appRepository.getSupabaseOrganizerInfo(appRepository.getSupabaseLoggedInAthlete()),
+                    organizerInfo = organizerInfo, //appRepository.getSupabaseOrganizerInfo(appRepository.getSupabaseLoggedInAthlete()),
                     events = events,
                     filteredEvents = filteredEvents
                 )

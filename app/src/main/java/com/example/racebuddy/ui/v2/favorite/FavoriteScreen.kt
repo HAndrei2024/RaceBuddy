@@ -22,6 +22,7 @@ import com.example.racebuddy.ui.v2.common.BottomNavigationBarChat
 import com.example.racebuddy.ui.v2.common.EventCardUpdated
 import com.example.racebuddy.ui.v2.common.MainScreenTopAppBar
 import com.example.racebuddy.ui.v2.main.countryMap
+import com.example.racebuddy.ui.v2.profile.NoUserLoggedInScreen
 import kotlinx.coroutines.launch
 
 @Composable
@@ -30,6 +31,7 @@ fun FavoriteScreen(
     onFavoriteIconClick: (String, Boolean) -> Unit,
     isUserLoggedIn: Boolean,
     onEventClick: (eventInfo: EventInfo) -> Unit,
+    onLoginButtonClick: () -> Unit,
     onHomeIconClick: () -> Unit,
     onProfileIconClick: () -> Unit,
     onBottomBarIconClick: (Int) -> Unit,
@@ -85,26 +87,37 @@ fun FavoriteScreen(
             modifier = Modifier
                 .padding(innerPadding)
         ) {
-
-            items(favoriteEvents) { eventInfo ->
-                EventCardUpdated(
-                    eventInfo = eventInfo,
-                    isUserLoggedIn = isUserLoggedIn,
-                    countryCodeEmoji = countryMap[eventInfo.city] ?: "",
-                    favoriteIcon =  painterResource(R.drawable.baseline_favorite_24),
-                    onFavoriteIconClick = {
-                        //TODO: Pass the event id, and update the database and local favorite list
-                        Log.d("MainScreen UI", "onFavoriteClickFromUi -> ${eventInfo.eventUuid}, false")
-                        onFavoriteIconClick(
-                            eventInfo.eventUuid,
-                            true
-                        )
-                    },
-                    onEventClick = {
-                        onEventClick(eventInfo)
-                    },
-                    modifier = Modifier
-                )
+            if(isUserLoggedIn) {
+                items(favoriteEvents) { eventInfo ->
+                    EventCardUpdated(
+                        eventInfo = eventInfo,
+                        isUserLoggedIn = isUserLoggedIn,
+                        countryCodeEmoji = countryMap[eventInfo.city] ?: "",
+                        favoriteIcon = painterResource(R.drawable.baseline_favorite_24),
+                        onFavoriteIconClick = {
+                            //TODO: Pass the event id, and update the database and local favorite list
+                            Log.d(
+                                "MainScreen UI",
+                                "onFavoriteClickFromUi -> ${eventInfo.eventUuid}, false"
+                            )
+                            onFavoriteIconClick(
+                                eventInfo.eventUuid,
+                                true
+                            )
+                        },
+                        onEventClick = {
+                            onEventClick(eventInfo)
+                        },
+                        modifier = Modifier
+                    )
+                }
+            }
+            else {
+                item {
+                    NoUserLoggedInScreen(
+                        onLoginButtonClick = onLoginButtonClick
+                    )
+                }
             }
         }
     }

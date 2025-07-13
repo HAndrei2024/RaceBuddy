@@ -183,7 +183,6 @@ class OrganizerUpdateDetailsScreenViewModel(
         organizerUuid: String
     ) {
         updateError(false)
-
         // Update Database, on succes go to confirmation screen
         if(isFormValid.value) {
             if(validateFields()) {

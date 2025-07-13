@@ -334,7 +334,7 @@ fun Appv2(
                 isRefreshing = organizerMainScreenUiState.isRefreshing,
                 isLoading = organizerMainScreenUiState.isLoading,
                 onRefresh = {
-                    organizerMainScreenViewModel.refreshUi(organizerUuid = organizerInfo.organizerUuid)
+                    organizerMainScreenViewModel.refreshUi(organizerUuid =  organizerInfo.organizerUuid)
                 },
                 onBottomBarIconClick = {
                     navController.navigate(AppScreen.OrganizerProfile.name) {
@@ -396,6 +396,7 @@ fun Appv2(
                 if (signupScreensUiState.signupSucces) {
                     if (signupScreensUiState.isOrganizer) {
                         Log.d("App Screen", "Starting to update organizer and navigating to OrganizerMainScreen")
+                        delay(250)
                         organizerMainScreenViewModel.updateStateAfterSignUp()
                         navController.navigate(AppScreen.Confirmation.name)
                     }
@@ -564,6 +565,11 @@ fun Appv2(
                 },
                 onSettingsIconClick = {
                     navController.navigate(AppScreen.Settings.name) {
+                        launchSingleTop = true
+                    }
+                },
+                onLoginButtonClick = {
+                    navController.navigate(AppScreen.Login.name) {
                         launchSingleTop = true
                     }
                 }
@@ -806,6 +812,12 @@ fun Appv2(
         composable(
             route = AppScreen.OrganizerEvent.name
         ) {
+            LaunchedEffect(Unit) {
+                if(organizerEventScreenUiState.eventInfo.startDate > LocalDate.now()) {
+                    organizerEventScreenViewModel.getSimilarEvents()
+                }
+            }
+
             OrganizerEventScreen(
                 eventInfo = organizerEventScreenUiState.eventInfo,
                 organizerInfo = organizerInfo,
@@ -822,6 +834,12 @@ fun Appv2(
                     navController.popBackStack()
                 },
                 isInFuture = organizerEventScreenUiState.eventInfo.startDate > LocalDate.now(),
+                isLoading = organizerEventScreenUiState.isLoading,
+                similarEvents = organizerEventScreenUiState.similarEvents,
+                predictedNumberOfParticipants = organizerEventScreenUiState.predictedValue,
+                onMakePredictionClick = {
+                    organizerEventScreenViewModel.getNumberOfMembersPrediction()
+                },
                 onUpdateResultsClick = {
                     navController.navigate(AppScreen.OrganizerUpdateResults.name) {
                         launchSingleTop = true
@@ -870,7 +888,9 @@ fun Appv2(
 
             LaunchedEffect(organizerAddEventScreenUiState) {
                 if(organizerAddEventScreenUiState.isAddSuccessful) {
-                    organizerMainScreenViewModel.updateEvents()
+                    organizerMainScreenViewModel.updateEvents(
+                        organizerUuid = organizerInfo.organizerUuid
+                    )
                     navController.navigate(AppScreen.Confirmation.name) {
                         popUpTo(AppScreen.OrganizerAddEvent.name) {
                             inclusive = true // ✅ Removes the current screen from the stack

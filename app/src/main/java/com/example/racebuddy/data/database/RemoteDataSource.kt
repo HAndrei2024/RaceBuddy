@@ -495,27 +495,35 @@ class RemoteDataSource {
         administratorFirstName: String,
         country: String,
     ): OrganizerInfo {
-        val response = SupabaseClient.client.from("Organizer").update(
-            {
-                set("name", name)
-                set("identification_number", identificationNumber)
-                set("administrator_first_name", administratorFirstName)
-                set("administrator_last_name", administratorLastName)
-                set("country", country)
-            }
-        ) {
-            select()
-            filter {
-                eq("organizer_uuid", organizerUuid)
-            }
-        }.decodeSingleOrNull<OrganizerInfo>()
+        try {
+            val response = SupabaseClient.client.from("Organizer").update(
+                {
+                    set("name", name)
+                    set("identification_number", identificationNumber)
+                    set("administrator_first_name", administratorFirstName)
+                    set("administrator_last_name", administratorLastName)
+                    set("country", country)
+                }
+            ) {
+                select()
+                filter {
+                    eq("organizer_uuid", organizerUuid)
+                }
+            }.decodeSingleOrNull<OrganizerInfo>()
 
-        if (response != null) {
-            Log.d("Supabase Organizer", "Updated database succesfuly - organizer details. $response")
+            if (response != null) {
+                Log.d(
+                    "Supabase Organizer",
+                    "Updated database succesfuly - organizer details. $response"
+                )
 
-            return response
-        } else {
-            Log.d("Supabase Organizer", "Database NOT updated succesfuly - organizer details.")
+                return response
+            } else {
+                Log.d("Supabase Organizer", "Database NOT updated succesfuly - organizer details.")
+                return defaultOrganizer
+            }
+        } catch (e: Exception) {
+            Log.d("Supabase Organizer", "Database NOT updated succesfuly exception: $e.")
             return defaultOrganizer
         }
     }
@@ -544,9 +552,60 @@ class RemoteDataSource {
         }
     }
 
+    suspend fun getEventsInfoWithNumberOfParticipants(
+        eventUuid: String,
+        category: String,
+        country: String
+    ): List<EventInfoWithNumberOfParticipants> {
+        try {
+
+            val countryParam = CountryParam(country)
+            val categoryParam = CategoryParam(category)
+            val response = SupabaseClient.client.postgrest
+                .rpc(
+                    function = "get_events_with_participant_count",
+                    parameters = mapOf(
+                        "event_uuid_input" to eventUuid,
+                        "country_input" to country,
+                        "category_input" to category
+                    )
+                ).decodeList<EventInfoWithNumberOfParticipants>()
+
+            Log.d("SUPABASE", "Fetched EventInfoWithNumberOfParticipants info: ${response.size}")
+
+            return response
+        } catch (exception: Exception) {
+            Log.d("SUPABASE", "Tried fetching EventInfoWithNumberOfParticipants join data and failed, exception: $exception")
+        }
+
+        return emptyList()
+    }
+
 }
 
 sealed class User
+
+@Serializable
+data class EventInfoWithNumberOfParticipants(
+    @SerialName("title") val title: String,
+    @SerialName("start_date") val startDate: LocalDate,
+    @SerialName("end_date") val endDate: LocalDate,
+    @SerialName("county") val county: String,
+    @SerialName("city") val city: String,
+    @SerialName("category") val category: String,
+    @SerialName("background_picture_url") val backgroundPictureUrl: String,
+    @SerialName("participant_count") val numberOfParticipants: Int
+)
+
+@Serializable
+data class CategoryParam(
+    @SerialName("category_input") val category: String
+)
+
+@Serializable
+data class CountryParam(
+    @SerialName("country_input") val country: String
+)
 
 @Serializable
 data class ResultConfirmedParam(

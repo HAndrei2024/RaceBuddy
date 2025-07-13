@@ -434,7 +434,7 @@ fun EventScreen2(
 
                                 ) {
                                     ResultsBottomSheet(
-                                        resultAthleteInfoList = resultAthleteInfoList.filter { it.gender == genderResultSheet }
+                                        resultAthleteInfoList = resultAthleteInfoList.filter { it.gender == genderResultSheet }.sortedBy { it.rank }
                                     )
                                 }
                             }
@@ -1385,6 +1385,8 @@ fun formatMillisToSecondsString(milliseconds: Long): String {
     return String.format("%d:%d", seconds, millis / 10)
 }
 
+
+
 @Composable
 fun ResultsBottomSheet(
     resultAthleteInfoList: List<ResultAthleteInfo>,
@@ -1394,6 +1396,10 @@ fun ResultsBottomSheet(
             .fillMaxWidth()
             .fillMaxHeight(0.95f)
     ) {
+        item {
+            ResultsBottomSheetHeader()
+        }
+
         if (resultAthleteInfoList.isNotEmpty()) {
             itemsIndexed(resultAthleteInfoList) { index, resultAthleteInfo ->
                 var difference =
@@ -1416,6 +1422,62 @@ fun ResultsBottomSheet(
 
 
 @Composable
+fun ResultsBottomSheetHeader() {
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+    ) {
+        Text(
+            text = "Rank",
+            //style = textStyle,
+            color = Color.Gray,
+            fontWeight = FontWeight.Bold,
+            maxLines = 1,
+            textAlign = TextAlign.Center,
+            overflow = TextOverflow.Ellipsis,
+            modifier = Modifier
+                //.weight(2f)
+        )
+
+        Text(
+            text = "Name",
+            //style = textStyle,
+            color = Color.Gray,
+            fontWeight = FontWeight.Bold,
+            maxLines = 1,
+            textAlign = TextAlign.Center,
+            overflow = TextOverflow.Ellipsis,
+            modifier = Modifier
+                .weight(2.5f)
+        )
+
+        Text(
+            text = "Time",
+            //style = textStyle,
+            color = Color.Gray,
+            fontWeight = FontWeight.Bold,
+            maxLines = 1,
+            textAlign = TextAlign.Center,
+            overflow = TextOverflow.Ellipsis,
+            modifier = Modifier
+                .weight(1f)
+        )
+
+        Text(
+            text = "Points",
+            //style = textStyle,
+            color = Color.Gray,
+            fontWeight = FontWeight.Bold,
+            maxLines = 1,
+            textAlign = TextAlign.Center,
+            overflow = TextOverflow.Ellipsis,
+            modifier = Modifier
+                .weight(1f)
+        )
+    }
+}
+
+@Composable
 fun ResultRowForBottomSheet(
     rank: Int,
     profilePicUrl: String,
@@ -1429,7 +1491,7 @@ fun ResultRowForBottomSheet(
         horizontalArrangement = Arrangement.SpaceBetween,
         verticalAlignment = Alignment.CenterVertically,
         modifier = Modifier
-            .background(Color(0xFFEEEEEE))
+            //.background(Color(0xFFEEEEEE))
             .fillMaxWidth()
             .drawBehind {
                 val borderSize = 2.dp.toPx()
@@ -1446,12 +1508,17 @@ fun ResultRowForBottomSheet(
 
         Text(
             text = "${rank}.",
-            style = MaterialTheme.typography.titleLarge
+            style = MaterialTheme.typography.titleLarge,
+            modifier = Modifier
+                .padding(end = paddings.spacingSmall)
+                //.weight(1f)
         )
 
         Row(
             horizontalArrangement = Arrangement.spacedBy(paddings.spacingSmall),
-            verticalAlignment = Alignment.CenterVertically
+            verticalAlignment = Alignment.CenterVertically,
+            modifier = Modifier
+                .weight(2.5f)
         ) {
 
 
@@ -1466,11 +1533,17 @@ fun ResultRowForBottomSheet(
                     .size(27.dp) // Adjust size as needed
                     .clip(CircleShape)
                     .border(0.5.dp, MaterialTheme.colorScheme.primary, CircleShape)
+                    //.weight(1f)
             )
 
             Text(
-                text = if(name.length > 15) "${name.take(15)}..." else name,
-                style = MaterialTheme.typography.titleMedium
+                text =  name,//if(name.length > 15) "${name.take(15)}..." else name,
+                style = MaterialTheme.typography.titleMedium,
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis,
+                modifier = Modifier
+                    .padding(end = paddings.spacingXSmall)
+                    //.weight(1f)
             )
 
         }
@@ -1479,19 +1552,29 @@ fun ResultRowForBottomSheet(
         Text(
             text = "${time}",
             style = MaterialTheme.typography.titleMedium,
-            fontWeight = FontWeight.Normal
+            fontWeight = FontWeight.Normal,
+            maxLines = 1,
+            textAlign = TextAlign.Center,
+            modifier = Modifier
+                .weight(1f)
         )
 
-        Text(
-            text = "+$difference",
-            style = MaterialTheme.typography.titleMedium,
-            fontWeight = FontWeight.Normal
-        )
+//        Text(
+//            text = "+$difference",
+//            style = MaterialTheme.typography.titleMedium,
+//            fontWeight = FontWeight.Normal,
+//            textAlign = TextAlign.Center,
+//            modifier = Modifier
+//                .weight(1f)
+//        )
 
         Text(
             text = points.toString(),
             style = MaterialTheme.typography.titleMedium,
-            fontWeight = FontWeight.Normal
+            fontWeight = FontWeight.Normal,
+            textAlign = TextAlign.Center,
+            modifier = Modifier
+                .weight(1f)
         )
     }
 }
@@ -2259,16 +2342,17 @@ fun EventDetails(
 //            )
        // First2DetailsRow(eventInfo)
 
-        First2DetailsColumn(eventInfo)
+        First2DetailsColumn(
+            eventInfo)
 
-        EventDetailsRowUpdated(
-            detailsIcon = R.drawable.outline_person_40,
-            isIcon = true,
-            bigText = "Organizer Name",
-            showSmallText = false,
-            smallText = "Organizer",
-            modifier = Modifier.fillMaxWidth()
-        )
+//        EventDetailsRowUpdated(
+//            detailsIcon = R.drawable.outline_person_40,
+//            isIcon = true,
+//            bigText = "Organizer Name",
+//            showSmallText = false,
+//            smallText = "Organizer",
+//            modifier = Modifier.fillMaxWidth()
+//        )
 
         Spacer(
             modifier = Modifier

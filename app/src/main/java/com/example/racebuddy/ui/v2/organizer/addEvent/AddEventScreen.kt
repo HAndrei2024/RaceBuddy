@@ -626,7 +626,7 @@ fun BottomBarWithButtonUsingShadow(
     onClick: () -> Unit,
     isEnabled: Boolean,
     showError: Boolean,
-    leadingIcon: String = "✅",
+    leadingIcon: String = "",//"✅",
     textColor: Color = Color. Red,
     errorMessage: String
 ) {

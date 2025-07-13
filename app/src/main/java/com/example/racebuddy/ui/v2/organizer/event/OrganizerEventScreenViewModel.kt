@@ -1,6 +1,7 @@
 package com.example.racebuddy.ui.v2.organizer.event
 
 import android.util.Log
+import androidx.datastore.preferences.preferencesDataStore
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.ViewModelProvider.AndroidViewModelFactory.Companion.APPLICATION_KEY
@@ -10,15 +11,20 @@ import androidx.lifecycle.viewmodel.viewModelFactory
 import com.example.racebuddy.Application
 import com.example.racebuddy.data.database.AppRepository
 import com.example.racebuddy.data.database.EventInfo
+import com.example.racebuddy.data.database.EventInfoWithNumberOfParticipants
 import com.example.racebuddy.data.database.ResultAthleteInfo
 import com.example.racebuddy.data.database.UserPreferencesRepository
 import com.example.racebuddy.data.database.testEvent
+import com.example.racebuddy.data.network.LocalServerApi
 import com.example.racebuddy.ui.v2.event.EventScreenUiState
 import com.example.racebuddy.ui.v2.event.EventScreenViewModel
+import com.google.gson.Gson
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import okhttp3.MediaType.Companion.toMediaType
+import okhttp3.RequestBody.Companion.toRequestBody
 
 class OrganizerEventScreenViewModel(
     val appRepository: AppRepository,
@@ -28,15 +34,18 @@ class OrganizerEventScreenViewModel(
         OrganizerEventScreenUiState(
         eventInfo = testEvent,
         resultAthleteInfoList = emptyList(),
-        resultAthleteInfoListFiltered = emptyList()
-    )
+        resultAthleteInfoListFiltered = emptyList(),
+        similarEvents = emptyList(),
+        predictedValue = -1
+        )
     )
     val uiState = _uiState.asStateFlow()
 
     fun updateEvent(eventInfo: EventInfo) {
         _uiState.update { currentState ->
             currentState.copy(
-                eventInfo = eventInfo
+                eventInfo = eventInfo,
+                predictedValue = -1
             )
         }
     }
@@ -96,6 +105,75 @@ class OrganizerEventScreenViewModel(
         }
     }
 
+    fun getSimilarEvents() {
+        viewModelScope.launch {
+            val similarEvents = appRepository.getEventsInfoWithNumberOfParticipants(
+                eventUuid = _uiState.value.eventInfo.eventUuid,
+                category = _uiState.value.eventInfo.category,
+                country = _uiState.value.eventInfo.country
+            )
+
+            updateSimilarEvents(similarEvents)
+        }
+    }
+
+    fun updateSimilarEvents(similarEvents: List<EventInfoWithNumberOfParticipants>) {
+        _uiState.update { currentState ->
+            currentState.copy(
+                similarEvents = similarEvents
+            )
+        }
+    }
+
+    fun updatePredictedValue(value: Int) {
+        _uiState.update { currentState ->
+            currentState.copy(
+                predictedValue = value
+            )
+        }
+    }
+
+    fun updateIsLoading(value: Boolean) {
+        _uiState.update { currentState ->
+            currentState.copy(
+                isLoading = value
+            )
+        }
+    }
+
+    fun getNumberOfMembersPrediction() {
+        viewModelScope.launch {
+            try {
+                updateIsLoading(true)
+                val event = mapOf(
+                    "start_date" to _uiState.value.eventInfo.startDate.toString(),
+                    "end_date" to _uiState.value.eventInfo.endDate.toString(),
+                    "country" to _uiState.value.eventInfo.country,
+                    "category" to _uiState.value.eventInfo.category
+                )
+
+
+                val eventJson = Gson().toJson(event)
+                val eventPart = eventJson.toRequestBody("text/plain".toMediaType())
+
+                val result = LocalServerApi.retrofitService.getPrediction(
+                    event = eventPart
+                )
+
+                updatePredictedValue(result.body()?.predictedParticipants ?: -1)
+
+                updateIsLoading(false)
+                Log.d("OrganizerEvent", "Prediction successful: $result and body of result: ${result.body()?.predictedParticipants}")
+            }
+            catch (e: Exception) {
+                updateIsLoading(false)
+                Log.d("OrganizerEvent", "Prediction error: $e")
+            }
+        }
+    }
+
+
+
     companion object {
         val factory: ViewModelProvider.Factory = viewModelFactory {
             initializer {
@@ -113,5 +191,7 @@ data class OrganizerEventScreenUiState(
     val eventInfo: EventInfo,
     val resultAthleteInfoList: List<ResultAthleteInfo>,
     val resultAthleteInfoListFiltered: List<ResultAthleteInfo>,
+    val similarEvents: List<EventInfoWithNumberOfParticipants>,
+    val predictedValue: Int,
     val isLoading: Boolean = false
 )

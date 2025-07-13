@@ -12,16 +12,21 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.defaultMinSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.LazyRow
+import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalBottomSheet
@@ -53,11 +58,14 @@ import androidx.compose.ui.zIndex
 import coil.compose.AsyncImage
 import com.example.racebuddy.R
 import com.example.racebuddy.data.database.EventInfo
+import com.example.racebuddy.data.database.EventInfoWithNumberOfParticipants
 import com.example.racebuddy.data.database.OrganizerInfo
 import com.example.racebuddy.data.database.ResultAthleteInfo
 import com.example.racebuddy.ui.theme.heights
 import com.example.racebuddy.ui.theme.paddings
 import com.example.racebuddy.ui.theme.shapes
+import com.example.racebuddy.ui.theme.sizes
+import com.example.racebuddy.ui.v2.common.LoadingAnimation
 import com.example.racebuddy.ui.v2.event.DragHandleWithIconOnRight
 import com.example.racebuddy.ui.v2.event.EventDetails
 import com.example.racebuddy.ui.v2.event.EventScreenBottomBar
@@ -87,7 +95,11 @@ fun OrganizerEventScreen(
     onBackClick: () -> Unit,
     onFilterButtonClick: (String) -> Unit,
     onUpdateResultsClick: () -> Unit,
-    isInFuture: Boolean
+    similarEvents: List<EventInfoWithNumberOfParticipants>,
+    predictedNumberOfParticipants: Int,
+    onMakePredictionClick: () -> Unit,
+    isInFuture: Boolean,
+    isLoading: Boolean
 ){
     val screenHeight = LocalConfiguration.current.screenHeightDp.dp
     val backgroundImageHeight = screenHeight * 0.30f
@@ -131,7 +143,7 @@ fun OrganizerEventScreen(
 
             item {
                 FilterButtons(
-                    items = if(eventInfo.startDate > LocalDate.now()) listOf("Summary", "Participants", "Predictions") else listOf("Summary", "Results"),
+                    items = if(eventInfo.startDate > LocalDate.now()) listOf("Summary", "Participants", "Stats") else listOf("Summary", "Results"),
                     onFilterButtonClick = { filterString: String ->
                         selectedFilterButton = filterString
                     }
@@ -177,15 +189,20 @@ fun OrganizerEventScreen(
                         }
                         else {
                             ResultsBlock(
-                                resultAthleteInfoList = resultAthleteInfoList,
+                                resultAthleteInfoList = resultAthleteInfoList.sortedBy { it.rank },
                                 categories = categories,
                                 onFilterResultsButtonClick = onFilterButtonClick
                             )
                         }
                     }
 
-                    "Predictions" -> {
-                        
+                    "Stats" -> {
+                        StatsScreen(
+                            similarEvents = similarEvents,
+                            predictedNumberOfParticipants = predictedNumberOfParticipants,
+                            onMakePredictionClick = onMakePredictionClick,
+                            isLoading = isLoading
+                        )
                     }
                 }
             }
@@ -193,6 +210,192 @@ fun OrganizerEventScreen(
     }
 }
 
+@Composable
+fun StatsScreen(
+    similarEvents: List<EventInfoWithNumberOfParticipants>,
+    predictedNumberOfParticipants: Int,
+    onMakePredictionClick: () -> Unit,
+    isLoading: Boolean
+) {
+    StatsBlock(
+        titleAboveText = "Similar Events",
+        content = {
+            SimilarEventsRow(
+                similarEvents = similarEvents
+            )
+        },
+        modifier = Modifier
+    )
+
+    StatsBlock(
+        titleAboveText = "Predictions",
+        content = {
+            if(isLoading) {
+                LoadingAnimation()
+            }
+            PredictionsRow(
+                predictedNumberOfParticipants = predictedNumberOfParticipants,
+                onMakePredictionClick = onMakePredictionClick,
+                modifier = Modifier
+            )
+        },
+        modifier = Modifier
+    )
+
+}
+
+@Composable
+fun StatsBlock(
+    titleAboveText: String,
+    content: @Composable () -> Unit,
+    modifier: Modifier = Modifier
+) {
+    Column(
+        modifier = modifier
+            .fillMaxWidth()
+            .padding(paddings.spacingMedium)
+        //.padding(start = paddings.spacingMedium)
+    ) {
+        Text(
+            text = titleAboveText,
+            style = MaterialTheme.typography.labelMedium,
+            color = Color.Gray,
+            modifier = Modifier
+                .padding(
+                    start = paddings.spacingXSmall / 2,
+                    top = paddings.spacingXSmall
+                )
+                .offset(y = paddings.spacingXSmall)
+        )
+
+        content()
+
+    }
+}
+
+@Composable
+fun PredictionsRow(
+    predictedNumberOfParticipants: Int,
+    onMakePredictionClick: () -> Unit,
+    modifier: Modifier = Modifier
+) {
+    Row(
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.SpaceBetween,
+        modifier = modifier
+            .fillMaxWidth()
+    ) {
+        Text("Number of participants: ${if(predictedNumberOfParticipants == -1) "" else predictedNumberOfParticipants}", color = Color.Black)
+
+        Button(
+            onClick = onMakePredictionClick,
+            colors = ButtonDefaults.buttonColors(
+                containerColor = MaterialTheme.colorScheme.primary ,
+                contentColor = Color.White
+            ),
+            elevation = ButtonDefaults.buttonElevation(2.dp),
+            shape = RoundedCornerShape(shapes.small.topEnd),
+            contentPadding = PaddingValues(horizontal = 16.dp, vertical = 8.dp)
+        ) {
+            Text("Predict")
+        }
+    }
+}
+
+@Composable
+fun SimilarEventsRow(
+    similarEvents: List<EventInfoWithNumberOfParticipants>
+) {
+    LazyRow(
+        contentPadding = PaddingValues(horizontal = 16.dp, vertical = 8.dp),
+        horizontalArrangement = Arrangement.spacedBy(12.dp)
+    ) {
+        if(similarEvents.isEmpty()) {
+            item {
+                Text(
+                    text = "You are the first to organize such an event!",
+                    modifier = Modifier
+                        .padding(start = paddings.spacingMedium)
+                )
+            }
+        }
+        else {
+            items(similarEvents) { event ->
+                SimilarEventCard(
+                    eventInfo = event,
+                    onEventClick = {},
+                    modifier = Modifier
+                )
+            }
+        }
+    }
+}
+
+@Composable
+fun SimilarEventCard(
+    eventInfo: EventInfoWithNumberOfParticipants,
+    onEventClick: () -> Unit,
+    modifier: Modifier = Modifier
+) {
+    Card(
+        shape = CardDefaults.elevatedShape,
+        elevation = CardDefaults.cardElevation(3.dp),
+        colors = CardDefaults.elevatedCardColors(containerColor = Color.White),
+        //border = BorderStroke(1.dp, MaterialTheme.colorScheme.primary),
+        modifier = modifier
+            .fillMaxWidth()
+            .clickable { onEventClick() }
+            .padding(paddings.spacingSmall)
+            .height(120.dp)
+            .width(120.dp)
+    ) {
+        Column(
+            verticalArrangement = Arrangement.Center,
+            horizontalAlignment = Alignment.CenterHorizontally,
+            modifier = Modifier
+                .padding(paddings.spacingSmall)
+        ) {
+            AsyncImage(
+                model = eventInfo.backgroundPictureUrl.takeIf { it.isNotBlank() },
+                contentDescription = "Profile Picture",
+                placeholder = painterResource(R.drawable.default_background),
+                error = painterResource(R.drawable.default_background),
+                fallback = painterResource(R.drawable.default_background),
+                contentScale = ContentScale.Crop,
+                modifier = Modifier
+                    .padding(paddings.spacingSmall)
+                    .clip(RoundedCornerShape(paddings.spacingSmall))
+                    .weight(2f)
+                    .height(80.dp)
+                    .fillMaxWidth()
+                //.border(1.dp, MaterialTheme.colorScheme.primary)
+            )
+
+            Text(
+                text = eventInfo.title,
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis,
+                style = MaterialTheme.typography.titleMedium,
+                color = Color.Black,
+                modifier = Modifier
+                    .padding(top = paddings.spacingXSmall)
+            )
+
+            Text(
+                text = " Participants: ${eventInfo.numberOfParticipants}",
+                maxLines = 1,
+                color = Color.Black,
+                overflow = TextOverflow.Ellipsis,
+                fontWeight = FontWeight.Normal,
+                style = MaterialTheme.typography.bodyMedium,
+//                    color = Color.Gray,
+//                    fontWeight = FontWeight.Bold,
+                modifier = Modifier
+                //.padding(5.dp)
+            )
+        }
+    }
+}
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -447,17 +650,25 @@ fun ConfirmationButton(
     onConfirm: (athleteUuid: String, value: Boolean) -> Unit,
     modifier: Modifier = Modifier
 ) {
-    Button(
-        onClick = {
+    if(!confirmed) {
+        Button(
+            onClick = {
                 if (!confirmed) onConfirm(athleteUuid, true)
                 Log.d("OrganizerEvent UI", "Confirmation Button pressed!")
-        }, // prevent double confirmation
-        modifier = modifier
-            .defaultMinSize(minWidth = 1.dp) // Optional: makes the button less wide
-            .padding(horizontal = 4.dp)
-    ) {
+            }, // prevent double confirmation
+            modifier = modifier
+                .defaultMinSize(minWidth = 1.dp) // Optional: makes the button less wide
+                .padding(horizontal = 4.dp)
+        ) {
+            Text(
+                text = if (confirmed) "✅ Confirmed" else "Confirm ⏳",
+                maxLines = 1
+            )
+        }
+    }
+    else {
         Text(
-            text = if (confirmed) "✅ Confirmed" else "Confirm ⏳",
+            text = "✅ Confirmed",
             maxLines = 1
         )
     }

@@ -789,7 +789,8 @@ fun BottomAppBarUpdated(
 fun BottomNavigationBarChat(
     selectedItem: Int,
     onItemSelected: (Int) -> Unit,
-    isFavoritesVisible: Boolean = true
+    isFavoritesVisible: Boolean = true,
+    isProfileVisible: Boolean = true
 ) {
     val royalBlue = Color(0xFF4169E1)
 
@@ -807,14 +808,20 @@ fun BottomNavigationBarChat(
             }
         //tonalElevation = 8.dp
     ) {
-        val items = if(isFavoritesVisible) listOf(
-            Pair("Home", Icons.Default.Home),
-            Pair("Favorite", Icons.Default.Favorite),
-            Pair("Profile", Icons.Default.Person)
-        ) else listOf(
-            Pair("Home", Icons.Default.Home),
-            Pair("Profile", Icons.Default.Person)
-        )
+//        var items = if(isFavoritesVisible && isProfileVisible) listOf(
+//            Pair("Home", Icons.Default.Home),
+//            Pair("Favorite", Icons.Default.Favorite),
+//            Pair("Profile", Icons.Default.Person)
+//        ) else listOf(
+//            Pair("Home", Icons.Default.Home),
+//            Pair("Profile", Icons.Default.Person)
+//        )
+
+        val items = mutableListOf<Pair<String, ImageVector>>()
+        items.add(Pair("Home", Icons.Default.Home))
+        if (isFavoritesVisible) items.add(Pair("Favorite", Icons.Default.Favorite))
+        if (isProfileVisible) items.add(Pair("Profile", Icons.Default.Person))
+
 
         items.forEachIndexed { index, item ->
             NavigationBarItem(

@@ -41,6 +41,12 @@ interface LocalServerApiService {
         @Part("event_id") eventId: RequestBody
     ): Response<Unit>
 
+
+    @Multipart
+    @POST("prediction")
+    suspend fun getPrediction(
+        @Part("event") event: RequestBody
+    ): Response<ParticipantsPredictionResponse>
 }
 
 @Serializable
@@ -55,6 +61,11 @@ data class LocalServerUploadResponse(
     val accessToken: String,
     @SerialName(value = "athlete")
     val athlete: StravaAthlete
+)
+
+@Serializable
+data class ParticipantsPredictionResponse(
+    @SerialName("predicted_participants") val predictedParticipants: Int
 )
 
 object LocalServerApi {

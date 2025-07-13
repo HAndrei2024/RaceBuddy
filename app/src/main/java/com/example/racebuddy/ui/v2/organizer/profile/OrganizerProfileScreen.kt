@@ -1,7 +1,10 @@
 package com.example.racebuddy.ui.v2.organizer.profile
 
 
+import androidx.compose.animation.core.Animatable
+import androidx.compose.animation.core.FastOutSlowInEasing
 import androidx.compose.animation.core.animateDpAsState
+import androidx.compose.animation.core.tween
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
@@ -10,32 +13,50 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Person
+import androidx.compose.material.icons.filled.Place
 import androidx.compose.material3.*
 import androidx.compose.material3.pulltorefresh.PullToRefreshBox
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.BlurredEdgeTreatment
 import androidx.compose.ui.draw.blur
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.scale
+import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.graphics.painter.Painter
+import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.zIndex
+import coil.compose.AsyncImage
 import com.example.racebuddy.R
+import com.example.racebuddy.data.database.AthleteInfo
 import com.example.racebuddy.data.database.OrganizerInfo
 import com.example.racebuddy.data.database.defaultOrganizer
+import com.example.racebuddy.ui.theme.StravaOrange
 import com.example.racebuddy.ui.theme.paddings
+import com.example.racebuddy.ui.theme.shapes
 import com.example.racebuddy.ui.v2.common.BottomNavigationBarChat
 import com.example.racebuddy.ui.v2.common.LoadingAnimation
 import com.example.racebuddy.ui.v2.common.MainScreenTopAppBar
+import com.example.racebuddy.ui.v2.event.DetailRow
 import com.example.racebuddy.ui.v2.main.countries
 import com.example.racebuddy.ui.v2.main.countryMap
+import com.example.racebuddy.ui.v2.profile.AthleteDetailsColumn
+import com.example.racebuddy.ui.v2.profile.DetailRow
+import kotlinx.datetime.LocalDate
+import network.chaintech.kmp_date_time_picker.utils.now
 
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -96,12 +117,17 @@ fun OrganizerProfileScreen(
                     //.zIndex(1f)
                     .fillMaxSize()
             ) {
-                UserProfileCardNoElevation(
-                    profileImage = painterResource(R.drawable.default_profile),
-                    name = organizer.name,
-                    country = organizer.country + countryMap[organizer.country],
-                    adminFirstName = organizer.administratorFirstName,
-                    adminLastName = organizer.administratorLastName
+//                UserProfileCardNoElevation(
+//                    profileImage = painterResource(R.drawable.default_profile),
+//                    name = organizer.name,
+//                    country = organizer.country + countryMap[organizer.country],
+//                    adminFirstName = organizer.administratorFirstName,
+//                    adminLastName = organizer.administratorLastName
+//                )
+                OrganizerDetails(
+                    organizerInfo = organizer,
+                    onLogoutButtonClick = {},
+                    modifier = Modifier
                 )
             }
         }
@@ -256,6 +282,160 @@ fun InfoRow(label: String, value: String) {
         )
     }
 }
+
+
+
+@Composable
+fun OrganizerDetails(
+    organizerInfo: OrganizerInfo,
+    onLogoutButtonClick: () -> Unit,
+    modifier: Modifier = Modifier,
+) {
+    Column(
+        verticalArrangement = Arrangement.Center,
+        horizontalAlignment = Alignment.CenterHorizontally,
+        modifier = modifier
+            .fillMaxWidth()
+            .padding(paddings.spacingSmall)
+//            .shadow(3.dp, shapes.small) // Shadow with rounded corners
+//            .background(Color.White, shapes.small)
+    ) {
+//        Text(
+//            text = "Details",
+//            style = MaterialTheme.typography.bodyMedium,
+//            color = Color.Gray,
+//            fontWeight = FontWeight.Bold,
+//            modifier = Modifier
+//                //.background(Color(0xFFEEEEEE))
+//                .padding(
+//                    paddings.spacingSmall
+//                    //start = paddings.spacingMedium,
+//                    //bottom = paddings.spacingSmall
+//                    //top = paddings.spacingXSmall
+//                )
+//                .fillMaxWidth(1f)
+//
+//                .drawBehind {
+//                    val borderSize = 2.dp.toPx()
+//                    drawLine(
+//                        color = Color(0xFFEEEEEE),                        start = Offset(0f, size.height),
+//                        end = Offset(size.width, size.height),
+//                        strokeWidth = borderSize
+//                    )
+//                }
+//            //.offset(y = paddings.spacingXSmall)
+//        )
+//
+//
+
+//        Row(
+//            modifier = modifier
+//                .fillMaxWidth()
+//                .height(IntrinsicSize.Min)
+//        ) {
+
+//            Column(
+//                verticalArrangement = Arrangement.Center,
+//                horizontalAlignment = Alignment.CenterHorizontally
+//            ) {
+                AsyncImage(
+                    model = "",
+                    contentDescription = "",
+                    placeholder = painterResource(R.drawable.default_profile),
+                    error = painterResource(R.drawable.ic_launcher_foreground),
+                    fallback = painterResource(R.drawable.default_profile),
+                    contentScale = ContentScale.Crop,
+                    modifier = Modifier
+                        .padding(paddings.spacingSmall)
+                        .size(125.dp) // Adjust size as needed
+                        .clip(shapes.medium)
+                    // .border(0.5.dp, MaterialTheme.colorScheme.primary, shapes.small)
+                    //.weight(0.5f)
+                )
+
+                OrganizerDetailsColumn(
+                    organizerInfo = organizerInfo,
+                    areDetailsFilled = organizerInfo.name != "-",
+                    modifier = Modifier
+                        .weight(1f)
+                        .fillMaxHeight()
+                )
+
+                Button(
+                    colors = ButtonDefaults.buttonColors(
+                        containerColor = MaterialTheme.colorScheme.primary,
+                        contentColor = Color.White
+                    ),
+                    elevation = ButtonDefaults.buttonElevation(2.dp),
+                    shape = RoundedCornerShape(shapes.small.topEnd),
+                    contentPadding = PaddingValues(horizontal = 16.dp, vertical = 8.dp),
+                    onClick = onLogoutButtonClick,
+                    modifier = Modifier
+                        .scale(0.8f)
+                        .align(Alignment.CenterHorizontally)
+                ) {
+                    Text(
+                        text = "Logout",
+                        style = MaterialTheme.typography.bodyMedium,
+                        modifier = Modifier
+                        //.padding(paddings.spacingXSmall)
+                    )
+                //}
+                //}
+
+
+        }
+    }
+}
+
+@Composable
+fun OrganizerDetailsColumn(
+    organizerInfo: OrganizerInfo,
+    areDetailsFilled: Boolean,
+    modifier: Modifier = Modifier
+) {
+//    val today = LocalDate.now()
+//    var age = today.year - organizerInfo.birthdate.year
+//    if (
+//        today.monthNumber < athleteInfo.birthdate.monthNumber ||
+//        (today.monthNumber == athleteInfo.birthdate.monthNumber && today.dayOfMonth < athleteInfo.birthdate.dayOfMonth)
+//    ) {
+//        age -= 1
+//    }
+
+    Column(
+        verticalArrangement = Arrangement.Top,
+        horizontalAlignment = Alignment.CenterHorizontally,
+        modifier = modifier
+            .fillMaxWidth()
+            .padding(start = paddings.spacingSmall, end = paddings.spacingSmall, bottom = paddings.spacingSmall)
+//            .shadow(3.dp, shapes.small) // Shadow with rounded corners
+//            .background(Color.White, shapes.small)
+    ) {
+
+        DetailRow(
+            field = "Name",
+            value = if(!areDetailsFilled) "-" else "${organizerInfo.name}",
+            maxLines = 2,
+            modifier = Modifier
+        )
+
+        DetailRow(
+            field = "Administrator",
+            value = if(!areDetailsFilled) "-" else "${organizerInfo.administratorFirstName} ${organizerInfo.administratorLastName}",
+            modifier = Modifier
+        )
+
+        DetailRow(
+            field = "Country",
+            value = if(!areDetailsFilled) "-" else "${organizerInfo.country} ${countryMap.get(organizerInfo.country)}",
+            maxLines = 2,
+            modifier = Modifier
+        )
+
+    }
+}
+
 
 
 @Preview

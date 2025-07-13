@@ -229,4 +229,16 @@ class AppRepository(
             value
         )
     }
+
+    suspend fun getEventsInfoWithNumberOfParticipants(
+        eventUuid: String,
+        category: String,
+        country: String
+    ): List<EventInfoWithNumberOfParticipants> {
+        return remoteDataSource.getEventsInfoWithNumberOfParticipants(
+            eventUuid = eventUuid,
+            category = category,
+            country = country
+        )
+    }
 }
