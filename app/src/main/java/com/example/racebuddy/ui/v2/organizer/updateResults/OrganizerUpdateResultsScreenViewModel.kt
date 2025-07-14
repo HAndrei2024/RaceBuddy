@@ -72,7 +72,7 @@ class OrganizerUpdateResultsScreenViewModel(
             }
             currentValue.copy(
                 fileUri = fileUri,
-                fileName = fileUri.path ?: "temp.xlsx"
+                fileName = fileName
             )
         }
     }
@@ -108,8 +108,8 @@ class OrganizerUpdateResultsScreenViewModel(
             "event_id" to "13c94ae9-ae3a-4b50-81e4-96d3cf7bc319"
         )
 
-        val path = _uiState.value.fileUri.path ?: ""
-        val file = File(path)
+        //val path = _uiState.value.fileUri.path ?: ""
+        //val file = File(path)
 
 // Create file part
         val fileUri = _uiState.value.fileUri ?: return
@@ -184,7 +184,7 @@ class OrganizerUpdateResultsScreenViewModel(
 
     fun copyUriToTempFile(context: Context, uri: Uri): File? {
         val contentResolver = context.contentResolver
-        val fileName = uri.path ?: "temp.xlsx" //getFileName(context, uri) ?: "temp.xlsx"
+        val fileName = getFileName(context, uri) ?: "temp.xlsx"
         val tempFile = File(context.cacheDir, fileName)
 
         return try {

@@ -260,7 +260,11 @@ fun MainScreen(
                     modifier = Modifier
                         .padding(top = paddings.spacingSmall)
                 )
-
+                if(events.isEmpty()) {
+                    Text(
+                        text = "There are no events..."
+                    )
+                }
                 Events(
                     events = events,
                     favoriteEventsId = favoriteEventsId,
